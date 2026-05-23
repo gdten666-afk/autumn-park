@@ -79,7 +79,7 @@ export default function ParkPage() {
         <ParkScene seasonState={seasonState} weather={weather} />
 
         {/* Welcome hero */}
-        <div className="welcome-text relative" style={{ paddingTop: '18vh', paddingLeft: '4vw', zIndex: 20 }}>
+        <div className="welcome-text relative px-4 md:px-0" style={{ paddingTop: 'clamp(60px, 12vh, 120px)', paddingLeft: '4vw', zIndex: 20 }}>
           <div className="flex flex-col items-start max-w-lg">
             {/* Season badge */}
             <div className="glass-btn inline-flex items-center gap-2 mb-6 cursor-default">
@@ -132,8 +132,7 @@ export default function ParkPage() {
       ) : (
         <button
           onClick={() => setShowLogin(true)}
-          className="fixed top-4 z-30 glass-btn"
-          style={{ right: '296px' }}
+          className="fixed top-4 z-30 glass-btn right-4 md:right-[296px]"
         >
           进入我的角落
         </button>

@@ -11,7 +11,7 @@ interface UserMenuProps {
 
 export default function UserMenu({ session, onEnterCorner, onOpenAdmin, onLogout }: UserMenuProps) {
   return (
-    <div className="fixed top-4 z-30 flex items-center gap-2" style={{ right: '296px' }}>
+    <div className="fixed top-4 z-30 flex items-center gap-2 right-4 md:right-[296px]">
       <div className="glass flex items-center gap-2 px-4 py-2">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-400/70" />
         <span className="text-black/45 text-sm">{session.name}</span>

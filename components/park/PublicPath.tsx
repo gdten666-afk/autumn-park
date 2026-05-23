@@ -85,7 +85,7 @@ export default function PublicPath() {
           </div>
         </div>
       ) : viewMode === 'walk' ? (
-        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'calc(100vw - 320px)', paddingLeft: '4vw', paddingRight: '4vw' }}>
+        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'calc(100vw - 320px)', width: '100%', paddingLeft: '4vw', paddingRight: '4vw' }}>
           <div className="flex flex-wrap justify-center gap-5 md:gap-8">
             {feedItems.map((item) => {
               if (item.type === 'quote') {
@@ -135,7 +135,7 @@ export default function PublicPath() {
           </div>
         </div>
       ) : (
-        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'calc(100vw - 320px)', paddingLeft: '4vw', paddingRight: '4vw' }}>
+        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'calc(100vw - 320px)', width: '100%', paddingLeft: '4vw', paddingRight: '4vw' }}>
           <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
             {photos.map(photo => (
               <div key={photo.id} className="break-inside-avoid mb-4 cursor-pointer group/gallery" onClick={() => setExpanded(photo)}>

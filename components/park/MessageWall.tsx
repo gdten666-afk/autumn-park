@@ -47,9 +47,9 @@ export default function MessageWall() {
   };
 
   return (
-    <div className="fixed pointer-events-auto" style={{
+    <div className="fixed pointer-events-auto hidden md:flex" style={{
       right: 0, top: 0, bottom: 0, width: '280px',
-      zIndex: 15, display: 'flex', flexDirection: 'column',
+      zIndex: 15, flexDirection: 'column',
     }}>
       {/* Wall background */}
       <div style={{
