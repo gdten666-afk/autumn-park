@@ -21,24 +21,30 @@ export async function POST(req: NextRequest) {
       db.prepare('INSERT OR IGNORE INTO invite_codes (code) VALUES (?)').run(bootstrapCode);
     }
 
+    const isBootstrap = inviteCode.trim() === bootstrapCode;
+
     // Check invite code
     const code = db.prepare('SELECT * FROM invite_codes WHERE code = ?').get(inviteCode.trim()) as any;
     if (!code) {
       return NextResponse.json({ ok: false, error: 'Invalid invite code' }, { status: 404 });
     }
-    if (code.used_by) {
+    // Bootstrap code can be reused; regular codes are single-use
+    if (code.used_by && !isBootstrap) {
       return NextResponse.json({ ok: false, error: 'Invite code already used' }, { status: 410 });
     }
 
     const trimmedName = name.trim();
-    const userId = nanoid();
+    const userId = isBootstrap && code.used_by ? code.used_by : nanoid();
+    const role = isBootstrap ? 'operator' : 'user';
 
-    // Determine role: bootstrap code user becomes operator
-    const role = (inviteCode.trim() === bootstrapCode) ? 'operator' : 'user';
-
-    db.prepare('INSERT INTO users (id, name, role, invite_code) VALUES (?, ?, ?, ?)').run(userId, trimmedName, role, inviteCode.trim());
+    // Upsert user for bootstrap (re-register), insert for normal
+    if (isBootstrap && code.used_by) {
+      db.prepare('UPDATE users SET name = ? WHERE id = ?').run(trimmedName, userId);
+    } else {
+      db.prepare('INSERT INTO users (id, name, role, invite_code) VALUES (?, ?, ?, ?)').run(userId, trimmedName, role, inviteCode.trim());
+    }
     db.prepare('UPDATE invite_codes SET used_by = ? WHERE code = ?').run(userId, inviteCode.trim());
-    db.prepare('INSERT OR IGNORE INTO spaces (user_id) VALUES (?)').run(userId);
+    db.prepare('INSERT OR IGNORE INTO spaces (user_id, scene, weather) VALUES (?, \'autumn-bench\', \'sunny\')').run(userId);
 
     const session: UserSession = { userId, name: trimmedName, role: role as any };
     await createSession({ id: userId, name: trimmedName, role });
