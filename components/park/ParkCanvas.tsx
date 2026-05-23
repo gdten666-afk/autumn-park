@@ -1,16 +1,15 @@
 'use client';
 
-import { useEffect, useRef, MutableRefObject } from 'react';
+import { useEffect, useRef } from 'react';
 import { getSeasonState } from '@/lib/seasons';
 import type { SeasonState } from '@/lib/types';
 
 interface ParkCanvasProps {
   children: React.ReactNode;
   onSeasonChange: (state: SeasonState) => void;
-  scrollRef: MutableRefObject<number>;
 }
 
-export default function ParkCanvas({ children, onSeasonChange, scrollRef }: ParkCanvasProps) {
+export default function ParkCanvas({ children, onSeasonChange }: ParkCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -18,15 +17,6 @@ export default function ParkCanvas({ children, onSeasonChange, scrollRef }: Park
     const interval = setInterval(() => onSeasonChange(getSeasonState()), 3600000);
     return () => clearInterval(interval);
   }, [onSeasonChange]);
-
-  // Direct DOM scroll → ref update, no React state involved
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const handler = () => { scrollRef.current = el.scrollLeft; };
-    el.addEventListener('scroll', handler, { passive: true });
-    return () => el.removeEventListener('scroll', handler);
-  }, [scrollRef]);
 
   return (
     <div

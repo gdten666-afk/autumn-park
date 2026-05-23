@@ -1,7 +1,7 @@
 // app/park/page.tsx
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import ParkCanvas from '@/components/park/ParkCanvas';
 import ParkScene from '@/components/park/ParkScene';
@@ -29,7 +29,6 @@ export default function ParkPage() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
-  const scrollRef = useRef(0);
 
   // Corner navigation
   const [cornerUserId, setCornerUserId] = useState<string | null>(null);
@@ -76,9 +75,9 @@ export default function ParkPage() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      <ParkCanvas onSeasonChange={handleSeasonChange} scrollRef={scrollRef}>
+      <ParkCanvas onSeasonChange={handleSeasonChange}>
         {/* Scene layer (trees, ground, sky) */}
-        <ParkScene seasonState={seasonState} weather={weather} scrollRef={scrollRef} />
+        <ParkScene seasonState={seasonState} weather={weather} />
 
         {/* Welcome hero */}
         <div className="welcome-text absolute" style={{ left: '4vw', top: '22vh', zIndex: 20 }}>
