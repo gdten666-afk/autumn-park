@@ -16,7 +16,7 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
   const c = palette[season] || palette.autumn;
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ width: '400vw' }}>
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
       {/* Sky — deep indigo/navy, NOT green */}
       <div className="fixed inset-0" style={{ background: `linear-gradient(180deg, ${c.sky1} 0%, ${c.sky2} 55%, #080810 100%)`, zIndex: 0 }} />
 

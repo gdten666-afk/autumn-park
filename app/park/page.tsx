@@ -79,7 +79,7 @@ export default function ParkPage() {
         <ParkScene seasonState={seasonState} weather={weather} />
 
         {/* Welcome hero */}
-        <div className="welcome-text absolute" style={{ left: '4vw', top: '22vh', zIndex: 20 }}>
+        <div className="welcome-text relative" style={{ paddingTop: '18vh', paddingLeft: '4vw', zIndex: 20 }}>
           <div className="flex flex-col items-start max-w-lg">
             {/* Season badge */}
             <div className="glass-btn inline-flex items-center gap-2 mb-6 cursor-default">
@@ -104,7 +104,7 @@ export default function ParkPage() {
             {/* CTA hint */}
             <div className="flex items-center gap-3 text-white/20 text-xs">
               <span className="w-8 h-px bg-white/10" />
-              向右漫步，探索公园
+              向下漫步，探索公园
               <svg width="14" height="14" viewBox="0 0 14 14" className="opacity-50">
                 <path d="M 3,7 L 11,7 M 8,4 L 11,7 L 8,10" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -113,12 +113,12 @@ export default function ParkPage() {
         </div>
 
         {/* Scroll hint — bottom center */}
-        <div className="scroll-hint absolute z-10 bottom-8 left-1/2 -translate-x-1/2">
+        <div className="scroll-hint relative z-10 flex justify-center py-12">
           <div className="flex flex-col items-center gap-2">
             <div className="w-5 h-8 rounded-full border border-white/10 flex items-start justify-center p-1">
               <div className="w-1 h-2 rounded-full bg-white/20 animate-bounce" style={{animationDuration: '1.5s'}} />
             </div>
-            <p className="text-white/10 text-[10px] tracking-[0.3em]">漫步</p>
+            <p className="text-white/10 text-[10px] tracking-[0.3em]">向下漫步</p>
           </div>
         </div>
 

@@ -21,13 +21,13 @@ export default function ParkCanvas({ children, onSeasonChange }: ParkCanvasProps
   return (
     <div
       ref={containerRef}
-      className="park-scroll-container w-full h-screen overflow-x-auto overflow-y-hidden relative"
+      className="w-full h-screen overflow-y-auto overflow-x-hidden relative"
       style={{
         background: 'var(--season-bg)',
         transition: 'background var(--transition-duration) ease',
       }}
     >
-      <div className="relative h-full" style={{ width: '400vw', minWidth: '4000px' }}>
+      <div className="relative w-full" style={{ minHeight: '200vh' }}>
         {children}
       </div>
     </div>
