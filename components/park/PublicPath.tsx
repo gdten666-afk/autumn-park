@@ -86,16 +86,16 @@ export default function PublicPath() {
         </div>
       ) : viewMode === 'walk' ? (
         <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'calc(100vw - 320px)', paddingLeft: '4vw', paddingRight: '4vw' }}>
-          <div className="flex flex-wrap justify-center gap-5 md:gap-8" suppressHydrationWarning>
+          <div className="flex flex-wrap justify-center gap-5 md:gap-8">
             {feedItems.map((item) => {
               if (item.type === 'quote') {
                 return (
-                  <div key={`q-${item.idx}`} className="flex items-center justify-center pointer-events-auto" suppressHydrationWarning
+                  <div key={`q-${item.idx}`} className="flex items-center justify-center pointer-events-auto"
                     style={{
                       width: 'clamp(160px, 22vw, 260px)',
                       minHeight: '120px',
                       marginTop: (item.idx % 3) * 24,
-                      transform: `rotate(${(Math.sin(item.idx * 2.7) * 2).toFixed(1)}deg)`,
+                      transform: `rotate(${['-1.5deg','1deg','-0.5deg','1.5deg','-1deg','0.5deg'][item.idx % 6]})`,
                     }}>
                     <div className="glass p-5 text-center">
                       <p className="text-black/35 text-sm leading-relaxed font-serif mb-2">「{item.text}」</p>
@@ -106,11 +106,12 @@ export default function PublicPath() {
               }
               const photo = item.data;
               const i = item.idx;
-              const rotation = (Math.sin(i * 2.1) * 4);
+              const rotations = ['-2deg', '1deg', '-1deg', '2deg', '-3deg', '1.5deg', '-1.5deg', '2.5deg'];
+              const rotation = rotations[i % rotations.length];
               return (
-                <div key={photo.id} className="polaroid-card cursor-pointer group/card" suppressHydrationWarning
+                <div key={photo.id} className="polaroid-card cursor-pointer group/card"
                   style={{
-                    transform: `rotate(${rotation}deg)`,
+                    transform: `rotate(${rotation})`,
                     marginTop: (i % 5) * 12,
                     marginLeft: (i % 3) * 20,
                     width: 'clamp(120px, 18vw, 200px)',

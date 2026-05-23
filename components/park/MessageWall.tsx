@@ -83,9 +83,10 @@ export default function MessageWall() {
           )}
           {messages.map((msg, i) => {
             const style = NOTE_COLORS[i % NOTE_COLORS.length];
-            const rotation = (Math.sin(i * 1.7) * 3);
+            const rots = ['-1.5deg','0.8deg','-0.5deg','1.2deg','-0.8deg','1.5deg'];
+            const rotation = rots[i % rots.length];
             return (
-              <div key={msg.id} className="break-inside-avoid mb-3" suppressHydrationWarning
+              <div key={msg.id} className="break-inside-avoid mb-3"
                 style={{
                   background: style.bg,
                   color: style.text,
