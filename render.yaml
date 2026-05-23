@@ -11,7 +11,3 @@ services:
         value: /app/data/park.db
       - key: UPLOAD_DIR
         value: /app/uploads
-    disk:
-      name: park-data
-      mountPath: /app/data
-      sizeGB: 1
