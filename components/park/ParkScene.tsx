@@ -149,6 +149,15 @@ export default function ParkScene({ seasonState, weather, scrollRef }: ParkScene
           <g color={c.tree} opacity="0.65">{midTrees.map((t, i) => treeEl(t, i, 48))}</g>
           <rect x="0" y="620" width="4800" height="380" fill={c.mist} />
         </svg>
+        {/* Real PNG assets — park structures at mid depth */}
+        <img src="/assets/houses/0-30.png" alt="" style={{ position: 'absolute', left: '6%', bottom: '34%', width: '90px', opacity: 0.5 }} />
+        <img src="/assets/houses/0-50.png" alt="" style={{ position: 'absolute', left: '26%', bottom: '32%', width: '80px', opacity: 0.5 }} />
+        <img src="/assets/houses/0-70.png" alt="" style={{ position: 'absolute', left: '50%', bottom: '36%', width: '95px', opacity: 0.48 }} />
+        <img src="/assets/houses/0-80.png" alt="" style={{ position: 'absolute', left: '74%', bottom: '33%', width: '85px', opacity: 0.5 }} />
+        <img src="/assets/houses/0-95.png" alt="" style={{ position: 'absolute', left: '93%', bottom: '35%', width: '88px', opacity: 0.48 }} />
+        <img src="/assets/landmarks/小番茄素材 (25).png" alt="" style={{ position: 'absolute', left: '16%', bottom: '35%', width: '110px', opacity: 0.4 }} />
+        <img src="/assets/landmarks/小番茄素材 (55).png" alt="" style={{ position: 'absolute', left: '58%', bottom: '37%', width: '105px', opacity: 0.4 }} />
+        <img src="/assets/landmarks/小番茄素材 (80).png" alt="" style={{ position: 'absolute', left: '82%', bottom: '36%', width: '100px', opacity: 0.4 }} />
       </div>
 
       {/* Layer 4: Ground + near trees */}
@@ -173,6 +182,8 @@ export default function ParkScene({ seasonState, weather, scrollRef }: ParkScene
         zIndex: 4, background: `radial-gradient(ellipse 80% 60% at 50% 15%, ${c.light} 0%, transparent 65%)`,
         animation: 'godRays 12s ease-in-out infinite',
       }} />
+
+      {/* Removed: structure layer was here, now integrated into mid layer below */}
 
       {/* Fog */}
       <div className="fixed bottom-0 left-0 right-0" style={{
