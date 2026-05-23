@@ -112,8 +112,10 @@ export default function PublicPath() {
                   <img
                     src={`/api/photos/${photo.id}?file=1`}
                     alt={photo.caption || ''}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover img-loading"
                     loading="lazy"
+                    decoding="async"
+                    onLoad={e => { (e.target as HTMLImageElement).classList.replace('img-loading', 'img-loaded'); }}
                   />
 
                   {/* Gradient overlay at bottom for text */}
@@ -150,8 +152,10 @@ export default function PublicPath() {
                     <img
                       src={`/api/photos/${photo.id}?file=1`}
                       alt={photo.caption || ''}
-                      className="w-full block"
+                      className="w-full block img-loading"
                       loading="lazy"
+                      decoding="async"
+                      onLoad={e => { (e.target as HTMLImageElement).classList.replace('img-loading', 'img-loaded'); }}
                     />
                     <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover/gallery:opacity-100 transition-opacity duration-300">
                       {photo.caption && <p className="text-white/90 text-xs font-serif truncate">{photo.caption}</p>}

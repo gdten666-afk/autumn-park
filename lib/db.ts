@@ -64,6 +64,13 @@ export async function ensureTables() {
       weather    TEXT NOT NULL,
       set_at     TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS messages (
+      id         TEXT PRIMARY KEY,
+      content    TEXT NOT NULL,
+      color      TEXT NOT NULL DEFAULT 'amber',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
   try { await db.execute(`ALTER TABLE users ADD COLUMN password_hash TEXT DEFAULT ''`); } catch {}
   const bootstrap = process.env.BOOTSTRAP_CODE;

@@ -14,6 +14,7 @@ import UserMenu from '@/components/auth/UserMenu';
 import AdminPanel from '@/components/admin/AdminPanel';
 import WeatherLayer from '@/components/weather/WeatherLayer';
 import WeatherVote from '@/components/weather/WeatherVote';
+import MessageWall from '@/components/park/MessageWall';
 import { getSeasonState } from '@/lib/seasons';
 import type { SeasonState, Weather, UserSession } from '@/lib/types';
 
@@ -84,8 +85,8 @@ export default function ParkPage() {
           <div className="flex flex-col items-start max-w-lg">
             {/* Season badge */}
             <div className="glass-btn inline-flex items-center gap-2 mb-6 cursor-default">
-              <span className="w-2 h-2 rounded-full bg-amber-400/60 animate-breathe" />
-              <span className="text-white/50 text-xs tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-amber-400/50 animate-breathe" />
+              <span className="text-white/40 text-xs tracking-wider">
                 {SEASON_NAME[seasonState.season]} · 四季公园
               </span>
             </div>
@@ -124,6 +125,7 @@ export default function ParkPage() {
         </div>
 
         <PublicPath />
+        <MessageWall />
       </ParkCanvas>
 
       <ParticleOverlay seasonState={seasonState} weather={weather} />

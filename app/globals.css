@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --season-bg: #1a1110;
-  --season-accent: #ff8f00;
-  --season-text: #d7ccc8;
-  --glass-bg: rgba(255,255,255,0.04);
-  --glass-border: rgba(255,255,255,0.08);
-  --glass-hover: rgba(255,255,255,0.08);
+  --season-bg: #0f0f1a;
+  --season-accent: #c4956a;
+  --season-text: #d5cfc6;
+  --glass-bg: rgba(255,255,255,0.03);
+  --glass-border: rgba(255,255,255,0.06);
+  --glass-hover: rgba(255,255,255,0.06);
   --transition-duration: 2s;
 }
 
@@ -45,7 +45,7 @@ body {
   padding: 6px 16px;
   font-size: 13px;
   color: rgba(255,255,255,0.7);
-  transition: all 0.2s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
   cursor: pointer;
 }
 .glass-btn:hover {
@@ -65,12 +65,23 @@ body {
   color: rgba(255,255,255,0.8);
   width: 100%;
   outline: none;
-  transition: all 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .glass-input::placeholder { color: rgba(255,255,255,0.2); }
 .glass-input:focus {
   border-color: rgba(255,255,255,0.25);
   box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
+}
+
+/* Blur-up image loading */
+.img-loading {
+  filter: blur(10px);
+  transform: scale(1.05);
+  transition: filter 0.4s ease, transform 0.4s ease;
+}
+.img-loaded {
+  filter: blur(0);
+  transform: scale(1);
 }
 
 /* --- Buttons --- */
@@ -113,9 +124,10 @@ body {
   66% { transform: translateY(-2px) rotate(-1deg); }
 }
 @keyframes breathe {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
 }
+.animate-breathe { animation: breathe 3s ease-in-out infinite; }
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
