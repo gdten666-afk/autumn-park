@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import type { Photo } from '@/lib/types';
 
 const QUOTES = [
@@ -41,11 +41,19 @@ export default function PublicPath() {
   const [expanded, setExpanded] = useState<Photo | null>(null);
   const [viewMode, setViewMode] = useState<'walk' | 'gallery'>('walk');
 
-  useEffect(() => {
-    fetch('/api/photos/public')
-      .then(r => r.json())
-      .then(data => { if (data.ok) setPhotos(data.data); });
+  const loadPhotos = useCallback(async () => {
+    const r = await fetch('/api/photos/public');
+    const data = await r.json();
+    if (data.ok) setPhotos(data.data);
   }, []);
+
+  useEffect(() => {
+    loadPhotos();
+    // Listen for new photo uploads
+    const handler = () => loadPhotos();
+    window.addEventListener('photo-uploaded', handler);
+    return () => window.removeEventListener('photo-uploaded', handler);
+  }, [loadPhotos]);
 
   const noPhotos = photos.length === 0;
 

@@ -30,7 +30,7 @@ export async function createSession(user: { id: string; name: string; role: stri
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: false,
+    secure: true,
     sameSite: 'lax',
     path: '/',
     maxAge: 30 * 24 * 60 * 60,

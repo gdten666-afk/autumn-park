@@ -37,6 +37,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
     const data = await res.json();
     if (data.ok) {
       setPhotos(prev => [data.data, ...prev]);
+      window.dispatchEvent(new CustomEvent('photo-uploaded'));
     } else {
       setUploadError(data.error || '上传失败');
     }
