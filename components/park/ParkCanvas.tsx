@@ -1,44 +1,36 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, MutableRefObject } from 'react';
 import { getSeasonState } from '@/lib/seasons';
 import type { SeasonState } from '@/lib/types';
 
 interface ParkCanvasProps {
   children: React.ReactNode;
   onSeasonChange: (state: SeasonState) => void;
-  onScroll?: (x: number) => void;
+  scrollRef: MutableRefObject<number>;
 }
 
-export default function ParkCanvas({ children, onSeasonChange, onScroll }: ParkCanvasProps) {
+export default function ParkCanvas({ children, onSeasonChange, scrollRef }: ParkCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollX, setScrollX] = useState(0);
 
   useEffect(() => {
-    const state = getSeasonState();
-    onSeasonChange(state);
-
-    // Update season every hour
-    const interval = setInterval(() => {
-      const newState = getSeasonState();
-      onSeasonChange(newState);
-    }, 3600000);
-
+    onSeasonChange(getSeasonState());
+    const interval = setInterval(() => onSeasonChange(getSeasonState()), 3600000);
     return () => clearInterval(interval);
   }, [onSeasonChange]);
 
-  const handleScroll = useCallback(() => {
-    if (containerRef.current) {
-      const x = containerRef.current.scrollLeft;
-      setScrollX(x);
-      onScroll?.(x);
-    }
-  }, [onScroll]);
+  // Direct DOM scroll → ref update, no React state involved
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const handler = () => { scrollRef.current = el.scrollLeft; };
+    el.addEventListener('scroll', handler, { passive: true });
+    return () => el.removeEventListener('scroll', handler);
+  }, [scrollRef]);
 
   return (
     <div
       ref={containerRef}
-      onScroll={handleScroll}
       className="park-scroll-container w-full h-screen overflow-x-auto overflow-y-hidden relative"
       style={{
         background: 'var(--season-bg)',
