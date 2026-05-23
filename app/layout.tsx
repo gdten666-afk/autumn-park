@@ -1,19 +1,16 @@
-import type { Metadata } from "next";
-import "./globals.css";
+// app/layout.tsx
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Autumn Park",
-  description: "A four-season digital park",
+  title: '秋日公园 — Autumn Park',
+  description: '一个随四季流转的数字公园',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="zh-CN">
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
