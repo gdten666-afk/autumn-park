@@ -1,6 +1,9 @@
 # syntax=docker/dockerfile:1
 FROM node:22-alpine AS base
 
+# Build tools for sharp
+RUN apk add --no-cache python3 make g++
+
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
