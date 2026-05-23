@@ -81,7 +81,7 @@ export default function ParkPage() {
         <ParkScene seasonState={seasonState} weather={weather} scrollX={scrollX} />
 
         {/* Welcome hero */}
-        <div className="welcome-text absolute z-10" style={{ left: '4vw', top: '22vh' }}>
+        <div className="welcome-text absolute" style={{ left: '4vw', top: '22vh', zIndex: 20 }}>
           <div className="flex flex-col items-start max-w-lg">
             {/* Season badge */}
             <div className="glass-btn inline-flex items-center gap-2 mb-6 cursor-default">

@@ -31,7 +31,7 @@ export default function PublicPath() {
         y: 15 + pseudoRandom * 55, // 15-70% from top
         rotation: (pseudoRandom - 0.5) * 12, // -6 to +6 degrees
         scale: 0.85 + pseudoRandom * 0.3,
-        zIndex: Math.floor(pseudoRandom * 10),
+        zIndex: 15 + Math.floor(pseudoRandom * 15),
       };
     });
   }, [photos]);
