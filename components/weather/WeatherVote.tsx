@@ -1,4 +1,3 @@
-// components/weather/WeatherVote.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -33,41 +32,47 @@ export default function WeatherVote() {
       body: JSON.stringify({ vote }),
     });
     const data = await res.json();
-    if (data.ok) {
-      setVoted(true);
-      setTomorrow(vote);
-    }
+    if (data.ok) { setVoted(true); setTomorrow(vote); }
     setVoting(false);
   };
 
+  const TodayIcon = WEATHERS.find(w => w.value === today);
+  const TomorrowIcon = WEATHERS.find(w => w.value === tomorrow);
+
   return (
-    <div className="fixed bottom-4 right-4 z-30 bg-black/40 backdrop-blur rounded-xl p-3 text-sm">
-      <div className="text-white/50 text-xs mb-2">
-        今日天气{' '}
-        <span className="text-white/80">{WEATHERS.find(w => w.value === today)?.emoji}</span>
-      </div>
-      <div className="text-white/50 text-xs mb-2">
-        明日天气{' '}
-        <span className="text-white/80">{WEATHERS.find(w => w.value === tomorrow)?.emoji}</span>
+    <div className="fixed bottom-4 right-4 z-30 glass-strong p-4 text-sm min-w-[160px] animate-slideUp">
+      {/* Today */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-white/35 text-xs">今日</span>
+        <span className="text-2xl">{TodayIcon?.emoji}</span>
       </div>
 
-      {!voted && (
-        <>
-          <p className="text-white/30 text-[10px] mb-1">投票明天的天气：</p>
-          <div className="flex gap-1">
+      {/* Tomorrow */}
+      <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/5">
+        <span className="text-white/35 text-xs">明日</span>
+        <span className="text-2xl">{TomorrowIcon?.emoji}</span>
+      </div>
+
+      {/* Vote section */}
+      {!voted ? (
+        <div>
+          <p className="text-white/20 text-[10px] mb-2 text-center">投票明天的天气</p>
+          <div className="flex justify-center gap-1.5">
             {WEATHERS.map(w => (
               <button
                 key={w.value}
                 onClick={() => handleVote(w.value)}
                 disabled={voting}
-                className="text-sm hover:scale-125 transition-transform disabled:opacity-50"
+                className="text-lg hover:scale-125 transition-transform disabled:opacity-30 p-0.5"
                 title={w.label}
               >
                 {w.emoji}
               </button>
             ))}
           </div>
-        </>
+        </div>
+      ) : (
+        <p className="text-white/20 text-[10px] text-center">已投票 ✓</p>
       )}
     </div>
   );

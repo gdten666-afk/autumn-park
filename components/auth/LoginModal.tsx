@@ -100,9 +100,9 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center" onClick={onClose}>
-      <div className="bg-[#2c1810] border border-white/10 rounded-xl p-6 w-80 max-w-[90vw]" onClick={e => e.stopPropagation()}>
-        <h2 className="text-white/80 text-lg mb-4 text-center">进入公园</h2>
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center animate-fadeIn" onClick={onClose}>
+      <div className="glass-strong p-6 w-80 max-w-[90vw] animate-slideUp" onClick={e => e.stopPropagation()}>
+        <h2 className="text-white/80 text-lg mb-4 text-center font-serif tracking-wider">进入公园</h2>
 
         {/* Tabs */}
         <div className="flex mb-4 border-b border-white/10">
@@ -134,7 +134,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
                   value={loginInviteCode}
                   onChange={e => setLoginInviteCode(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
+                  className="glass-input mb-3"
                 />
                 <p className="text-white/20 text-xs mb-3">
                   如果你已经注册过但没设密码，用邀请码登录后可去角落设置新密码。
@@ -148,7 +148,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
                   value={loginName}
                   onChange={e => setLoginName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
+                  className="glass-input mb-3"
                 />
                 <input
                   type="password"
@@ -156,7 +156,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
                   value={loginPassword}
                   onChange={e => setLoginPassword(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
+                  className="glass-input mb-3"
                 />
               </>
             )}
@@ -164,7 +164,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
             <button
               onClick={handleLogin}
               disabled={loading}
-              className="w-full px-3 py-2 bg-white/10 hover:bg-white/20 rounded text-sm text-white/80 transition-colors disabled:opacity-50"
+              className="w-full btn-primary disabled:opacity-30"
             >
               {loginInviteMode ? '用邀请码登录' : '登录'}
             </button>
@@ -182,34 +182,34 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
               placeholder="你的名字"
               value={regName}
               onChange={e => setRegName(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
+              className="glass-input mb-3"
             />
             <input
               type="password"
               placeholder="设置密码（至少4位）"
               value={regPassword}
               onChange={e => setRegPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
+              className="glass-input mb-3"
             />
             <input
               type="password"
               placeholder="确认密码"
               value={regConfirm}
               onChange={e => setRegConfirm(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
+              className="glass-input mb-3"
             />
             <input
               type="text"
               placeholder="邀请码"
               value={regInviteCode}
               onChange={e => setRegInviteCode(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
+              className="glass-input mb-3"
             />
             {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
             <button
               onClick={handleRegister}
               disabled={loading}
-              className="w-full px-3 py-2 bg-white/10 hover:bg-white/20 rounded text-sm text-white/80 transition-colors disabled:opacity-50"
+              className="w-full btn-primary disabled:opacity-30"
             >
               注册
             </button>

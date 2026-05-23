@@ -80,27 +80,48 @@ export default function ParkPage() {
         {/* Scene layer (trees, ground, sky) */}
         <ParkScene seasonState={seasonState} weather={weather} scrollX={scrollX} />
 
-        {/* Welcome area at the start */}
-        <div className="welcome-text absolute z-10" style={{ left: '2vw', top: '28vh' }}>
-          <div className="flex flex-col items-start max-w-sm">
-            <p className="text-white/20 text-xs tracking-[0.3em] mb-2">
-              {SEASON_NAME[seasonState.season]} · 四季公园
-            </p>
-            <h1 className="text-3xl text-white/70 font-serif tracking-widest mb-3 leading-relaxed"
-              style={{ fontFamily: '"Noto Serif SC", serif' }}>
-              一个在秋天等花开的人
+        {/* Welcome hero */}
+        <div className="welcome-text absolute z-10" style={{ left: '4vw', top: '22vh' }}>
+          <div className="flex flex-col items-start max-w-lg">
+            {/* Season badge */}
+            <div className="glass-btn inline-flex items-center gap-2 mb-6 cursor-default">
+              <span className="w-2 h-2 rounded-full bg-amber-400/60 animate-breathe" />
+              <span className="text-white/50 text-xs tracking-wider">
+                {SEASON_NAME[seasonState.season]} · 四季公园
+              </span>
+            </div>
+
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl text-white/80 font-serif tracking-[0.05em] mb-4 leading-tight"
+              style={{ fontFamily: '"Noto Serif SC", Georgia, serif', textShadow: '0 2px 40px rgba(0,0,0,0.3)' }}>
+              一个在秋天<br />等花开的人
             </h1>
-            <p className="text-white/25 text-xs leading-relaxed max-w-xs">
-              沿着小径漫步，走进每个人用照片和天气建成的角落。
-              <br />此刻是<span className="text-white/40">{SEASON_NAME[seasonState.season]}天</span>，公园正向你敞开。
+
+            {/* Subtitle */}
+            <p className="text-white/30 text-sm leading-relaxed max-w-xs mb-8" style={{ lineHeight: '1.8' }}>
+              沿着蜿蜒小径漫步，偶然遇见某个人的照片，
+              <br />踏入他用天气和光影建成的角落。
             </p>
+
+            {/* CTA hint */}
+            <div className="flex items-center gap-3 text-white/20 text-xs">
+              <span className="w-8 h-px bg-white/10" />
+              向右漫步，探索公园
+              <svg width="14" height="14" viewBox="0 0 14 14" className="opacity-50">
+                <path d="M 3,7 L 11,7 M 8,4 L 11,7 L 8,10" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
           </div>
         </div>
 
-        {/* Scroll hint */}
-        <div className="scroll-hint absolute z-10 bottom-8 left-1/2 -translate-x-1/2 animate-pulse"
-          style={{ animationDuration: '3s' }}>
-          <p className="text-white/15 text-xs tracking-widest">向右漫步 →</p>
+        {/* Scroll hint — bottom center */}
+        <div className="scroll-hint absolute z-10 bottom-8 left-1/2 -translate-x-1/2">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-5 h-8 rounded-full border border-white/10 flex items-start justify-center p-1">
+              <div className="w-1 h-2 rounded-full bg-white/20 animate-bounce" style={{animationDuration: '1.5s'}} />
+            </div>
+            <p className="text-white/10 text-[10px] tracking-[0.3em]">漫步</p>
+          </div>
         </div>
 
         <PublicPath />
@@ -121,7 +142,7 @@ export default function ParkPage() {
       ) : (
         <button
           onClick={() => setShowLogin(true)}
-          className="fixed top-4 right-4 z-30 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-sm text-white/60 transition-colors"
+          className="fixed top-4 right-4 z-30 glass-btn"
         >
           进入我的角落
         </button>

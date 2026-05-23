@@ -45,10 +45,7 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
     <div className="fixed inset-0 z-30">
       <SceneFrame scene={space.scene} weather={space.weather}>
         <div className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between">
-          <button
-            onClick={onExit}
-            className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-sm text-white/70 transition-colors"
-          >
+          <button onClick={onExit} className="glass-btn">
             ← 回到公园
           </button>
 
@@ -57,9 +54,11 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
             <ScenePicker current={space.scene} onSelect={s => updateSpace({ scene: s })} isOwner={isOwner} />
           </div>
 
-          <p className="text-white/40 text-sm">
-            {space.owner_name} 的角落
-          </p>
+          <div className="glass px-3 py-1.5">
+            <p className="text-white/40 text-xs">
+              <span className="text-white/60">{space.owner_name}</span> 的角落
+            </p>
+          </div>
         </div>
 
         <div className="pt-16 h-full overflow-y-auto">
