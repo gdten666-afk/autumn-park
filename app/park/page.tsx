@@ -14,7 +14,6 @@ import AdminPanel from '@/components/admin/AdminPanel';
 import WeatherLayer from '@/components/weather/WeatherLayer';
 import WeatherVote from '@/components/weather/WeatherVote';
 import MessageWall from '@/components/park/MessageWall';
-import Quotes from '@/components/park/Quotes';
 import StatsBar from '@/components/park/StatsBar';
 import { getSeasonState } from '@/lib/seasons';
 import type { SeasonState, Weather, UserSession } from '@/lib/types';
@@ -114,7 +113,6 @@ export default function ParkPage() {
           </div>
         </div>
 
-        <Quotes />
         <PublicPath />
         <MessageWall />
       </ParkCanvas>
