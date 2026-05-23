@@ -46,11 +46,22 @@ export default function MessageWall() {
     setPosting(false);
   };
 
+  const [open, setOpen] = useState(true);
+
   return (
-    <div className="fixed pointer-events-auto hidden md:flex" style={{
-      right: 0, top: 0, bottom: 0, width: '280px',
-      zIndex: 15, flexDirection: 'column',
-    }}>
+    <>
+      {/* Mobile toggle */}
+      <button onClick={() => setOpen(!open)}
+        className="fixed md:hidden glass-btn z-30"
+        style={{ right: 8, bottom: 80 }}>
+        💬 {open ? '隐藏' : '留言墙'}
+      </button>
+
+      {/* Wall panel */}
+      <div className={`fixed pointer-events-auto ${open ? 'flex' : 'hidden'} md:flex`} style={{
+        right: 0, top: 0, bottom: 0, width: 'min(280px, 85vw)',
+        zIndex: 15, flexDirection: 'column',
+      }}>
       {/* Wall background */}
       <div style={{
         position: 'absolute', inset: 0,
@@ -135,5 +146,6 @@ export default function MessageWall() {
         {error && <p className="text-red-400/60 text-[10px] mt-1.5">{error}</p>}
       </div>
     </div>
+    </>
   );
 }
