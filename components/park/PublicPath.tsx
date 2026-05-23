@@ -6,8 +6,8 @@ import type { Photo } from '@/lib/types';
 
 interface DisplayPoint {
   id: string;
-  x: number;        // percentage across the park width
-  y: number;        // percentage from top
+  x: number;
+  y: number;
   label: string;
   photos: Photo[];
 }
@@ -25,6 +25,7 @@ const FIXED_POINTS: Omit<DisplayPoint, 'photos'>[] = [
 export default function PublicPath() {
   const [publicPhotos, setPublicPhotos] = useState<Photo[]>([]);
   const [featured, setFeatured] = useState<Photo[]>([]);
+  const [selectedPoint, setSelectedPoint] = useState<DisplayPoint | null>(null);
 
   useEffect(() => {
     fetch('/api/photos/public')
@@ -75,13 +76,17 @@ export default function PublicPath() {
           className="absolute pointer-events-auto cursor-pointer group"
           style={{ left: `${point.x}%`, top: `${point.y}%` }}
         >
-          <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-xs text-white/60 group-hover:bg-white/20 transition-all">
-            📍
-          </div>
+          <button
+            onClick={() => setSelectedPoint(point)}
+            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-sm text-white/60 group-hover:bg-white/25 group-hover:scale-110 transition-all"
+            title={point.label}
+          >
+            {point.photos.length > 0 ? '🖼' : '📍'}
+          </button>
           <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-white/40 whitespace-nowrap">
             {point.label}
           </span>
-          {/* Photos at this point */}
+          {/* Photos orbiting around the point */}
           {point.photos.map((photo, i) => (
             <PhotoFragment key={photo.id} photo={photo} index={i} />
           ))}
@@ -98,6 +103,46 @@ export default function PublicPath() {
           <PhotoFragment photo={photo} index={0} featured />
         </div>
       ))}
+
+      {/* Point popup panel */}
+      {selectedPoint && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center pointer-events-auto"
+          onClick={() => setSelectedPoint(null)}
+        >
+          <div
+            className="bg-[#2c1810] border border-white/10 rounded-xl p-5 w-80 max-w-[90vw] max-h-[80vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-white/80 text-lg mb-1">{selectedPoint.label}</h3>
+            <p className="text-white/30 text-xs mb-4">
+              {selectedPoint.photos.length > 0
+                ? `${selectedPoint.photos.length} 张照片`
+                : '这里还没有照片，上传一些照片并设为公开吧'}
+            </p>
+
+            {selectedPoint.photos.length > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                {selectedPoint.photos.map(photo => (
+                  <img
+                    key={photo.id}
+                    src={`/api/photos/${photo.id}?file=1`}
+                    alt={photo.caption || ''}
+                    className="w-full aspect-square object-cover rounded cursor-pointer hover:scale-105 transition-transform"
+                  />
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={() => setSelectedPoint(null)}
+              className="mt-4 w-full px-3 py-2 bg-white/5 hover:bg-white/10 rounded text-sm text-white/40 transition-colors"
+            >
+              关闭
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

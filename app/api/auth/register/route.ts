@@ -15,6 +15,12 @@ export async function POST(req: NextRequest) {
 
     const db = getDb();
 
+    // Auto-create bootstrap code on first run
+    const bootstrapCode = process.env.BOOTSTRAP_CODE;
+    if (inviteCode.trim() === bootstrapCode) {
+      db.prepare('INSERT OR IGNORE INTO invite_codes (code) VALUES (?)').run(bootstrapCode);
+    }
+
     // Check invite code
     const code = db.prepare('SELECT * FROM invite_codes WHERE code = ?').get(inviteCode.trim()) as any;
     if (!code) {
@@ -27,8 +33,7 @@ export async function POST(req: NextRequest) {
     const trimmedName = name.trim();
     const userId = nanoid();
 
-    // Determine role: first use of bootstrap code = operator
-    const bootstrapCode = process.env.BOOTSTRAP_CODE;
+    // Determine role: bootstrap code user becomes operator
     const role = (inviteCode.trim() === bootstrapCode) ? 'operator' : 'user';
 
     db.prepare('INSERT INTO users (id, name, role, invite_code) VALUES (?, ?, ?, ?)').run(userId, trimmedName, role, inviteCode.trim());

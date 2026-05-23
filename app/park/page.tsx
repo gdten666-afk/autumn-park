@@ -101,7 +101,7 @@ export default function ParkPage() {
         <>
           <CornerTransition
             isEntering={isTransitioning}
-            onEntered={() => {}}
+            onEntered={() => setIsTransitioning(false)}
             onExited={exitCorner}
             ownerName={cornerOwnerName}
           />

@@ -1,0 +1,30 @@
+app = "autumn-park"
+primary_region = "nrt"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  BOOTSTRAP_CODE = "park-founder-2026"
+  DB_PATH = "/app/data/park.db"
+  UPLOAD_DIR = "/app/uploads"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[[mounts]]
+  source = "park_data"
+  destination = "/app/data"
+
+[[mounts]]
+  source = "park_uploads"
+  destination = "/app/uploads"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
