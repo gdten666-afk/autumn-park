@@ -58,18 +58,18 @@ export default function MessageWall() {
         position: 'absolute', inset: 0,
         backgroundImage: `url(/assets/scene/stone-wall.jpg)`,
         backgroundSize: 'cover', backgroundPosition: 'center',
-        filter: 'brightness(0.25) contrast(1.2) saturate(0.3)',
+        filter: 'brightness(0.7) contrast(1.1) saturate(0.5)',
       }} />
-      {/* Dark gradient overlay */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,8,15,0.7) 0%, rgba(15,12,20,0.5) 50%, rgba(10,8,15,0.8) 100%)' }} />
+      {/* Light overlay */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,250,240,0.5) 0%, rgba(255,248,235,0.35) 50%, rgba(255,250,240,0.55) 100%)' }} />
       {/* Vignette edges */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '15%', background: 'linear-gradient(180deg, rgba(10,8,15,0.9) 0%, transparent 100%)' }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '20%', background: 'linear-gradient(0deg, rgba(10,8,15,0.9) 0%, transparent 100%)' }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '12%', background: 'linear-gradient(180deg, rgba(255,250,240,0.7) 0%, transparent 100%)' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '18%', background: 'linear-gradient(0deg, rgba(255,250,240,0.7) 0%, transparent 100%)' }} />
 
       {/* Header */}
       <div className="relative p-5 pb-2 flex-shrink-0">
-        <h2 className="text-white/70 text-base font-serif tracking-wider text-center">留言墙</h2>
-        <p className="text-white/20 text-[10px] text-center mt-0.5">把想说的话留在这里 · 匿名</p>
+        <h2 className="text-black/45 text-base font-serif tracking-wider text-center">留言墙</h2>
+        <p className="text-black/25 text-[10px] text-center mt-0.5">把想说的话留在这里 · 匿名</p>
       </div>
 
       {/* Messages — pinned notes */}

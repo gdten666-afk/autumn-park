@@ -83,42 +83,39 @@ export default function ParkPage() {
           <div className="flex flex-col items-start max-w-lg">
             {/* Season badge */}
             <div className="glass-btn inline-flex items-center gap-2 mb-6 cursor-default">
-              <span className="w-2 h-2 rounded-full bg-amber-400/50 animate-breathe" />
-              <span className="text-white/40 text-xs tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-amber-400/70 animate-breathe" />
+              <span className="text-black/30 text-xs tracking-wider">
                 {SEASON_NAME[seasonState.season]} · 四季公园
               </span>
             </div>
 
             {/* Title */}
-            <h1 className="text-4xl md:text-5xl text-white/80 font-serif tracking-[0.05em] mb-4 leading-tight"
-              style={{ fontFamily: '"Noto Serif SC", Georgia, serif', textShadow: '0 2px 40px rgba(0,0,0,0.3)' }}>
+            <h1 className="text-4xl md:text-5xl text-black/60 font-serif tracking-[0.05em] mb-4 leading-tight"
+              style={{ fontFamily: '"Noto Serif SC", Georgia, serif' }}>
               一个在秋天<br />等花开的人
             </h1>
 
             {/* Subtitle */}
-            <p className="text-white/30 text-sm leading-relaxed max-w-xs mb-8" style={{ lineHeight: '1.8' }}>
+            <p className="text-black/25 text-sm leading-relaxed max-w-xs mb-8" style={{ lineHeight: '1.8' }}>
               沿着蜿蜒小径漫步，偶然遇见某个人的照片，
               <br />踏入他用天气和光影建成的角落。
             </p>
 
             {/* CTA hint */}
-            <div className="flex items-center gap-3 text-white/20 text-xs">
-              <span className="w-8 h-px bg-white/10" />
+            <div className="flex items-center gap-3 text-black/15 text-xs">
+              <span className="w-8 h-px bg-black/10" />
               向下漫步，探索公园
-              <svg width="14" height="14" viewBox="0 0 14 14" className="opacity-50">
-                <path d="M 3,7 L 11,7 M 8,4 L 11,7 L 8,10" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
           </div>
+        </div>
         </div>
 
         {/* Scroll hint — bottom center */}
         <div className="scroll-hint relative z-10 flex justify-center py-12">
           <div className="flex flex-col items-center gap-2">
-            <div className="w-5 h-8 rounded-full border border-white/10 flex items-start justify-center p-1">
-              <div className="w-1 h-2 rounded-full bg-white/20 animate-bounce" style={{animationDuration: '1.5s'}} />
+            <div className="w-5 h-8 rounded-full border border-black/10 flex items-start justify-center p-1">
+              <div className="w-1 h-2 rounded-full bg-black/15 animate-bounce" style={{animationDuration: '1.5s'}} />
             </div>
-            <p className="text-white/10 text-[10px] tracking-[0.3em]">向下漫步</p>
+            <p className="text-black/15 text-[10px] tracking-[0.3em]">向下漫步</p>
           </div>
         </div>
 

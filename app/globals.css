@@ -1,12 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --season-bg: #0f0f1a;
-  --season-accent: #c4956a;
-  --season-text: #d5cfc6;
-  --glass-bg: rgba(255,255,255,0.03);
-  --glass-border: rgba(255,255,255,0.06);
-  --glass-hover: rgba(255,255,255,0.06);
+  --season-bg: #f5f0e8;
+  --season-text: #3d3226;
+  --season-accent: #c8956a;
   --transition-duration: 2s;
 }
 
@@ -20,86 +17,74 @@ body {
   transition: background var(--transition-duration) ease;
 }
 
-/* --- Glass morphism --- */
+/* --- Glass morphism (light theme) --- */
 .glass {
-  background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
 }
 .glass-strong {
-  background: rgba(0,0,0,0.25);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 16px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
 }
 .glass-btn {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.5);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 999px;
   padding: 6px 16px;
   font-size: 13px;
-  color: rgba(255,255,255,0.7);
+  color: rgba(0,0,0,0.55);
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
   cursor: pointer;
 }
 .glass-btn:hover {
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.16);
-  color: rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.8);
+  border-color: rgba(0,0,0,0.12);
+  color: rgba(0,0,0,0.75);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 .glass-input {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.5);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 13px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(0,0,0,0.65);
   width: 100%;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.glass-input::placeholder { color: rgba(255,255,255,0.2); }
+.glass-input::placeholder { color: rgba(0,0,0,0.2); }
 .glass-input:focus {
-  border-color: rgba(255,255,255,0.25);
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
-}
-
-/* Blur-up image loading */
-.img-loading {
-  filter: blur(10px);
-  transform: scale(1.05);
-  transition: filter 0.4s ease, transform 0.4s ease;
-}
-.img-loaded {
-  filter: blur(0);
-  transform: scale(1);
+  border-color: rgba(0,0,0,0.2);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.03);
 }
 
 /* --- Buttons --- */
 .btn-primary {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.1);
   border-radius: 999px;
   padding: 8px 20px;
   font-size: 13px;
-  color: white;
+  color: rgba(0,0,0,0.65);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 .btn-primary:hover {
-  background: rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.1);
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 .btn-ghost {
   background: transparent;
@@ -107,59 +92,32 @@ body {
   border-radius: 999px;
   padding: 8px 16px;
   font-size: 12px;
-  color: rgba(255,255,255,0.4);
+  color: rgba(0,0,0,0.3);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
-.btn-ghost:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.04); }
+.btn-ghost:hover { color: rgba(0,0,0,0.55); background: rgba(0,0,0,0.03); }
+
+/* --- Blur-up image loading --- */
+.img-loading { filter: blur(10px); transform: scale(1.05); transition: filter 0.4s ease, transform 0.4s ease; }
+.img-loaded { filter: blur(0); transform: scale(1); }
 
 /* --- Animations --- */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-@keyframes float-slow {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  33% { transform: translateY(-6px) rotate(1deg); }
-  66% { transform: translateY(-2px) rotate(-1deg); }
-}
-@keyframes breathe {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
+@keyframes breathe { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.7; } }
 .animate-breathe { animation: breathe 3s ease-in-out infinite; }
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-@keyframes godRays {
-  0%, 100% { opacity: 0.55; }
-  30% { opacity: 0.75; }
-  60% { opacity: 0.45; }
-  85% { opacity: 0.65; }
-}
-@keyframes driftSlow {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-30px); }
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 
-.animate-slideUp {
-  animation: slideUp 0.6s ease both;
-}
+@keyframes godRays { 0%, 100% { opacity: 0.5; } 30% { opacity: 0.7; } 60% { opacity: 0.4; } 85% { opacity: 0.6; } }
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animate-slideUp { animation: slideUp 0.5s ease both; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.animate-fadeIn { animation: fadeIn 0.3s ease both; }
 
 /* --- Scrollbar --- */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
 
 /* --- Selection --- */
-::selection { background: rgba(255,143,0,0.3); color: white; }
+::selection { background: rgba(200,150,100,0.25); color: #3d3226; }

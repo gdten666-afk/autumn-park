@@ -43,20 +43,20 @@ export default function WeatherVote() {
     <div className="fixed bottom-4 left-4 z-30 glass-strong p-4 text-sm min-w-[160px] animate-slideUp">
       {/* Today */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-white/35 text-xs">今日</span>
+        <span className="text-black/35 text-xs">今日</span>
         <span className="text-2xl">{TodayIcon?.emoji}</span>
       </div>
 
       {/* Tomorrow */}
       <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/5">
-        <span className="text-white/35 text-xs">明日</span>
+        <span className="text-black/35 text-xs">明日</span>
         <span className="text-2xl">{TomorrowIcon?.emoji}</span>
       </div>
 
       {/* Vote section */}
       {!voted ? (
         <div>
-          <p className="text-white/20 text-[10px] mb-2 text-center">投票明天的天气</p>
+          <p className="text-black/20 text-[10px] mb-2 text-center">投票明天的天气</p>
           <div className="flex justify-center gap-1.5">
             {WEATHERS.map(w => (
               <button
@@ -72,7 +72,7 @@ export default function WeatherVote() {
           </div>
         </div>
       ) : (
-        <p className="text-white/20 text-[10px] text-center">已投票 ✓</p>
+        <p className="text-black/20 text-[10px] text-center">已投票 ✓</p>
       )}
     </div>
   );
