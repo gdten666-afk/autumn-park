@@ -7,9 +7,10 @@ import type { SeasonState } from '@/lib/types';
 interface ParkCanvasProps {
   children: React.ReactNode;
   onSeasonChange: (state: SeasonState) => void;
+  onScroll?: (x: number) => void;
 }
 
-export default function ParkCanvas({ children, onSeasonChange }: ParkCanvasProps) {
+export default function ParkCanvas({ children, onSeasonChange, onScroll }: ParkCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollX, setScrollX] = useState(0);
 
@@ -28,9 +29,11 @@ export default function ParkCanvas({ children, onSeasonChange }: ParkCanvasProps
 
   const handleScroll = useCallback(() => {
     if (containerRef.current) {
-      setScrollX(containerRef.current.scrollLeft);
+      const x = containerRef.current.scrollLeft;
+      setScrollX(x);
+      onScroll?.(x);
     }
-  }, []);
+  }, [onScroll]);
 
   return (
     <div

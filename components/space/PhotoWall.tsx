@@ -14,6 +14,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [uploading, setUploading] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     fetch(`/api/photos/user/${userId}`)
@@ -26,6 +27,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
     if (!file) return;
 
     setUploading(true);
+    setUploadError('');
     const formData = new FormData();
     formData.append('file', file);
     formData.append('isPublic', 'false');
@@ -34,8 +36,11 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
     const data = await res.json();
     if (data.ok) {
       setPhotos(prev => [data.data, ...prev]);
+    } else {
+      setUploadError(data.error || '上传失败');
     }
     setUploading(false);
+    if (e.target) e.target.value = '';
   }, []);
 
   const handleTogglePublic = useCallback(async (photo: Photo) => {
@@ -65,10 +70,13 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
   return (
     <div className="p-6">
       {isOwner && (
-        <label className="inline-block mb-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded cursor-pointer text-sm text-white/80 transition-colors">
-          {uploading ? '上传中...' : '+ 添加照片'}
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleUpload} className="hidden" disabled={uploading} />
-        </label>
+        <div className="mb-4">
+          <label className="inline-block px-4 py-2 bg-white/10 hover:bg-white/20 rounded cursor-pointer text-sm text-white/80 transition-colors">
+            {uploading ? '上传中...' : '+ 添加照片'}
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleUpload} className="hidden" disabled={uploading} />
+          </label>
+          {uploadError && <p className="text-red-400 text-xs mt-1">{uploadError}</p>}
+        </div>
       )}
 
       <div className={gridClass}>
