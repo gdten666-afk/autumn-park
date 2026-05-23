@@ -25,9 +25,7 @@ export default function MessageWall() {
   const listRef = useRef<HTMLDivElement>(null);
 
   const fetchMessages = useCallback(async () => {
-    const res = await fetch('/api/messages');
-    const data = await res.json();
-    if (data.ok) setMessages(data.data);
+    try { const res = await fetch('/api/messages'); const data = await res.json(); if (data.ok) setMessages(data.data); } catch {}
   }, []);
 
   useEffect(() => { fetchMessages(); const t = setInterval(fetchMessages, 30000); return () => clearInterval(t); }, [fetchMessages]);

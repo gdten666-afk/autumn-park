@@ -6,10 +6,9 @@ export default function StatsBar() {
   const [stats, setStats] = useState<{ users: number; photos: number; messages: number; votes: Record<string,number> } | null>(null);
 
   useEffect(() => {
-    fetch('/api/stats').then(r => r.json()).then(d => { if (d.ok) setStats(d.data); });
-    const t = setInterval(() => {
-      fetch('/api/stats').then(r => r.json()).then(d => { if (d.ok) setStats(d.data); });
-    }, 30000);
+    const load = () => fetch('/api/stats').then(r => r.json()).then(d => { if (d.ok) setStats(d.data); }).catch(() => {});
+    load();
+    const t = setInterval(load, 30000);
     return () => clearInterval(t);
   }, []);
 
