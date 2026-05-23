@@ -49,7 +49,6 @@ function seasonOverlay(season: string): string {
 
 export default function ParkScene({ seasonState, weather, scrollRef }: ParkSceneProps) {
   const farRef = useRef<HTMLDivElement>(null);
-  const midRef = useRef<HTMLDivElement>(null);
   const nearRef = useRef<HTMLDivElement>(null);
   const season = seasonState.season;
   const overlay = seasonOverlay(season);
@@ -57,15 +56,13 @@ export default function ParkScene({ seasonState, weather, scrollRef }: ParkScene
   const farTrees = useMemo(()=>makeTrees(15,[48,58],[12,20]),[]);
   const nearTrees = useMemo(()=>makeTrees(20,[52,62],[18,32]),[]);
 
-  // rAF parallax
+  // rAF parallax — 2 layers only
   useEffect(()=>{
     let raf=0;
     const loop=()=>{
       const sx=scrollRef.current;
-      const layers=[{ref:farRef,factor:FAR},{ref:midRef,factor:MID},{ref:nearRef,factor:NEAR}];
-      for(const{ref,factor}of layers){
-        if(ref.current) ref.current.style.transform=`translate3d(${-sx*factor}px,0,0)`;
-      }
+      if(farRef.current) farRef.current.style.transform=`translate3d(${-sx*FAR}px,0,0)`;
+      if(nearRef.current) nearRef.current.style.transform=`translate3d(${-sx*NEAR}px,0,0)`;
       raf=requestAnimationFrame(loop);
     };
     raf=requestAnimationFrame(loop);
@@ -77,34 +74,22 @@ export default function ParkScene({ seasonState, weather, scrollRef }: ParkScene
       {/* Sky — dark gradient base */}
       <div className="fixed inset-0" style={{background:'linear-gradient(180deg, #1a1a2e 0%, #16213e 30%, #1a1a2e 60%, #0f0f1a 100%)',zIndex:0}}/>
 
-      {/* Far layer — misty forest photo blended */}
-      <div ref={farRef} className="fixed" style={{width:'420vw',left:'-10vw',height:'100vh',zIndex:1,willChange:'transform'}}>
-        <div style={{position:'absolute',inset:0,background:`url(/assets/scene/misty-trees.jpg) center/cover no-repeat`,opacity:0.25,filter:'brightness(0.6) blur(2px)'}}/>
-        {/* Distant silhouette trees */}
+      {/* Far layer — single photo background with tree silhouettes */}
+      <div ref={farRef} className="fixed" style={{width:'420vw',left:'-10vw',height:'100vh',zIndex:1,willChange:'transform',contain:'strict'}}>
+        <div style={{position:'absolute',inset:0,background:`url(/assets/scene/misty-trees.jpg) center/cover no-repeat`,opacity:0.2,filter:'brightness(0.5)'}}/>
         <svg viewBox="0 0 4200 1000" preserveAspectRatio="none" style={{width:'100%',height:'100%',position:'absolute',inset:0}}>
-          <g color="rgba(15,25,20,0.5)">
+          <g color="rgba(12,20,16,0.45)">
             {farTrees.map((t,i)=>{const C={oak:Oak,pine:Pine,bush:Bush}[t.type];return C?<C key={i} cx={t.x*42} cy={t.y*10} s={t.s*4}/>:null;})}
           </g>
         </svg>
       </div>
 
-      {/* Mid layer — dark forest photo */}
-      <div ref={midRef} className="fixed" style={{width:'460vw',left:'-30vw',height:'100vh',zIndex:2,willChange:'transform'}}>
-        <div style={{position:'absolute',inset:0,background:`url(/assets/scene/dark-forest.jpg) center/cover no-repeat`,opacity:0.2,filter:'brightness(0.5)'}}/>
-        {/* Forest line silhouette */}
-        <svg viewBox="0 0 4600 1000" preserveAspectRatio="none" style={{width:'100%',height:'100%',position:'absolute',inset:0}}>
-          <g color="rgba(10,15,12,0.55)">
-            {makeTrees(25,[50,62],[14,26]).map((t,i)=>{const C={oak:Oak,pine:Pine,bush:Bush}[t.type];return C?<C key={i} cx={t.x*46} cy={t.y*10} s={t.s*5}/>:null;})}
-          </g>
-        </svg>
-      </div>
-
-      {/* Ground layer */}
-      <div ref={nearRef} className="fixed" style={{width:'520vw',left:'-60vw',height:'100vh',zIndex:3,willChange:'transform'}}>
-        <div style={{position:'absolute',bottom:0,left:0,right:0,height:'45vh',background:'linear-gradient(0deg, rgba(10,15,12,0.95) 0%, rgba(15,22,18,0.7) 30%, rgba(20,30,25,0.3) 60%, transparent 100%)'}}/>
-        <svg viewBox="0 0 5200 1000" preserveAspectRatio="none" style={{width:'100%',height:'100%',position:'absolute',inset:0,marginTop:'40vh'}}>
-          <g color="rgba(20,30,24,0.6)">
-            {nearTrees.map((t,i)=>{const C={oak:Oak,pine:Pine,bush:Bush}[t.type];return C?<C key={i} cx={t.x*52} cy={(t.y-52)*10} s={t.s*6}/>:null;})}
+      {/* Mid-foreground layer — gradient ground + near trees */}
+      <div ref={nearRef} className="fixed" style={{width:'500vw',left:'-50vw',height:'100vh',zIndex:2,willChange:'transform',contain:'strict'}}>
+        <div style={{position:'absolute',bottom:0,left:0,right:0,height:'45vh',background:'linear-gradient(0deg, rgba(8,12,10,0.95) 0%, rgba(12,18,15,0.7) 35%, rgba(16,24,20,0.25) 65%, transparent 100%)'}}/>
+        <svg viewBox="0 0 5000 1000" preserveAspectRatio="none" style={{width:'100%',height:'100%',position:'absolute',inset:0,marginTop:'40vh'}}>
+          <g color="rgba(16,26,20,0.55)">
+            {nearTrees.map((t,i)=>{const C={oak:Oak,pine:Pine,bush:Bush}[t.type];return C?<C key={i} cx={t.x*50} cy={(t.y-52)*10} s={t.s*5.5}/>:null;})}
           </g>
         </svg>
       </div>

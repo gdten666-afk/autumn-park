@@ -33,18 +33,17 @@ export default function ParticleOverlay({ seasonState, weather }: ParticleOverla
     const config = SEASON_PARTICLES[seasonState.season];
     const weatherConfig = WEATHER_PARTICLES[weather];
     const count = Math.floor(config.count * (weatherConfig?.density ?? 1));
-    particlesRef.current = Array.from({ length: Math.min(count, 200) }, () =>
+    particlesRef.current = Array.from({ length: Math.min(count, 100) }, () =>
       createParticle(canvas.width, canvas.height, config, weatherConfig)
     );
 
-    // Secondary season particles during transition
     if (seasonState.secondarySeason && seasonState.transitionWeight > 0) {
       const secConfig = SEASON_PARTICLES[seasonState.secondarySeason];
       const secCount = Math.floor(secConfig.count * seasonState.transitionWeight);
-      const secParticles = Array.from({ length: Math.min(secCount, 100) }, () =>
+      const secParticles = Array.from({ length: Math.min(secCount, 50) }, () =>
         createParticle(canvas.width, canvas.height, secConfig, null)
       );
-      particlesRef.current = [...particlesRef.current, ...secParticles].slice(0, 200);
+      particlesRef.current = [...particlesRef.current, ...secParticles].slice(0, 100);
     }
 
     const animate = () => {
