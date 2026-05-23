@@ -56,9 +56,9 @@ export default function MessageWall() {
       {/* Wall background */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: `url(/assets/scene/concrete-wall.jpg), url(/assets/scene/brick-wall.jpg)`,
-        backgroundSize: 'cover', backgroundPosition: 'center', backgroundBlendMode: 'multiply',
-        filter: 'brightness(0.35) saturate(0.6)',
+        backgroundImage: `url(/assets/scene/stone-wall.jpg)`,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        filter: 'brightness(0.25) contrast(1.2) saturate(0.3)',
       }} />
       {/* Dark gradient overlay */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,8,15,0.7) 0%, rgba(15,12,20,0.5) 50%, rgba(10,8,15,0.8) 100%)' }} />

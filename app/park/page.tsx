@@ -141,7 +141,8 @@ export default function ParkPage() {
       ) : (
         <button
           onClick={() => setShowLogin(true)}
-          className="fixed top-4 right-4 z-30 glass-btn"
+          className="fixed top-4 z-30 glass-btn"
+          style={{ right: '296px' }}
         >
           进入我的角落
         </button>
