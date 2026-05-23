@@ -92,6 +92,23 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
           )}
         </section>
 
+        {/* Delete all photos */}
+        <section className="mb-6">
+          <h3 className="text-white/60 text-sm mb-3">清空所有照片</h3>
+          <button
+            onClick={async () => {
+              if (!confirm('确定要删除所有照片吗？此操作不可撤销！')) return;
+              const res = await fetch('/api/admin/photos', { method: 'DELETE' });
+              const data = await res.json();
+              if (data.ok) alert(`已删除 ${data.data?.deleted || 0} 张照片`);
+              else alert('删除失败');
+            }}
+            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded text-sm text-red-300/80 transition-colors"
+          >
+            清空所有照片
+          </button>
+        </section>
+
         {/* User list */}
         <section>
           <h3 className="text-white/60 text-sm mb-3">用户列表 ({users.length})</h3>
