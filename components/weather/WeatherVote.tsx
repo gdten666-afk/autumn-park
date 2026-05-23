@@ -40,7 +40,7 @@ export default function WeatherVote() {
   const TomorrowIcon = WEATHERS.find(w => w.value === tomorrow);
 
   return (
-    <div className="fixed bottom-4 right-4 z-30 glass-strong p-4 text-sm min-w-[160px] animate-slideUp">
+    <div className="fixed bottom-4 left-4 z-30 glass-strong p-4 text-sm min-w-[160px] animate-slideUp">
       {/* Today */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-white/35 text-xs">今日</span>
