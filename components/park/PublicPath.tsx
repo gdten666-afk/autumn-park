@@ -93,14 +93,14 @@ export default function PublicPath() {
           </div>
         </div>
       ) : viewMode === 'walk' ? (
-        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'calc(100vw - 320px)', width: '100%', paddingLeft: '4vw', paddingRight: '4vw' }}>
+        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'min(calc(100vw - 320px), 100%)', width: '100%', paddingLeft: 'clamp(12px, 4vw, 32px)', paddingRight: 'clamp(12px, 4vw, 32px)' }}>
           <div className="flex flex-wrap justify-center gap-5 md:gap-8">
             {feedItems.map((item) => {
               if (item.type === 'quote') {
                 return (
                   <div key={`q-${item.idx}`} className="flex items-center justify-center pointer-events-auto"
                     style={{
-                      width: 'clamp(160px, 22vw, 260px)',
+                      width: 'clamp(140px, 42vw, 260px)',
                       minHeight: '120px',
                       marginTop: (item.idx % 3) * 24,
                       transform: `rotate(${['-1.5deg','1deg','-0.5deg','1.5deg','-1deg','0.5deg'][item.idx % 6]})`,
@@ -122,7 +122,7 @@ export default function PublicPath() {
                     transform: `rotate(${rotation})`,
                     marginTop: (i % 5) * 12,
                     marginLeft: (i % 3) * 20,
-                    width: 'clamp(120px, 18vw, 200px)',
+                    width: 'clamp(100px, 40vw, 200px)',
                     transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
                   }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'rotate(0deg) scale(1.04)'; e.currentTarget.style.zIndex = '20'; }}
@@ -143,7 +143,7 @@ export default function PublicPath() {
           </div>
         </div>
       ) : (
-        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'calc(100vw - 320px)', width: '100%', paddingLeft: '4vw', paddingRight: '4vw' }}>
+        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'min(calc(100vw - 320px), 100%)', width: '100%', paddingLeft: 'clamp(12px, 4vw, 32px)', paddingRight: 'clamp(12px, 4vw, 32px)' }}>
           <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
             {photos.map(photo => (
               <div key={photo.id} className="break-inside-avoid mb-4 cursor-pointer group/gallery" onClick={() => setExpanded(photo)}>
