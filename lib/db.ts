@@ -21,6 +21,7 @@ function initTables(db: Database.Database) {
     CREATE TABLE IF NOT EXISTS users (
       id         TEXT PRIMARY KEY,
       name       TEXT NOT NULL,
+      password_hash TEXT DEFAULT '',
       role       TEXT NOT NULL DEFAULT 'user',
       invite_code TEXT NOT NULL UNIQUE,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -62,6 +63,9 @@ function initTables(db: Database.Database) {
       set_at     TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Migration: add password_hash for existing databases
+  try { db.exec(`ALTER TABLE users ADD COLUMN password_hash TEXT DEFAULT ''`); } catch {}
 }
 
 export function closeDb() {

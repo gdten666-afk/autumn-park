@@ -13,7 +13,7 @@ interface CornerTransitionProps {
 export default function CornerTransition({ onEntered, onExited, isEntering, ownerName }: CornerTransitionProps) {
   return (
     <motion.div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 pointer-events-none"
       initial={{ opacity: 0 }}
       animate={{ opacity: isEntering ? 1 : 0 }}
       transition={{ duration: 1.5 }}
