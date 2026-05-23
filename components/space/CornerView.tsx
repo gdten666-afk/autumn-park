@@ -44,17 +44,17 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
   return (
     <div className="fixed inset-0 z-30">
       <SceneFrame scene={space.scene} weather={space.weather}>
-        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between">
-          <button onClick={onExit} className="glass-btn">
+        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between max-md:flex-col max-md:gap-2 max-md:items-start">
+          <button onClick={onExit} className="glass-btn shrink-0">
             ← 回到公园
           </button>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 max-md:gap-1 max-md:flex-wrap">
             <WeatherPicker current={space.weather} onSelect={w => updateSpace({ weather: w })} isOwner={isOwner} />
             <ScenePicker current={space.scene} onSelect={s => updateSpace({ scene: s })} isOwner={isOwner} />
           </div>
 
-          <div className="glass px-3 py-1.5">
+          <div className="glass px-3 py-1.5 shrink-0">
             <p className="text-white/40 text-xs">
               <span className="text-white/60">{space.owner_name}</span> 的角落
             </p>

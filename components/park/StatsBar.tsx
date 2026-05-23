@@ -18,7 +18,7 @@ export default function StatsBar() {
   const weatherEmoji: Record<string,string> = { sunny:'☀️', cloudy:'☁️', 'light-rain':'🌧', 'heavy-rain':'⛈', fog:'🌫', snow:'❄️' };
 
   return (
-    <div className="fixed top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+    <div className="fixed left-1/2 -translate-x-1/2 z-30 pointer-events-none max-md:top-2 md:top-16">
       <div className="glass flex items-center gap-4 px-4 py-1.5 text-[10px]">
         <span className="text-black/30">👥 <span className="text-black/50">{stats.users}</span></span>
         <span className="text-black/30">🖼 <span className="text-black/50">{stats.photos}</span></span>

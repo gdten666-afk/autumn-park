@@ -25,24 +25,28 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
   }, [userId]);
 
   const handleUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setUploading(true);
     setUploadError('');
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('isPublic', makePublic ? 'true' : 'false');
-    formData.append('caption', caption);
-
-    const res = await fetch('/api/photos/upload', { method: 'POST', body: formData });
-    const data = await res.json();
-    if (data.ok) {
-      setPhotos(prev => [data.data, ...prev]);
-      window.dispatchEvent(new CustomEvent('photo-uploaded'));
-    } else {
-      setUploadError(data.error || '上传失败');
+    let ok = 0;
+    for (let i = 0; i < files.length; i++) {
+      const formData = new FormData();
+      formData.append('file', files[i]);
+      formData.append('isPublic', makePublic ? 'true' : 'false');
+      formData.append('caption', caption);
+      const res = await fetch('/api/photos/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.ok) {
+        setPhotos(prev => [data.data, ...prev]);
+        ok++;
+      } else if (files.length === 1) {
+        setUploadError(data.error || '上传失败');
+      }
     }
+    if (ok > 0) window.dispatchEvent(new CustomEvent('photo-uploaded'));
+    if (files.length > 1 && ok < files.length) setUploadError(`${ok}/${files.length} 张上传成功`);
     setUploading(false);
     if (e.target) e.target.value = '';
   }, [makePublic, caption]);
@@ -80,7 +84,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
           <div className="flex items-center gap-2 flex-wrap">
             <label className="inline-block px-4 py-2 bg-white/10 hover:bg-white/20 rounded cursor-pointer text-sm text-white/80 transition-colors">
               {uploading ? '上传中...' : '+ 添加照片'}
-              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleUpload} className="hidden" disabled={uploading} />
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleUpload} className="hidden" disabled={uploading} multiple />
             </label>
             <label className="inline-flex items-center gap-1 text-xs text-white/40 cursor-pointer">
               <input type="checkbox" checked={makePublic} onChange={e => setMakePublic(e.target.checked)} className="accent-amber-500" />
