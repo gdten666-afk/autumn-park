@@ -1,5 +1,5 @@
 // lib/weather.ts
-import { getDb } from './db';
+import { dbGet, dbAll, dbRun } from './db';
 import type { Weather } from './types';
 
 const WEATHER_PRIORITY: Weather[] = ['sunny', 'cloudy', 'light-rain', 'fog', 'heavy-rain', 'snow'];
@@ -14,13 +14,11 @@ export function getTomorrowDate(): string {
   return d.toISOString().slice(0, 10);
 }
 
-export function getOrComputeDailyWeather(date: string): Weather {
-  const db = getDb();
-  const existing = db.prepare('SELECT weather FROM daily_weather WHERE date = ?').get(date) as any;
-  if (existing) return existing.weather;
+export async function getOrComputeDailyWeather(date: string): Promise<Weather> {
+  const existing = await dbGet('SELECT weather FROM daily_weather WHERE date = ?', [date]);
+  if (existing) return existing.weather as Weather;
 
-  // Try to tally votes for this date
-  const votes = db.prepare('SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC').all(date) as any[];
+  const votes = await dbAll('SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC', [date]);
 
   let weather: Weather = 'sunny';
   if (votes.length > 0) {
@@ -29,18 +27,15 @@ export function getOrComputeDailyWeather(date: string): Weather {
     weather = WEATHER_PRIORITY.find(w => topVotes.includes(w)) || 'sunny';
   }
 
-  db.prepare('INSERT OR IGNORE INTO daily_weather (date, weather) VALUES (?, ?)').run(date, weather);
+  await dbRun('INSERT OR IGNORE INTO daily_weather (date, weather) VALUES (?, ?)', [date, weather]);
   return weather;
 }
 
-export function castVote(userId: string, date: string, vote: Weather): { ok: boolean; error?: string } {
-  const db = getDb();
-
-  // Upsert
-  db.prepare(
-    'INSERT INTO weather_votes (user_id, date, vote) VALUES (?, ?, ?) ON CONFLICT(user_id, date) DO UPDATE SET vote = excluded.vote'
-  ).run(userId, date, vote);
-
+export async function castVote(userId: string, date: string, vote: Weather): Promise<{ ok: boolean; error?: string }> {
+  await dbRun(
+    'INSERT INTO weather_votes (user_id, date, vote) VALUES (?, ?, ?) ON CONFLICT(user_id, date) DO UPDATE SET vote = excluded.vote',
+    [userId, date, vote]
+  );
   return { ok: true };
 }
 

@@ -1,7 +1,7 @@
 // lib/auth.ts
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
-import { getDb } from './db';
+import { dbGet } from './db';
 import type { UserSession } from './types';
 
 export function hashPassword(password: string): string {
@@ -24,13 +24,13 @@ export async function createSession(user: { id: string; name: string; role: stri
     userId: user.id,
     name: user.name,
     role: user.role,
-    exp: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+    exp: Date.now() + 30 * 24 * 60 * 60 * 1000,
   })).toString('base64');
 
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: false,        // set true in production
+    secure: false,
     sameSite: 'lax',
     path: '/',
     maxAge: 30 * 24 * 60 * 60,
@@ -48,9 +48,7 @@ export async function getSession(): Promise<UserSession | null> {
     const data = JSON.parse(Buffer.from(token, 'base64').toString());
     if (data.exp < Date.now()) return null;
 
-    // Verify user still exists
-    const db = getDb();
-    const user = db.prepare('SELECT id, name, role FROM users WHERE id = ?').get(data.userId) as any;
+    const user = await dbGet('SELECT id, name, role FROM users WHERE id = ?', [data.userId]);
     if (!user) return null;
 
     return { userId: user.id, name: user.name, role: user.role };

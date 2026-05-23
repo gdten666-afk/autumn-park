@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     const date = getTomorrowDate();
-    castVote(session.userId, date, vote);
+    await castVote(session.userId, date, vote);
 
     return NextResponse.json({ ok: true, data: { date, vote } } satisfies ApiResponse<{ date: string; vote: Weather }>);
   } catch (err: any) {
