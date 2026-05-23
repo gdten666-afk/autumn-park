@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: autumn-park
+    runtime: docker
+    plan: free
+    healthCheckPath: /park
+    envVars:
+      - key: BOOTSTRAP_CODE
+        value: park-founder-2026
+      - key: DB_PATH
+        value: /app/data/park.db
+      - key: UPLOAD_DIR
+        value: /app/uploads
+    disk:
+      name: park-data
+      mountPath: /app/data
+      sizeGB: 1
