@@ -86,7 +86,7 @@ export default function PublicPath() {
         </div>
       ) : viewMode === 'walk' ? (
         <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'calc(100vw - 320px)', paddingLeft: '4vw', paddingRight: '4vw' }}>
-          <div className="flex flex-wrap justify-center gap-5 md:gap-8">
+          <div className="flex flex-wrap justify-center gap-5 md:gap-8" suppressHydrationWarning>
             {feedItems.map((item) => {
               if (item.type === 'quote') {
                 return (
