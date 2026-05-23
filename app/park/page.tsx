@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import dynamic from 'next/dynamic';
 import ParkCanvas from '@/components/park/ParkCanvas';
 import ParkScene from '@/components/park/ParkScene';
 import GSAPAnimations from '@/components/park/GSAPAnimations';
@@ -15,10 +14,9 @@ import AdminPanel from '@/components/admin/AdminPanel';
 import WeatherLayer from '@/components/weather/WeatherLayer';
 import WeatherVote from '@/components/weather/WeatherVote';
 import MessageWall from '@/components/park/MessageWall';
+import StatsBar from '@/components/park/StatsBar';
 import { getSeasonState } from '@/lib/seasons';
 import type { SeasonState, Weather, UserSession } from '@/lib/types';
-
-const ParticleOverlay = dynamic(() => import('@/components/park/ParticleOverlay'), { ssr: false });
 
 const SEASON_NAME: Record<string, string> = {
   spring: '春', summer: '夏', autumn: '秋', winter: '冬',
@@ -128,8 +126,8 @@ export default function ParkPage() {
         <MessageWall />
       </ParkCanvas>
 
-      <ParticleOverlay seasonState={seasonState} weather={weather} />
       <WeatherLayer weather={weather} />
+      <StatsBar />
       <GSAPAnimations />
 
       {/* User controls */}

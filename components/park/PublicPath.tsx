@@ -17,21 +17,38 @@ export default function PublicPath() {
   }, []);
 
   // Distribute photos across the 400vw park space with natural-looking positions
+  // Photo clusters — like natural clearings along the path
   const scatteredPhotos = useMemo(() => {
-    const seed = new Date().toISOString().slice(0, 10);
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+    // Define clusters as "clearings" along the path
+    const clusters = [
+      { cx: 6,  cy: 32, spread: 5, count: 5 },   // Near entrance
+      { cx: 18, cy: 45, spread: 6, count: 6 },   // By the bench
+      { cx: 32, cy: 38, spread: 5, count: 5 },   // Mid park clearing
+      { cx: 48, cy: 42, spread: 6, count: 6 },   // Central gathering
+      { cx: 64, cy: 36, spread: 5, count: 5 },   // Far clearing
+      { cx: 78, cy: 44, spread: 6, count: 5 },   // Deep park
+      { cx: 90, cy: 38, spread: 5, count: 5 },   // End of path
+    ];
 
-    return photos.map((photo, i) => {
-      const pseudoRandom = ((hash * (i + 1) * 31 + i * 7) % 10000) / 10000;
+    let photoIndex = 0;
+    const totalClusters = clusters.length;
+
+    return photos.map((photo) => {
+      // Assign photos to clusters round-robin
+      const cluster = clusters[photoIndex % totalClusters];
+      const angle = (photoIndex / cluster.count) * Math.PI * 2;
+      const radius = (photoIndex % cluster.count) * (cluster.spread / cluster.count);
+      const x = cluster.cx + Math.cos(angle) * radius;
+      const y = cluster.cy + Math.sin(angle) * radius * 0.6;
+      photoIndex++;
+
       return {
         ...photo,
-        // Distribute across 2-95% of park width, varying heights
-        x: 2 + (i / Math.max(photos.length, 1)) * 93 + pseudoRandom * 5 - 2.5,
-        y: 15 + pseudoRandom * 55, // 15-70% from top
-        rotation: (pseudoRandom - 0.5) * 12, // -6 to +6 degrees
-        scale: 0.85 + pseudoRandom * 0.3,
-        zIndex: 15 + Math.floor(pseudoRandom * 15),
+        x: Math.max(1, Math.min(98, x)),
+        y: Math.max(12, Math.min(68, y)),
+        rotation: (Math.sin(photoIndex * 2.3) * 5),
+        scale: 0.85 + (photoIndex % 3) * 0.1,
+        zIndex: 15 + (photoIndex % 15),
       };
     });
   }, [photos]);
