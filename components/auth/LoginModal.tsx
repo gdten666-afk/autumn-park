@@ -11,10 +11,12 @@ interface LoginModalProps {
 
 export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
   const [tab, setTab] = useState<'login' | 'register'>('login');
+  const [loginInviteMode, setLoginInviteMode] = useState(false);
 
   // Login fields
   const [loginName, setLoginName] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [loginInviteCode, setLoginInviteCode] = useState('');
 
   // Register fields
   const [regName, setRegName] = useState('');
@@ -26,6 +28,24 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (loginInviteMode) {
+      if (!loginInviteCode.trim()) {
+        setError('请输入邀请码');
+        return;
+      }
+      setLoading(true);
+      setError('');
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inviteCode: loginInviteCode.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) { onLogin(data.data); } else { setError(data.error || '登录失败'); }
+      setLoading(false);
+      return;
+    }
+
     if (!loginName.trim() || !loginPassword) {
       setError('请填写名字和密码');
       return;
@@ -106,29 +126,53 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
 
         {tab === 'login' ? (
           <>
-            <input
-              type="text"
-              placeholder="你的名字"
-              value={loginName}
-              onChange={e => setLoginName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
-            />
-            <input
-              type="password"
-              placeholder="密码"
-              value={loginPassword}
-              onChange={e => setLoginPassword(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
-            />
+            {loginInviteMode ? (
+              <>
+                <input
+                  type="text"
+                  placeholder="邀请码"
+                  value={loginInviteCode}
+                  onChange={e => setLoginInviteCode(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
+                />
+                <p className="text-white/20 text-xs mb-3">
+                  如果你已经注册过但没设密码，用邀请码登录后可去角落设置新密码。
+                </p>
+              </>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  placeholder="你的名字"
+                  value={loginName}
+                  onChange={e => setLoginName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
+                />
+                <input
+                  type="password"
+                  placeholder="密码"
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded mb-3 text-white/80 placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30"
+                />
+              </>
+            )}
             {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
             <button
               onClick={handleLogin}
               disabled={loading}
               className="w-full px-3 py-2 bg-white/10 hover:bg-white/20 rounded text-sm text-white/80 transition-colors disabled:opacity-50"
             >
-              登录
+              {loginInviteMode ? '用邀请码登录' : '登录'}
+            </button>
+            <button
+              onClick={() => { setLoginInviteMode(!loginInviteMode); setError(''); }}
+              className="w-full mt-2 text-white/25 hover:text-white/50 text-xs transition-colors"
+            >
+              {loginInviteMode ? '← 用密码登录' : '用邀请码登录'}
             </button>
           </>
         ) : (

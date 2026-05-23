@@ -8,7 +8,7 @@ import fs from 'fs';
 import type { ApiResponse, Photo } from '@/lib/types';
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export async function POST(req: NextRequest) {

@@ -6,20 +6,34 @@ import type { ApiResponse, UserSession } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, password } = await req.json();
-
-    if (!name || !password) {
-      return NextResponse.json({ ok: false, error: 'Name and password are required' }, { status: 400 });
-    }
+    const { name, password, inviteCode } = await req.json();
 
     const db = getDb();
-    const user = db.prepare('SELECT id, name, role, password_hash FROM users WHERE name = ?').get(name.trim()) as any;
+    let user: any = null;
+
+    // Login by invite code (for legacy accounts or bootstrap code)
+    if (inviteCode && !name) {
+      user = db.prepare('SELECT id, name, role, password_hash FROM users WHERE invite_code = ?').get(inviteCode.trim()) as any;
+      if (!user) {
+        return NextResponse.json({ ok: false, error: 'Invalid invite code. Register first?' }, { status: 404 });
+      }
+      await createSession({ id: user.id, name: user.name, role: user.role });
+      const session: UserSession = { userId: user.id, name: user.name, role: user.role };
+      return NextResponse.json({ ok: true, data: session });
+    }
+
+    // Login by name + password
+    if (!name || !password) {
+      return NextResponse.json({ ok: false, error: 'Please enter your name and password, or use an invite code' }, { status: 400 });
+    }
+
+    user = db.prepare('SELECT id, name, role, password_hash FROM users WHERE name = ?').get(name.trim()) as any;
     if (!user) {
-      return NextResponse.json({ ok: false, error: 'Account not found. Check your name or register first.' }, { status: 404 });
+      return NextResponse.json({ ok: false, error: 'Account not found. Check your name, or use the Register tab if you\'re new.' }, { status: 404 });
     }
 
     if (!user.password_hash) {
-      return NextResponse.json({ ok: false, error: 'This account has no password set. Please re-register with a password.' }, { status: 400 });
+      return NextResponse.json({ ok: false, error: 'This account needs a password. Please use the Register tab with your invite code to set one.' }, { status: 400 });
     }
 
     if (!verifyPassword(password, user.password_hash)) {
