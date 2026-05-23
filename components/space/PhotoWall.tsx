@@ -15,6 +15,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
   const [uploading, setUploading] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState('');
+  const [makePublic, setMakePublic] = useState(true);
 
   useEffect(() => {
     fetch(`/api/photos/user/${userId}`)
@@ -30,7 +31,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
     setUploadError('');
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('isPublic', 'false');
+    formData.append('isPublic', makePublic ? 'true' : 'false');
 
     const res = await fetch('/api/photos/upload', { method: 'POST', body: formData });
     const data = await res.json();
@@ -41,7 +42,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
     }
     setUploading(false);
     if (e.target) e.target.value = '';
-  }, []);
+  }, [makePublic]);
 
   const handleTogglePublic = useCallback(async (photo: Photo) => {
     const res = await fetch(`/api/photos/${photo.id}`, {
@@ -74,6 +75,10 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
           <label className="inline-block px-4 py-2 bg-white/10 hover:bg-white/20 rounded cursor-pointer text-sm text-white/80 transition-colors">
             {uploading ? '上传中...' : '+ 添加照片'}
             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleUpload} className="hidden" disabled={uploading} />
+          </label>
+          <label className="ml-3 inline-flex items-center gap-1 text-xs text-white/40 cursor-pointer">
+            <input type="checkbox" checked={makePublic} onChange={e => setMakePublic(e.target.checked)} className="accent-amber-500" />
+            发布到公园
           </label>
           {uploadError && <p className="text-red-400 text-xs mt-1">{uploadError}</p>}
         </div>
