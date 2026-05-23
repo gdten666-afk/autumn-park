@@ -89,7 +89,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
         {photos.map(photo => (
           <div key={photo.id} className="relative group">
             <img
-              src={`/api/photos/${photo.id}?file=1`}
+              src={`/api/photos/${photo.id}?thumb=1`}
               alt={photo.caption || ''}
               className="w-full aspect-square object-cover rounded-lg cursor-pointer hover:scale-105 transition-transform border border-white/20"
               onClick={() => setExpandedId(expandedId === photo.id ? null : photo.id)}

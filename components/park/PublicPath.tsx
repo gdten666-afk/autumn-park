@@ -129,7 +129,7 @@ export default function PublicPath() {
                   onMouseLeave={e => { e.currentTarget.style.transform = `rotate(${rotation}deg) scale(1)`; e.currentTarget.style.zIndex = ''; }}
                   onClick={() => setExpanded(photo)}>
                   <div className="relative overflow-hidden rounded-xl bg-white ring-1 ring-black/5 shadow-lg" style={{ aspectRatio: '4/5' }}>
-                    <img src={`/api/photos/${photo.id}?file=1`} alt={photo.caption || ''} className="w-full h-full object-cover img-loading" loading="lazy" decoding="async"
+                    <img src={`/api/photos/${photo.id}?thumb=1`} alt={photo.caption || ''} className="w-full h-full object-cover img-loading" loading="lazy" decoding="async"
                       onLoad={e => { (e.target as HTMLImageElement).classList.replace('img-loading', 'img-loaded'); }} />
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                     <div className="absolute bottom-0 inset-x-0 p-2.5">
@@ -148,7 +148,7 @@ export default function PublicPath() {
             {photos.map(photo => (
               <div key={photo.id} className="break-inside-avoid mb-4 cursor-pointer group/gallery" onClick={() => setExpanded(photo)}>
                 <div className="relative overflow-hidden rounded-xl bg-white ring-1 ring-black/5 hover:ring-black/15 transition-all duration-300 hover:shadow-xl">
-                  <img src={`/api/photos/${photo.id}?file=1`} alt={photo.caption || ''} className="w-full block img-loading" loading="lazy" decoding="async"
+                  <img src={`/api/photos/${photo.id}?thumb=1`} alt={photo.caption || ''} className="w-full block img-loading" loading="lazy" decoding="async"
                     onLoad={e => { (e.target as HTMLImageElement).classList.replace('img-loading', 'img-loaded'); }} />
                   <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/50 via-black/20 to-transparent opacity-0 group-hover/gallery:opacity-100 transition-opacity duration-300">
                     {photo.caption && <p className="text-white/90 text-xs font-serif truncate">{photo.caption}</p>}

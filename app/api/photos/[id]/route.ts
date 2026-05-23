@@ -47,13 +47,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const url = new URL(req.url);
   const isFile = url.searchParams.get('file') === '1';
-  if (isFile) {
+  const isThumb = url.searchParams.get('thumb') === '1';
+  if (isFile || isThumb) {
     const photo = await dbGet('SELECT filename FROM photos WHERE id = ?', [id]);
     if (!photo) return new NextResponse('Not found', { status: 404 });
-    const filePath = path.join(UPLOAD_DIR, photo.filename);
+
+    // Try thumbnail first if requested
+    let serveFilename = photo.filename;
+    if (isThumb) {
+      const thumbName = `thumb_${photo.filename}`;
+      const thumbPath = path.join(UPLOAD_DIR, thumbName);
+      if (fs.existsSync(thumbPath)) serveFilename = thumbName;
+    }
+
+    const filePath = path.join(UPLOAD_DIR, serveFilename);
     if (!fs.existsSync(filePath)) return new NextResponse('File missing', { status: 404 });
     const buffer = fs.readFileSync(filePath);
-    const ext = photo.filename.split('.').pop();
+    const ext = serveFilename.split('.').pop();
     const contentType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
     return new NextResponse(buffer, { headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400' } });
   }

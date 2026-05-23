@@ -4,6 +4,7 @@ import { ensureTables, dbRun } from '@/lib/db';
 import { requireSession } from '@/lib/auth';
 import path from 'path';
 import fs from 'fs';
+import sharp from 'sharp';
 import type { ApiResponse, Photo } from '@/lib/types';
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
@@ -30,6 +31,15 @@ export async function POST(req: NextRequest) {
     const filename = `${photoId}.${ext}`;
     const buffer = Buffer.from(await file.arrayBuffer());
     fs.writeFileSync(path.join(UPLOAD_DIR, filename), buffer);
+
+    // Generate thumbnail (max 600px wide, for fast gallery loading)
+    const thumbFilename = `thumb_${photoId}.${ext}`;
+    try {
+      await sharp(buffer)
+        .resize(600, 600, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 75 })
+        .toFile(path.join(UPLOAD_DIR, thumbFilename));
+    } catch { /* thumbnail fails silently, full image still works */ }
 
     await dbRun('INSERT INTO photos (id, user_id, filename, caption, is_public) VALUES (?, ?, ?, ?, ?)',
       [photoId, session.userId, filename, caption, isPublic ? 1 : 0]);
