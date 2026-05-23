@@ -112,7 +112,7 @@ export default function ParkScene({ seasonState, weather, scrollX }: ParkScenePr
       </svg>
 
       {/* Trees */}
-      <svg className="absolute w-full h-full pointer-events-none"
+      <svg className="park-tree-layer absolute w-full h-full pointer-events-none"
         viewBox={`0 0 ${400 * 10} ${100 * 10}`}
         preserveAspectRatio="none"
         style={{ width: '400vw', height: '100vh' }}>

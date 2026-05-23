@@ -108,7 +108,7 @@ export default function PublicPath() {
             >
               {/* Polaroid card */}
               <div
-                className="relative bg-white/90 backdrop-blur p-1.5 pb-6 rounded-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                className="polaroid-card relative bg-white/90 backdrop-blur p-1.5 pb-6 rounded-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all"
                 style={{
                   transform: `rotate(${photo.rotation}deg)`,
                   width: `${100 * photo.scale}px`,

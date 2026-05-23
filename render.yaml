@@ -7,7 +7,11 @@ services:
     envVars:
       - key: BOOTSTRAP_CODE
         value: park-founder-2026
-      - key: DB_PATH
-        value: /app/data/park.db
+      - key: TURSO_DATABASE_URL
+        sync: false
+        value: file:./data/park.db
+      - key: TURSO_AUTH_TOKEN
+        sync: false
+        value: ""
       - key: UPLOAD_DIR
         value: /app/uploads

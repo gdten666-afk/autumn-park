@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import ParkCanvas from '@/components/park/ParkCanvas';
 import ParkScene from '@/components/park/ParkScene';
+import GSAPAnimations from '@/components/park/GSAPAnimations';
 import PublicPath from '@/components/park/PublicPath';
 import CornerTransition from '@/components/space/CornerTransition';
 import CornerView from '@/components/space/CornerView';
@@ -80,7 +81,7 @@ export default function ParkPage() {
         <ParkScene seasonState={seasonState} weather={weather} scrollX={scrollX} />
 
         {/* Welcome area at the start */}
-        <div className="absolute z-10" style={{ left: '2vw', top: '28vh' }}>
+        <div className="welcome-text absolute z-10" style={{ left: '2vw', top: '28vh' }}>
           <div className="flex flex-col items-start max-w-sm">
             <p className="text-white/20 text-xs tracking-[0.3em] mb-2">
               {SEASON_NAME[seasonState.season]} · 四季公园
@@ -97,7 +98,7 @@ export default function ParkPage() {
         </div>
 
         {/* Scroll hint */}
-        <div className="absolute z-10 bottom-8 left-1/2 -translate-x-1/2 animate-pulse"
+        <div className="scroll-hint absolute z-10 bottom-8 left-1/2 -translate-x-1/2 animate-pulse"
           style={{ animationDuration: '3s' }}>
           <p className="text-white/15 text-xs tracking-widest">向右漫步 →</p>
         </div>
@@ -107,6 +108,7 @@ export default function ParkPage() {
 
       <ParticleOverlay seasonState={seasonState} weather={weather} />
       <WeatherLayer weather={weather} />
+      <GSAPAnimations />
 
       {/* User controls */}
       {session ? (

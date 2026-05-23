@@ -39,7 +39,7 @@ export default function ParkCanvas({ children, onSeasonChange, onScroll }: ParkC
     <div
       ref={containerRef}
       onScroll={handleScroll}
-      className="w-full h-screen overflow-x-auto overflow-y-hidden relative"
+      className="park-scroll-container w-full h-screen overflow-x-auto overflow-y-hidden relative"
       style={{
         background: 'var(--season-bg)',
         transition: 'background var(--transition-duration) ease',
