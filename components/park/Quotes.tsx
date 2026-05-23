@@ -41,7 +41,7 @@ export default function Quotes() {
       </div>
       <div className="columns-1 md:columns-2 gap-8 max-w-2xl">
         {QUOTES.map((q, i) => (
-          <div key={i} className="break-inside-avoid mb-6 pointer-events-auto"
+          <div key={i} className="break-inside-avoid mb-6 pointer-events-auto" suppressHydrationWarning
             style={{
               transform: `rotate(${(Math.sin(i * 1.3) * 1.5).toFixed(1)}deg)`,
             }}>

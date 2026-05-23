@@ -90,7 +90,7 @@ export default function PublicPath() {
             {feedItems.map((item) => {
               if (item.type === 'quote') {
                 return (
-                  <div key={`q-${item.idx}`} className="flex items-center justify-center pointer-events-auto"
+                  <div key={`q-${item.idx}`} className="flex items-center justify-center pointer-events-auto" suppressHydrationWarning
                     style={{
                       width: 'clamp(160px, 22vw, 260px)',
                       minHeight: '120px',
@@ -108,7 +108,7 @@ export default function PublicPath() {
               const i = item.idx;
               const rotation = (Math.sin(i * 2.1) * 4);
               return (
-                <div key={photo.id} className="polaroid-card cursor-pointer group/card"
+                <div key={photo.id} className="polaroid-card cursor-pointer group/card" suppressHydrationWarning
                   style={{
                     transform: `rotate(${rotation}deg)`,
                     marginTop: (i % 5) * 12,
