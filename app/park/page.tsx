@@ -89,16 +89,10 @@ export default function ParkPage() {
               </span>
             </div>
 
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl text-black/60 font-serif tracking-[0.05em] mb-4 leading-tight"
-              style={{ fontFamily: '"Noto Serif SC", Georgia, serif' }}>
-              一个在秋天<br />等花开的人
-            </h1>
-
             {/* Subtitle */}
             <p className="text-black/25 text-sm leading-relaxed max-w-xs mb-8" style={{ lineHeight: '1.8' }}>
-              沿着蜿蜒小径漫步，偶然遇见某个人的照片，
-              <br />踏入他用天气和光影建成的角落。
+              一个随四季流转的数字公园，
+              <br />每个人在这里都有自己的角落。
             </p>
 
             {/* CTA hint */}
