@@ -12,6 +12,6 @@ services:
         value: libsql://gdten-gdten666-afk.aws-ap-northeast-1.turso.io
       - key: TURSO_AUTH_TOKEN
         sync: false
-        value: ""
+        value: eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3Nzk1MDU0NzgsImlkIjoiMDE5ZTUyYzktZTcwMS03NjVkLThhYjYtODNiMmUyMzVjNzEyIiwicmlkIjoiZjQ0OGNmMWQtNTJlMy00M2YxLTgxMTUtZjBhNmIwOTQ0NWExIn0.w2ZHCTtcIkoGpZOJ54mNZwAz_JcQpMbgMYJitWKKqLo-KvJER9R-z8RYzWrkfNKLU07fopQNiv3CsyNo_9_ZDg
       - key: UPLOAD_DIR
         value: /app/uploads
