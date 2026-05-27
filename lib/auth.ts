@@ -52,18 +52,25 @@ export async function getSession(): Promise<UserSession | null> {
 
   try {
     const dotIdx = token.lastIndexOf('.');
-    if (dotIdx === -1) return null;
-    const payloadB64 = token.slice(0, dotIdx);
-    const signature = token.slice(dotIdx + 1);
-    const payload = Buffer.from(payloadB64, 'base64').toString();
-    if (sign(payload) !== signature) return null;
 
-    const data = JSON.parse(payload);
+    // New format: base64(payload).hmac_signature
+    if (dotIdx !== -1) {
+      const payloadB64 = token.slice(0, dotIdx);
+      const signature = token.slice(dotIdx + 1);
+      const payload = Buffer.from(payloadB64, 'base64').toString();
+      if (sign(payload) !== signature) return null;
+      const data = JSON.parse(payload);
+      if (data.exp < Date.now()) return null;
+      const user = await dbGet('SELECT id, name, role FROM users WHERE id = ?', [data.userId]);
+      if (!user) return null;
+      return { userId: user.id, name: user.name, role: user.role };
+    }
+
+    // Old format (pre-HMAC): base64(payload) — backward compat during transition
+    const data = JSON.parse(Buffer.from(token, 'base64').toString());
     if (data.exp < Date.now()) return null;
-
     const user = await dbGet('SELECT id, name, role FROM users WHERE id = ?', [data.userId]);
     if (!user) return null;
-
     return { userId: user.id, name: user.name, role: user.role };
   } catch {
     return null;

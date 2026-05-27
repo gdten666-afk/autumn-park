@@ -15,6 +15,8 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
   // Login fields
   const [loginName, setLoginName] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [loginInviteCode, setLoginInviteCode] = useState('');
+  const [useInviteLogin, setUseInviteLogin] = useState(false);
 
   // Register fields
   const [regName, setRegName] = useState('');
@@ -26,25 +28,31 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    setError('');
+    if (useInviteLogin) {
+      if (!loginName.trim() || !loginInviteCode.trim()) { setError('请填写名字和邀请码'); return; }
+      setLoading(true);
+      const res = await fetch('/api/auth/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: loginName.trim(), inviteCode: loginInviteCode.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) onLogin(data.data); else setError(data.error || '登录失败');
+      setLoading(false);
+      return;
+    }
     if (!loginName.trim() || !loginPassword) {
       setError('请填写名字和密码');
       return;
     }
     setLoading(true);
-    setError('');
-
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: loginName.trim(), password: loginPassword }),
     });
     const data = await res.json();
-
-    if (data.ok) {
-      onLogin(data.data);
-    } else {
-      setError(data.error || '登录失败');
-    }
+    if (data.ok) onLogin(data.data); else setError(data.error || '登录失败');
     setLoading(false);
   };
 
@@ -114,21 +122,41 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
               onKeyDown={e => e.key === 'Enter' && handleLogin()}
               className="glass-input mb-3"
             />
-            <input
-              type="password"
-              placeholder="密码"
-              value={loginPassword}
-              onChange={e => setLoginPassword(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              className="glass-input mb-3"
-            />
+            {useInviteLogin ? (
+              <>
+                <input
+                  type="text"
+                  placeholder="邀请码"
+                  value={loginInviteCode}
+                  onChange={e => setLoginInviteCode(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  className="glass-input mb-3"
+                />
+                <p className="text-white/20 text-xs mb-3">用邀请码登录不需要密码</p>
+              </>
+            ) : (
+              <input
+                type="password"
+                placeholder="密码"
+                value={loginPassword}
+                onChange={e => setLoginPassword(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                className="glass-input mb-3"
+              />
+            )}
             {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
             <button
               onClick={handleLogin}
               disabled={loading}
               className="w-full btn-primary disabled:opacity-30"
             >
-              登录
+              {useInviteLogin ? '用邀请码登录' : '登录'}
+            </button>
+            <button
+              onClick={() => { setUseInviteLogin(!useInviteLogin); setError(''); }}
+              className="w-full mt-2 text-white/25 hover:text-white/50 text-xs transition-colors"
+            >
+              {useInviteLogin ? '← 用密码登录' : '用邀请码登录'}
             </button>
           </>
         ) : (
