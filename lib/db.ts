@@ -48,6 +48,7 @@ export async function ensureTables() {
       id         TEXT PRIMARY KEY,
       user_id    TEXT NOT NULL,
       filename   TEXT NOT NULL,
+      data       BLOB,
       caption    TEXT DEFAULT '',
       is_public  INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -73,6 +74,7 @@ export async function ensureTables() {
     );
   `);
   try { await db.execute(`ALTER TABLE users ADD COLUMN password_hash TEXT DEFAULT ''`); } catch {}
+  try { await db.execute(`ALTER TABLE photos ADD COLUMN data BLOB`); } catch {}
   const bootstrap = process.env.BOOTSTRAP_CODE;
   if (bootstrap) {
     await db.execute({ sql: 'INSERT OR IGNORE INTO invite_codes (code) VALUES (?)', args: [bootstrap] });

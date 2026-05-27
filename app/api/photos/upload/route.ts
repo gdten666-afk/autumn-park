@@ -41,8 +41,8 @@ export async function POST(req: NextRequest) {
         .toFile(path.join(UPLOAD_DIR, thumbFilename));
     } catch { /* thumbnail fails silently, full image still works */ }
 
-    await dbRun('INSERT INTO photos (id, user_id, filename, caption, is_public) VALUES (?, ?, ?, ?, ?)',
-      [photoId, session.userId, filename, caption, isPublic ? 1 : 0]);
+    await dbRun('INSERT INTO photos (id, user_id, filename, data, caption, is_public) VALUES (?, ?, ?, ?, ?, ?)',
+      [photoId, session.userId, filename, buffer, caption, isPublic ? 1 : 0]);
 
     const photo: Photo = {
       id: photoId, user_id: session.userId, filename, caption,

@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const session = await getSession();
   const isOwner = session?.userId === id;
   const photos = await dbAll(
-    `SELECT photos.*, users.name as author_name FROM photos JOIN users ON photos.user_id = users.id WHERE photos.user_id = ? ${isOwner ? '' : 'AND photos.is_public = 1'} ORDER BY photos.created_at DESC`,
+    `SELECT photos.id, photos.user_id, photos.filename, photos.caption, photos.is_public, photos.created_at, users.name as author_name FROM photos JOIN users ON photos.user_id = users.id WHERE photos.user_id = ? ${isOwner ? '' : 'AND photos.is_public = 1'} ORDER BY photos.created_at DESC`,
     [id]
   );
   return NextResponse.json({ ok: true, data: photos } satisfies ApiResponse<Photo[]>);
