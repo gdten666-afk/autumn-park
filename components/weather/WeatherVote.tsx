@@ -7,9 +7,20 @@ import { WEATHERS } from '@/lib/constants';
 interface VoteData {
   today: Weather;
   tomorrow: Weather;
+  voteDate: string;
   voteCounts: Record<string, number>;
   totalVotes: number;
   userVote: string | null;
+}
+
+const DAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const wd = DAY_NAMES[d.getDay()];
+  return `${m}月${day}日 ${wd}`;
 }
 
 export default function WeatherVote() {
@@ -50,20 +61,21 @@ export default function WeatherVote() {
   const todayW = WEATHERS.find(w => w.value === data.today);
   const tomorrowW = WEATHERS.find(w => w.value === data.tomorrow);
   const maxVotes = Math.max(1, ...Object.values(data.voteCounts));
+  const todayLabel = formatDate(data.voteDate);
 
   return (
-    <div className="fixed bottom-4 right-4 z-25 flex flex-col items-end gap-2 max-md:bottom-16 max-md:right-2">
-      {/* Compact collapsed view — always visible */}
+    <div className="fixed bottom-4 left-4 z-25 flex flex-col items-start gap-2 max-md:bottom-16 max-md:left-2">
+      {/* Compact collapsed button */}
       <button
         onClick={() => setExpanded(!expanded)}
         className="glass-btn flex items-center gap-2 !px-3 !py-1.5 text-xs"
         title="天气投票"
       >
         <span className="text-base">{todayW?.emoji}</span>
-        <span className="text-black/30 hidden md:inline">今日</span>
+        <span className="text-black/30 hidden md:inline">{todayLabel}</span>
         <span className="text-black/20 text-[10px] hidden md:inline">|</span>
         <span className="text-sm">{tomorrowW?.emoji}</span>
-        <span className="text-black/30 hidden md:inline">明日预测</span>
+        <span className="text-black/30 hidden md:inline">明日</span>
         {data.totalVotes > 0 && (
           <span className="text-black/20 text-[10px] ml-0.5">{data.totalVotes}票</span>
         )}
@@ -72,12 +84,15 @@ export default function WeatherVote() {
       {/* Expanded panel */}
       {expanded && (
         <div
-          className="glass-strong p-4 min-w-[200px] max-w-[calc(100vw-2rem)] animate-slideUp"
+          className="glass-strong p-4 min-w-[210px] max-w-[calc(100vw-2rem)] animate-slideUp"
           onClick={e => e.stopPropagation()}
         >
-          {/* Close button */}
+          {/* Header */}
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-black/40 text-xs tracking-wider">明日天气投票</h3>
+            <div>
+              <h3 className="text-black/40 text-xs tracking-wider">天气投票</h3>
+              <p className="text-black/20 text-[10px] mt-0.5">{todayLabel}</p>
+            </div>
             <button
               onClick={() => setExpanded(false)}
               className="text-black/20 hover:text-black/50 text-xs transition-colors"
@@ -86,14 +101,14 @@ export default function WeatherVote() {
             </button>
           </div>
 
-          {/* Today + Tomorrow summary */}
+          {/* Today + Tomorrow */}
           <div className="flex items-center justify-center gap-4 mb-3 pb-3 border-b border-black/5">
             <div className="text-center">
               <p className="text-black/25 text-[10px] mb-1">今日</p>
               <span className="text-3xl">{todayW?.emoji}</span>
               <p className="text-black/30 text-[10px] mt-0.5">{todayW?.label}</p>
             </div>
-            <div className="text-black/15">→</div>
+            <div className="text-black/15 text-sm">→</div>
             <div className="text-center">
               <p className="text-black/25 text-[10px] mb-1">明日预测</p>
               <span className="text-3xl">{tomorrowW?.emoji}</span>
@@ -101,7 +116,7 @@ export default function WeatherVote() {
             </div>
           </div>
 
-          {/* Vote options with bars */}
+          {/* Vote options */}
           <div className="space-y-1.5">
             {WEATHERS.map(w => {
               const count = data.voteCounts[w.value] || 0;
@@ -137,7 +152,7 @@ export default function WeatherVote() {
 
           {!data.userVote && !error && (
             <p className="text-black/15 text-[10px] mt-2 text-center">
-              点击天气图标投票
+              点击天气图标投票明天的天气
             </p>
           )}
 
