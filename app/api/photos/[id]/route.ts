@@ -49,10 +49,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const isFile = url.searchParams.get('file') === '1';
   const isThumb = url.searchParams.get('thumb') === '1';
   if (isFile || isThumb) {
-    const photo = await dbGet('SELECT filename, data, is_public, user_id FROM photos WHERE id = ?', [id]);
+    const photo = await dbGet('SELECT filename, data, thumb_data, is_public, user_id FROM photos WHERE id = ?', [id]);
     if (!photo) return new NextResponse('Not found', { status: 404 });
 
-    // Permission check: allow if public, or if viewer is the owner
+    // Permission check
     if (!photo.is_public) {
       const session = await getSession();
       if (!session || (session.userId !== photo.user_id && session.role !== 'operator')) {
@@ -60,22 +60,27 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     }
 
-    // Serve from database BLOB if available (new uploads)
-    if (photo.data) {
+    // Thumbnail: try DB first, then disk fallback
+    if (isThumb && photo.thumb_data) {
+      const buf = Buffer.isBuffer(photo.thumb_data) ? photo.thumb_data : Buffer.from(photo.thumb_data);
+      return new NextResponse(buf, { headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=31536000, immutable' } });
+    }
+
+    // Full image from DB BLOB
+    if (isFile && photo.data) {
       const ext = photo.filename.split('.').pop();
       const contentType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
       const buf = Buffer.isBuffer(photo.data) ? photo.data : Buffer.from(photo.data);
       return new NextResponse(buf, { headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400' } });
     }
 
-    // Fallback: serve from disk for old photos not yet migrated
+    // Disk fallback for old photos
     let serveFilename = photo.filename;
     if (isThumb) {
       const thumbName = `thumb_${photo.filename}`;
       const thumbPath = path.join(UPLOAD_DIR, thumbName);
       if (fs.existsSync(thumbPath)) serveFilename = thumbName;
     }
-
     const filePath = path.join(UPLOAD_DIR, serveFilename);
     if (!fs.existsSync(filePath)) return new NextResponse('File missing', { status: 404 });
     const buffer = fs.readFileSync(filePath);

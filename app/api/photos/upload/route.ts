@@ -24,25 +24,28 @@ export async function POST(req: NextRequest) {
     if (file.size > MAX_SIZE) return NextResponse.json({ ok: false, error: 'File too large (max 50MB)' }, { status: 413 });
     if (!ALLOWED_TYPES.includes(file.type)) return NextResponse.json({ ok: false, error: 'Only JPEG, PNG, WebP allowed' }, { status: 415 });
 
-    if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
     const photoId = nanoid();
     const ext = file.type.split('/')[1];
     const filename = `${photoId}.${ext}`;
     const buffer = Buffer.from(await file.arrayBuffer());
-    fs.writeFileSync(path.join(UPLOAD_DIR, filename), buffer);
 
-    // Generate thumbnail (max 600px wide, for fast gallery loading)
-    const thumbFilename = `thumb_${photoId}.${ext}`;
+    // Save to disk as fallback
+    try { if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true }); } catch {}
+    try { fs.writeFileSync(path.join(UPLOAD_DIR, filename), buffer); } catch {}
+
+    // Generate thumbnail (max 400px, JPEG quality 70 — small/fast for gallery)
+    let thumbBuffer: Buffer | null = null;
     try {
-      await sharp(buffer)
-        .resize(600, 600, { fit: 'inside', withoutEnlargement: true })
-        .jpeg({ quality: 75 })
-        .toFile(path.join(UPLOAD_DIR, thumbFilename));
-    } catch { /* thumbnail fails silently, full image still works */ }
+      thumbBuffer = await sharp(buffer)
+        .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 70 })
+        .toBuffer();
+    } catch { /* thumbnail fails silently */ }
 
-    await dbRun('INSERT INTO photos (id, user_id, filename, data, caption, is_public) VALUES (?, ?, ?, ?, ?, ?)',
-      [photoId, session.userId, filename, buffer, caption, isPublic ? 1 : 0]);
+    await dbRun(
+      'INSERT INTO photos (id, user_id, filename, data, thumb_data, caption, is_public) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [photoId, session.userId, filename, buffer, thumbBuffer, caption, isPublic ? 1 : 0]
+    );
 
     const photo: Photo = {
       id: photoId, user_id: session.userId, filename, caption,

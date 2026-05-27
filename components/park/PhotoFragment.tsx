@@ -28,7 +28,7 @@ export default function PhotoFragment({ photo, index, featured }: PhotoFragmentP
         onClick={() => setExpanded(true)}
       >
         <img
-          src={`/api/photos/${photo.id}?file=1`}
+          src={`/api/photos/${photo.id}?thumb=1`}
           alt={photo.caption || 'photo'}
           className="w-full h-full object-cover rounded shadow-lg border-2 border-white/30"
         />

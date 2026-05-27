@@ -75,6 +75,7 @@ export async function ensureTables() {
   `);
   try { await db.execute(`ALTER TABLE users ADD COLUMN password_hash TEXT DEFAULT ''`); } catch {}
   try { await db.execute(`ALTER TABLE photos ADD COLUMN data BLOB`); } catch {}
+  try { await db.execute(`ALTER TABLE photos ADD COLUMN thumb_data BLOB`); } catch {}
   try { await db.execute(`ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT ''`); } catch {}
   try { await db.execute(`ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''`); } catch {}
   const bootstrap = process.env.BOOTSTRAP_CODE;

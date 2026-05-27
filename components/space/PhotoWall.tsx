@@ -232,7 +232,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
                 onClick={() => setDetailIdx(idx)}
               >
                 <img
-                  src={`/api/photos/${photo.id}?file=1`}
+                  src={`/api/photos/${photo.id}?thumb=1`}
                   alt={photo.caption || 'photo'}
                   className="w-full h-full object-cover"
                   loading="lazy"

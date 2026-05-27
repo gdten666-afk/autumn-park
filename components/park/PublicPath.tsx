@@ -109,7 +109,7 @@ export default function PublicPath() {
                   onMouseLeave={e => { e.currentTarget.style.transform = `rotate(${rotation}deg) scale(1)`; e.currentTarget.style.zIndex = ''; }}
                   onClick={() => setExpanded(photo)}>
                   <div className="relative overflow-hidden rounded-xl bg-white ring-1 ring-black/10 shadow-md" style={{ aspectRatio: '4/5' }}>
-                    <img src={`/api/photos/${photo.id}?file=1`} alt={photo.caption || 'photo'} className="w-full h-full object-cover img-loading" loading="lazy" decoding="async"
+                    <img src={`/api/photos/${photo.id}?thumb=1`} alt={photo.caption || 'photo'} className="w-full h-full object-cover img-loading" loading="lazy" decoding="async"
                       onLoad={e => { (e.target as HTMLImageElement).classList.replace('img-loading', 'img-loaded'); }} />
                     {/* Caption always visible with darker overlay */}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/25 to-transparent" style={{ minHeight: '40%' }} />
@@ -131,7 +131,7 @@ export default function PublicPath() {
             {photos.map(photo => (
               <div key={photo.id} className="break-inside-avoid mb-4 cursor-pointer group/gallery" onClick={() => setExpanded(photo)}>
                 <div className="relative overflow-hidden rounded-xl bg-white ring-1 ring-black/10 hover:ring-black/20 transition-all duration-300 hover:shadow-xl">
-                  <img src={`/api/photos/${photo.id}?file=1`} alt={photo.caption || 'photo'} className="w-full block img-loading" loading="lazy" decoding="async"
+                  <img src={`/api/photos/${photo.id}?thumb=1`} alt={photo.caption || 'photo'} className="w-full block img-loading" loading="lazy" decoding="async"
                     onLoad={e => { (e.target as HTMLImageElement).classList.replace('img-loading', 'img-loaded'); }} />
                   {/* Caption always visible in gallery too */}
                   <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/55 via-black/20 to-transparent">
