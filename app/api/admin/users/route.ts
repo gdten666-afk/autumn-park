@@ -10,7 +10,7 @@ export async function GET() {
   try {
     await ensureTables();
     await requireOperator();
-    const users = await dbAll('SELECT u.*, COUNT(p.id) as photo_count FROM users u LEFT JOIN photos p ON u.id = p.user_id GROUP BY u.id ORDER BY u.created_at DESC');
+    const users = await dbAll('SELECT u.id, u.name, u.role, u.invite_code, u.created_at, COUNT(p.id) as photo_count FROM users u LEFT JOIN photos p ON u.id = p.user_id GROUP BY u.id ORDER BY u.created_at DESC');
     return NextResponse.json({ ok: true, data: users });
   } catch (err: any) {
     if (err.message === 'Unauthorized' || err.message === 'Forbidden') return NextResponse.json({ ok: false, error: 'Operator only' }, { status: 403 });

@@ -80,8 +80,11 @@ export async function ensureTables() {
   tablesReady = true;
 }
 
-// Convert rows array + columns array → array of objects
-function toObjects(result: { columns: string[]; rows: any[][] }): any[] {
+// Convert rows to objects. libsql v0.17+ returns rows as objects already;
+// older versions return rows as arrays (paired with columns).
+function toObjects(result: { columns: string[]; rows: any[] }): any[] {
+  if (result.rows.length === 0) return [];
+  if (!Array.isArray(result.rows[0])) return result.rows;
   return result.rows.map(row => {
     const obj: any = {};
     result.columns.forEach((col, i) => { obj[col] = row[i]; });
