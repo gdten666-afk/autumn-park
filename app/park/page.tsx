@@ -13,6 +13,7 @@ import UserMenu from '@/components/auth/UserMenu';
 import AdminPanel from '@/components/admin/AdminPanel';
 import WeatherLayer from '@/components/weather/WeatherLayer';
 import WeatherVote from '@/components/weather/WeatherVote';
+import ParticleOverlay from '@/components/park/ParticleOverlay';
 import MessageWall from '@/components/park/MessageWall';
 import StatsBar from '@/components/park/StatsBar';
 import { getSeasonState } from '@/lib/seasons';
@@ -118,6 +119,7 @@ export default function ParkPage() {
       </ParkCanvas>
 
       <WeatherLayer weather={weather} />
+      <ParticleOverlay seasonState={seasonState} weather={weather} />
       <StatsBar />
       <GSAPAnimations />
 
