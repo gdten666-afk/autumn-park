@@ -2,14 +2,7 @@
 'use client';
 
 import type { Scene } from '@/lib/types';
-
-const SCENES: { value: Scene; label: string; icon: string }[] = [
-  { value: 'autumn-bench', label: '秋日长椅', icon: '🍂' },
-  { value: 'darkroom', label: '旧房间', icon: '📷' },
-  { value: 'starlit-camp', label: '星空营地', icon: '✨' },
-  { value: 'lighthouse-coast', label: '海边灯塔', icon: '🗼' },
-  { value: 'bookstore', label: '深夜书店', icon: '📚' },
-];
+import { SCENES } from '@/lib/constants';
 
 interface ScenePickerProps {
   current: Scene;

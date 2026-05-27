@@ -2,15 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { Weather } from '@/lib/types';
-
-const WEATHERS: { value: Weather; label: string; emoji: string }[] = [
-  { value: 'sunny', label: '晴', emoji: '☀️' },
-  { value: 'cloudy', label: '多云', emoji: '☁️' },
-  { value: 'light-rain', label: '小雨', emoji: '🌧' },
-  { value: 'heavy-rain', label: '大雨', emoji: '⛈' },
-  { value: 'fog', label: '雾', emoji: '🌫' },
-  { value: 'snow', label: '雪', emoji: '❄️' },
-];
+import { WEATHERS } from '@/lib/constants';
 
 export default function WeatherVote() {
   const [today, setToday] = useState<Weather>('sunny');

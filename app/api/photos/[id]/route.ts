@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureTables, dbGet, dbRun } from '@/lib/db';
-import { requireSession } from '@/lib/auth';
+import { requireSession, getSession } from '@/lib/auth';
 import path from 'path';
 import fs from 'fs';
 
@@ -49,8 +49,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const isFile = url.searchParams.get('file') === '1';
   const isThumb = url.searchParams.get('thumb') === '1';
   if (isFile || isThumb) {
-    const photo = await dbGet('SELECT filename, data FROM photos WHERE id = ?', [id]);
+    const photo = await dbGet('SELECT filename, data, is_public, user_id FROM photos WHERE id = ?', [id]);
     if (!photo) return new NextResponse('Not found', { status: 404 });
+
+    // Permission check: allow if public, or if viewer is the owner
+    if (!photo.is_public) {
+      const session = await getSession();
+      if (!session || (session.userId !== photo.user_id && session.role !== 'operator')) {
+        return new NextResponse('Not found', { status: 404 });
+      }
+    }
 
     // Serve from database BLOB if available (new uploads)
     if (photo.data) {

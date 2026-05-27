@@ -18,14 +18,20 @@ export function verifyPassword(password: string, stored: string): boolean {
 }
 
 const SESSION_COOKIE = 'park_session';
+const SESSION_SECRET = process.env.BOOTSTRAP_CODE || 'park-session-secret';
+
+function sign(payload: string): string {
+  return crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
+}
 
 export async function createSession(user: { id: string; name: string; role: string }): Promise<string> {
-  const token = Buffer.from(JSON.stringify({
+  const payload = JSON.stringify({
     userId: user.id,
     name: user.name,
     role: user.role,
     exp: Date.now() + 30 * 24 * 60 * 60 * 1000,
-  })).toString('base64');
+  });
+  const token = `${Buffer.from(payload).toString('base64')}.${sign(payload)}`;
 
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
@@ -45,7 +51,14 @@ export async function getSession(): Promise<UserSession | null> {
   if (!token) return null;
 
   try {
-    const data = JSON.parse(Buffer.from(token, 'base64').toString());
+    const dotIdx = token.lastIndexOf('.');
+    if (dotIdx === -1) return null;
+    const payloadB64 = token.slice(0, dotIdx);
+    const signature = token.slice(dotIdx + 1);
+    const payload = Buffer.from(payloadB64, 'base64').toString();
+    if (sign(payload) !== signature) return null;
+
+    const data = JSON.parse(payload);
     if (data.exp < Date.now()) return null;
 
     const user = await dbGet('SELECT id, name, role FROM users WHERE id = ?', [data.userId]);

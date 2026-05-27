@@ -45,7 +45,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
         setUploadError(data.error || '上传失败');
       }
     }
-    if (ok > 0) window.dispatchEvent(new CustomEvent('photo-uploaded'));
+    if (ok > 0) { window.dispatchEvent(new CustomEvent('photo-uploaded')); setCaption(''); }
     if (files.length > 1 && ok < files.length) setUploadError(`${ok}/${files.length} 张上传成功`);
     setUploading(false);
     if (e.target) e.target.value = '';

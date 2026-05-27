@@ -42,7 +42,9 @@ export default function MessageWall() {
     if (data.ok) {
       setMessages(prev => [data.data, ...prev]);
       setInput('');
-    } else { setError(data.error || '发送失败'); }
+    } else {
+      setError(data.status === 401 ? '登录后才能留言' : (data.error || '发送失败'));
+    }
     setPosting(false);
   };
 

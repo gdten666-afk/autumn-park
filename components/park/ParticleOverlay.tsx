@@ -49,9 +49,9 @@ export default function ParticleOverlay({ seasonState, weather }: ParticleOverla
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      for (const p of particlesRef.current) {
-        updateParticle(p, canvas.width, canvas.height);
-        drawParticle(ctx, p);
+      for (let i = 0; i < particlesRef.current.length; i++) {
+        particlesRef.current[i] = updateParticle(particlesRef.current[i], canvas.width, canvas.height);
+        drawParticle(ctx, particlesRef.current[i]);
       }
 
       rafRef.current = requestAnimationFrame(animate);
