@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Photo } from '@/lib/types';
+import PhotoModal from './PhotoModal';
 
 interface PhotoWallProps {
   userId: string;
@@ -11,6 +12,7 @@ interface PhotoWallProps {
 
 export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [makePublic, setMakePublic] = useState(true);
@@ -18,14 +20,16 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
 
   // Detail modal
   const [detailIdx, setDetailIdx] = useState<number | null>(null);
-  // Inline caption editing: photoId -> editing state
+  // Inline caption editing
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
 
   useEffect(() => {
+    setLoading(true);
     fetch(`/api/photos/user/${userId}`)
       .then(r => r.json())
-      .then(data => { if (data.ok) setPhotos(data.data); });
+      .then(data => { if (data.ok) setPhotos(data.data); })
+      .finally(() => setLoading(false));
   }, [userId]);
 
   // --- Upload ---
@@ -118,7 +122,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
     : 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3';
 
   // --- Empty state ---
-  if (photos.length === 0 && !isOwner) {
+  if (!loading && photos.length === 0 && !isOwner) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
@@ -208,7 +212,14 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
 
       {/* === Photo grid === */}
       <div className={gridClass}>
-        {photos.map((photo, idx) => {
+        {/* Skeleton loading */}
+        {loading && Array.from({ length: 8 }).map((_, i) => (
+          <div key={`sk-${i}`} className="relative aspect-square rounded-xl bg-white/5 ring-1 ring-white/5 overflow-hidden animate-pulse">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5" />
+          </div>
+        ))}
+
+        {!loading && photos.map((photo, idx) => {
           const isEditing = editingId === photo.id;
           return (
             <div key={photo.id} className="relative group">
@@ -311,7 +322,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
         })}
 
         {/* Empty: owner hasn't uploaded yet */}
-        {photos.length === 0 && isOwner && (
+        {!loading && photos.length === 0 && isOwner && (
           <div className="col-span-full flex items-center justify-center py-16">
             <div className="text-center max-w-xs">
               <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-white/5 flex items-center justify-center">
@@ -329,107 +340,22 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
         )}
       </div>
 
-      {/* === Detail modal === */}
+      {/* === Detail modal with swipe + zoom + download === */}
       {detailIdx !== null && photos[detailIdx] && (
-        <div
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center animate-fadeIn"
-          onClick={() => setDetailIdx(null)}
-        >
-          {/* Close button */}
-          <button
-            onClick={() => setDetailIdx(null)}
-            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-
-          {/* Nav arrows */}
-          {detailIdx > 0 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setDetailIdx(detailIdx - 1); }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
-            </button>
-          )}
-          {detailIdx < photos.length - 1 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setDetailIdx(detailIdx + 1); }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-            </button>
-          )}
-
-          <div
-            className="flex flex-col items-center max-w-4xl max-h-[92vh] w-full px-4"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Image */}
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 max-h-[70vh]">
-              <img
-                src={`/api/photos/${photos[detailIdx].id}?file=1`}
-                alt={photos[detailIdx].caption || 'photo'}
-                className="max-w-full max-h-[70vh] object-contain bg-black/40"
-              />
-            </div>
-
-            {/* Caption & info */}
-            <div className="mt-4 text-center w-full max-w-lg">
-              {photos[detailIdx].caption ? (
-                isOwner && editingId === photos[detailIdx].id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={editValue}
-                      onChange={e => setEditValue(e.target.value)}
-                      maxLength={100}
-                      autoFocus
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') saveCaption(photos[detailIdx].id);
-                        if (e.key === 'Escape') { setEditingId(null); setEditValue(''); }
-                      }}
-                      className="flex-1 bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 placeholder:text-white/25 outline-none focus:border-white/30 text-center"
-                    />
-                    <button onClick={() => saveCaption(photos[detailIdx].id)}
-                      className="text-xs px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-white/80 transition-colors flex-shrink-0">
-                      保存
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-2">
-                    <p className="text-white/80 text-base font-serif">{photos[detailIdx].caption}</p>
-                    {isOwner && (
-                      <button
-                        onClick={() => startEdit(photos[detailIdx])}
-                        className="text-white/25 hover:text-white/50 text-xs transition-colors"
-                        title="编辑文案"
-                      >
-                        ✎
-                      </button>
-                    )}
-                  </div>
-                )
-              ) : (
-                isOwner && (
-                  <button
-                    onClick={() => startEdit(photos[detailIdx])}
-                    className="text-white/20 hover:text-white/40 text-xs transition-colors"
-                  >
-                    + 添加文案
-                  </button>
-                )
-              )}
-
-              <p className="text-white/20 text-xs mt-2">
-                {detailIdx + 1} / {photos.length}
-                {photos[detailIdx].is_public && <span className="ml-2 text-white/15">· 公园可见</span>}
-              </p>
-            </div>
-          </div>
-        </div>
+        <PhotoModal
+          photos={photos}
+          index={detailIdx}
+          isOwner={isOwner}
+          editingId={editingId}
+          editValue={editValue}
+          onClose={() => setDetailIdx(null)}
+          onPrev={() => setDetailIdx(d => d !== null && d > 0 ? d - 1 : d)}
+          onNext={() => setDetailIdx(d => d !== null && d < photos.length - 1 ? d + 1 : d)}
+          onStartEdit={startEdit}
+          onSaveCaption={saveCaption}
+          onEditValueChange={setEditValue}
+          onCancelEdit={() => { setEditingId(null); setEditValue(''); }}
+        />
       )}
     </div>
   );

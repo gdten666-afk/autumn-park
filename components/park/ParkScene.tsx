@@ -1,11 +1,44 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import type { SeasonState, Weather } from '@/lib/types';
+import { getTimeOfDay, type TimeOfDay } from '@/lib/time';
 
 interface ParkSceneProps { seasonState: SeasonState; weather: Weather; }
 
+function NightSky() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = canvasRef.current; if (!c) return;
+    const ctx = c.getContext('2d'); if (!ctx) return;
+    const resize = () => { c.width = window.innerWidth; c.height = window.innerHeight; };
+    resize(); window.addEventListener('resize', resize);
+    // Static stars
+    const stars: {x:number;y:number;r:number;o:number}[] = [];
+    for (let i = 0; i < 120; i++) {
+      stars.push({
+        x: Math.random() * 2000, y: Math.random() * 1200,
+        r: 0.3 + Math.random() * 1.2,
+        o: 0.3 + Math.random() * 0.7,
+      });
+    }
+    const draw = () => {
+      ctx.clearRect(0, 0, c.width, c.height);
+      for (const s of stars) {
+        ctx.fillStyle = `rgba(255,255,255,${s.o * (0.7 + 0.3 * Math.sin(Date.now()*0.0005 + s.x))})`;
+        ctx.beginPath(); ctx.arc(s.x % c.width, s.y % c.height, s.r, 0, Math.PI*2); ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    };
+    const id = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(id); window.removeEventListener('resize', resize); };
+  }, []);
+  return <canvas ref={canvasRef} className="absolute inset-0" style={{ zIndex: 4 }} />;
+}
+
 export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
   const season = seasonState.season;
+  const tod = getTimeOfDay();
 
   const palette: Record<string, { sky: string; ground: string; accent: string; rays: string }> = {
     spring: { sky: 'linear-gradient(180deg, #d4eaf7 0%, #e8f2fa 40%, #f5f0e8 100%)', ground: 'linear-gradient(0deg, rgba(180,165,140,0.7) 0%, rgba(200,185,160,0.4) 40%, transparent 100%)', accent: 'rgba(140,200,160,0.06)', rays: 'rgba(255,250,240,0.15)' },
@@ -106,6 +139,43 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
 
       {/* Season accent */}
       <div className="absolute inset-0" style={{ zIndex: 3, background: c.accent, transition: 'background 4s ease' }} />
+
+      {/* === Time-of-day overlays === */}
+
+      {/* Night (20:00-5:00): dark blue + stars */}
+      {tod === 'night' && (
+        <>
+          <div className="absolute inset-0" style={{
+            zIndex: 4,
+            background: 'linear-gradient(180deg, rgba(10,15,35,0.65) 0%, rgba(15,20,45,0.55) 40%, rgba(20,30,50,0.45) 100%)',
+          }} />
+          <NightSky />
+          {/* Moon */}
+          <div className="absolute" style={{
+            top: '6%', right: '18%',
+            width: 'clamp(40px,6vw,80px)', height: 'clamp(40px,6vw,80px)',
+            background: 'radial-gradient(circle at 35% 35%, rgba(255,250,235,0.9) 0%, rgba(240,235,210,0.6) 30%, rgba(200,200,210,0.1) 60%, transparent 70%)',
+            borderRadius: '50%', zIndex: 4,
+            boxShadow: '0 0 40px rgba(200,200,220,0.3), 0 0 80px rgba(200,200,220,0.15)',
+          }} />
+        </>
+      )}
+
+      {/* Evening (17:00-20:00): warm golden hour */}
+      {tod === 'evening' && (
+        <div className="absolute inset-0" style={{
+          zIndex: 4,
+          background: 'linear-gradient(180deg, rgba(255,180,100,0.25) 0%, rgba(255,150,80,0.15) 30%, rgba(200,120,60,0.1) 60%, rgba(100,60,40,0.15) 100%)',
+        }} />
+      )}
+
+      {/* Morning (5:00-10:00): soft pink dawn */}
+      {tod === 'morning' && (
+        <div className="absolute inset-0" style={{
+          zIndex: 4,
+          background: 'linear-gradient(180deg, rgba(255,200,180,0.15) 0%, rgba(255,220,200,0.1) 30%, rgba(255,240,230,0.05) 60%, transparent 100%)',
+        }} />
+      )}
 
       {/* Subtle vignette */}
       <div className="absolute inset-0" style={{ zIndex: 5, background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.06) 100%)' }} />

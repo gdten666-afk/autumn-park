@@ -147,7 +147,20 @@ export default function PublicPath() {
 
       {/* Expanded photo modal */}
       {expanded && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center pointer-events-auto animate-fadeIn" onClick={() => setExpanded(null)}>
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center pointer-events-auto animate-fadeIn" onClick={() => setExpanded(null)}>
+          {/* Close */}
+          <button onClick={() => setExpanded(null)}
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          {/* Download */}
+          <button onClick={async () => {
+            try { const r = await fetch(`/api/photos/${expanded.id}?file=1`); const b = await r.blob(); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = expanded.filename || 'photo.jpg'; a.click(); URL.revokeObjectURL(u); } catch {}
+          }}
+            className="absolute top-4 right-16 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+            title="下载">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
           <div className="flex flex-col items-center max-w-4xl max-h-[92vh] p-6" onClick={e => e.stopPropagation()}>
             <div className="relative rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
               <img src={`/api/photos/${expanded.id}?file=1`} alt={expanded.caption || 'photo'} className="max-w-full max-h-[70vh] object-contain bg-black/40" />

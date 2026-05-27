@@ -1,4 +1,3 @@
-// components/space/CornerView.tsx
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -8,6 +7,11 @@ import ScenePicker from './ScenePicker';
 import PhotoWall from './PhotoWall';
 import type { Space } from '@/lib/types';
 
+interface SpaceWithProfile extends Space {
+  display_name?: string;
+  bio?: string;
+}
+
 interface CornerViewProps {
   userId: string;
   isOwner: boolean;
@@ -15,7 +19,10 @@ interface CornerViewProps {
 }
 
 export default function CornerView({ userId, isOwner, onExit }: CornerViewProps) {
-  const [space, setSpace] = useState<Space | null>(null);
+  const [space, setSpace] = useState<SpaceWithProfile | null>(null);
+  const [editingBio, setEditingBio] = useState(false);
+  const [bioValue, setBioValue] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetch(`/api/space/${userId}`)
@@ -33,6 +40,23 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
     if (data.ok) setSpace(data.data);
   }, []);
 
+  const saveBio = useCallback(async () => {
+    setSaving(true);
+    const res = await fetch('/api/user/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bio: bioValue }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      setSpace(prev => prev ? { ...prev, bio: bioValue.trim() } : prev);
+      setEditingBio(false);
+    }
+    setSaving(false);
+  }, [bioValue]);
+
+  const displayName = space?.display_name || space?.owner_name || '';
+
   if (!space) {
     return (
       <div className="fixed inset-0 z-30 bg-black flex items-center justify-center">
@@ -49,9 +73,11 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
             <button onClick={onExit} className="glass-btn shrink-0 text-xs !px-3 !py-1">
               ← 回到公园
             </button>
-            <div className="glass px-2 py-1 shrink-0 max-md:hidden">
+            <div className="glass px-3 py-1.5 shrink-0 max-md:hidden">
               <p className="text-white/40 text-xs">
-                <span className="text-white/60">{space.owner_name}</span> 的角落
+                {displayName && <span className="text-white/60">{displayName}</span>}
+                {!displayName && <span className="text-white/40">{space.owner_name}</span>}
+                <span className="text-white/25"> 的角落</span>
               </p>
             </div>
           </div>
@@ -63,6 +89,40 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
         </div>
 
         <div className="pt-16 h-full overflow-y-auto">
+          {/* Bio / Signature section */}
+          <div className="px-4 md:px-6 pb-2">
+            {isOwner && !editingBio && (
+              <div className="flex items-start gap-2">
+                <p className="text-white/25 text-xs italic leading-relaxed flex-1">
+                  {space.bio || '写一句签名，让路过的人了解你…'}
+                </p>
+                <button
+                  onClick={() => { setBioValue(space.bio || ''); setEditingBio(true); }}
+                  className="text-white/15 hover:text-white/40 text-[10px] flex-shrink-0 transition-colors"
+                >
+                  {space.bio ? '✎' : '+ 签名'}
+                </button>
+              </div>
+            )}
+            {isOwner && editingBio && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text" value={bioValue} onChange={e => setBioValue(e.target.value)}
+                  maxLength={120} autoFocus placeholder="写一句签名…"
+                  onKeyDown={e => { if (e.key === 'Enter') saveBio(); if (e.key === 'Escape') setEditingBio(false); }}
+                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white/70 placeholder:text-white/20 outline-none focus:border-white/20"
+                />
+                <button onClick={saveBio} disabled={saving}
+                  className="text-[10px] px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-white/60 transition-colors flex-shrink-0">
+                  {saving ? '…' : '保存'}
+                </button>
+              </div>
+            )}
+            {!isOwner && space.bio && (
+              <p className="text-white/25 text-xs italic leading-relaxed">{space.bio}</p>
+            )}
+          </div>
+
           <PhotoWall userId={userId} isOwner={isOwner} scene={space.scene} />
         </div>
       </SceneFrame>
