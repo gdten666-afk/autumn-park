@@ -2,26 +2,42 @@
 
 import { QUOTES } from '@/lib/constants';
 
+const ROTS = ['-2deg','1.2deg','-1.5deg','0.8deg','-0.5deg','1.8deg','-1deg','0.3deg'];
+const TINTS = [
+  'bg-amber-50/40', 'bg-rose-50/35', 'bg-sky-50/38', 'bg-stone-50/42',
+  'bg-teal-50/32', 'bg-yellow-50/36', 'bg-orange-50/34', 'bg-violet-50/30',
+];
+
 export default function Quotes() {
   return (
     <div className="relative w-full py-16 pointer-events-none" style={{ maxWidth: 'calc(100vw - 320px)', marginLeft: '4vw', zIndex: 15 }}>
       <div className="mb-6">
-        <h2 className="text-black/20 text-xs tracking-[0.2em] font-serif">文字角落</h2>
+        <h2 className="text-black/45 text-xs tracking-[0.2em] font-serif">文字角落</h2>
       </div>
-      <div className="columns-1 md:columns-2 gap-8 max-w-2xl">
-        {QUOTES.map((q, i) => (
-          <div key={i} className="break-inside-avoid mb-6 pointer-events-auto"
-            style={{
-              transform: `rotate(${['-1deg','0.5deg','-0.3deg','0.8deg'][i % 4]})`,
-            }}>
-            <p className="text-black/35 text-sm leading-relaxed font-serif italic mb-1.5">
-              「{q.text}」
-            </p>
-            <p className="text-black/15 text-[10px] tracking-wider">
-              —— {q.source}
-            </p>
-          </div>
-        ))}
+      <div className="flex flex-wrap gap-4 md:gap-5 max-w-3xl">
+        {QUOTES.map((q, i) => {
+          const rot = ROTS[i % ROTS.length];
+          const tint = TINTS[i % TINTS.length];
+          const mt = (i * 17) % 30 - 8;
+          return (
+            <div key={i} className="pointer-events-auto"
+              style={{
+                transform: `rotate(${rot})`,
+                marginTop: mt,
+                flexBasis: `clamp(180px, ${28 + (i % 3) * 6}vw, ${220 + (i % 3) * 30}px)`,
+                flexGrow: 1,
+              }}>
+              <div className={`${tint} backdrop-blur-sm border border-black/5 rounded-2xl p-4 shadow-sm`}>
+                <p className="text-black/55 text-sm leading-relaxed font-serif mb-2">
+                  「{q.text}」
+                </p>
+                <p className="text-black/35 text-[10px] tracking-wider">
+                  —— {q.source}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

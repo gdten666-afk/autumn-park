@@ -85,20 +85,20 @@ export default function ParkPage() {
             {/* Season badge */}
             <div className="glass-btn inline-flex items-center gap-2 mb-6 cursor-default">
               <span className="w-2 h-2 rounded-full bg-amber-400/70 animate-breathe" />
-              <span className="text-black/30 text-xs tracking-wider">
+              <span className="text-black/50 text-xs tracking-wider">
                 {SEASON_NAME[seasonState.season]} · 四季公园
               </span>
             </div>
 
             {/* Subtitle */}
-            <p className="text-black/25 text-sm leading-relaxed max-w-xs mb-8" style={{ lineHeight: '1.8' }}>
+            <p className="text-black/50 text-sm leading-relaxed max-w-xs mb-8" style={{ lineHeight: '1.8' }}>
               一个随四季流转的数字公园，
               <br />每个人在这里都有自己的角落。
             </p>
 
             {/* CTA hint */}
-            <div className="flex items-center gap-3 text-black/15 text-xs">
-              <span className="w-8 h-px bg-black/10" />
+            <div className="flex items-center gap-3 text-black/40 text-xs">
+              <span className="w-8 h-px bg-black/20" />
               向下漫步，探索公园
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function ParkPage() {
             <div className="w-5 h-8 rounded-full border border-black/10 flex items-start justify-center p-1">
               <div className="w-1 h-2 rounded-full bg-black/15 animate-bounce" style={{animationDuration: '1.5s'}} />
             </div>
-            <p className="text-black/15 text-[10px] tracking-[0.3em]">向下漫步</p>
+            <p className="text-black/35 text-[10px] tracking-[0.3em]">向下漫步</p>
           </div>
         </div>
 
