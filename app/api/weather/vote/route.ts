@@ -14,7 +14,7 @@ export async function GET() {
   const session = await getSession();
 
   const todayWeather = await getOrComputeDailyWeather(today);
-  const tomorrowWeather = await getOrComputeDailyWeather(tomorrow);
+  const tomorrowWeather = await getOrComputeDailyWeather(tomorrow, todayWeather);
 
   const voteRows = await dbAll(
     'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
@@ -56,12 +56,13 @@ export async function POST(req: NextRequest) {
     }
 
     const date = getTomorrowDate();
+    const todayWeather = await getOrComputeDailyWeather(getTodayDate());
 
     await dbRun(
       'INSERT INTO weather_votes (user_id, date, vote) VALUES (?, ?, ?) ON CONFLICT(user_id, date) DO UPDATE SET vote = excluded.vote',
       [session.userId, date, vote]
     );
-    await recomputeDailyWeather(date);
+    await recomputeDailyWeather(date, todayWeather);
 
     return NextResponse.json({ ok: true, data: { date, vote } } satisfies ApiResponse<{ date: string; vote: Weather }>);
   } catch (err: any) {

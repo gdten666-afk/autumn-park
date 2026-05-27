@@ -14,27 +14,27 @@ export function getTomorrowDate(): string {
   return d.toISOString().slice(0, 10);
 }
 
-function countWinner(votes: any[]): Weather {
-  if (votes.length === 0) return 'sunny';
+function countWinner(votes: any[], fallback: Weather): Weather {
+  if (votes.length === 0) return fallback;
   const maxCnt = votes[0].cnt;
   const topVotes = votes.filter((v: any) => v.cnt === maxCnt).map((v: any) => v.vote);
-  return WEATHER_PRIORITY.find(w => topVotes.includes(w)) || 'sunny';
+  return WEATHER_PRIORITY.find(w => topVotes.includes(w)) || fallback;
 }
 
-export async function getOrComputeDailyWeather(date: string): Promise<Weather> {
+export async function getOrComputeDailyWeather(date: string, fallback: Weather = 'sunny'): Promise<Weather> {
   const existing = await dbGet('SELECT weather FROM daily_weather WHERE date = ?', [date]);
   if (existing) return existing.weather as Weather;
 
   const votes = await dbAll('SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC', [date]);
-  const weather = countWinner(votes);
+  const weather = countWinner(votes, fallback);
 
   await dbRun('INSERT OR IGNORE INTO daily_weather (date, weather) VALUES (?, ?)', [date, weather]);
   return weather;
 }
 
-export async function recomputeDailyWeather(date: string): Promise<Weather> {
+export async function recomputeDailyWeather(date: string, fallback: Weather = 'sunny'): Promise<Weather> {
   const votes = await dbAll('SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC', [date]);
-  const weather = countWinner(votes);
+  const weather = countWinner(votes, fallback);
   await dbRun('INSERT OR REPLACE INTO daily_weather (date, weather) VALUES (?, ?)', [date, weather]);
   return weather;
 }

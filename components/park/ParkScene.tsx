@@ -20,7 +20,102 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
       {/* Sky */}
       <div className="absolute inset-0" style={{ background: c.sky, zIndex: 0 }} />
 
-      {/* Subtle atmosphere */}
+      {/* Sunny: bright warm glow + sun */}
+      {weather === 'sunny' && (
+        <>
+          <div className="absolute" style={{
+            top: '5%', left: '55%',
+            width: 'clamp(120px, 20vw, 280px)', height: 'clamp(120px, 20vw, 280px)',
+            background: 'radial-gradient(circle, rgba(255,240,200,0.7) 0%, rgba(255,220,150,0.3) 30%, rgba(255,200,100,0.05) 60%, transparent 75%)',
+            borderRadius: '50%', zIndex: 2,
+            animation: 'sunPulse 8s ease-in-out infinite',
+          }} />
+          <div className="absolute inset-0" style={{
+            zIndex: 3,
+            background: 'linear-gradient(180deg, rgba(255,240,210,0.25) 0%, rgba(255,250,240,0.1) 40%, transparent 70%)',
+          }} />
+          {/* Light rays */}
+          <div className="absolute inset-0" style={{
+            zIndex: 4,
+            background: `radial-gradient(ellipse 60% 40% at 55% 5%, rgba(255,250,220,0.4) 0%, transparent 55%)`,
+            animation: 'godRays 12s ease-in-out infinite',
+          }} />
+        </>
+      )}
+
+      {/* Cloudy: grey cast, muted light */}
+      {weather === 'cloudy' && (
+        <>
+          <div className="absolute inset-0" style={{
+            zIndex: 3,
+            background: 'linear-gradient(180deg, rgba(180,180,190,0.35) 0%, rgba(200,200,210,0.25) 40%, rgba(220,220,225,0.15) 100%)',
+          }} />
+          <div className="absolute inset-0" style={{
+            zIndex: 4,
+            background: 'radial-gradient(ellipse 70% 30% at 40% 10%, rgba(220,220,230,0.3) 0%, transparent 60%)',
+            animation: 'cloudDrift 20s ease-in-out infinite',
+          }} />
+        </>
+      )}
+
+      {/* Rain: dark + blue-grey overlay */}
+      {(weather === 'light-rain' || weather === 'heavy-rain') && (
+        <>
+          <div className="absolute inset-0" style={{
+            zIndex: 3,
+            background: weather === 'heavy-rain'
+              ? 'linear-gradient(180deg, rgba(40,50,70,0.5) 0%, rgba(50,60,80,0.45) 50%, rgba(60,70,90,0.4) 100%)'
+              : 'linear-gradient(180deg, rgba(60,70,90,0.3) 0%, rgba(80,90,110,0.25) 50%, rgba(100,110,120,0.2) 100%)',
+          }} />
+          {/* Rain streaks layer — CSS animated */}
+          <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 4 }}>
+            <div style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: `repeating-linear-gradient(
+                5deg,
+                transparent,
+                transparent 2px,
+                rgba(180,200,220,0.25) 2px,
+                rgba(180,200,220,0.25) 3px
+              )`,
+              backgroundSize: weather === 'heavy-rain' ? '100% 20px' : '100% 35px',
+              animation: `rainFall ${weather === 'heavy-rain' ? '0.4s' : '0.7s'} linear infinite`,
+            }} />
+          </div>
+        </>
+      )}
+
+      {/* Snow: white frost overlay */}
+      {weather === 'snow' && (
+        <>
+          <div className="absolute inset-0" style={{
+            zIndex: 3,
+            background: 'linear-gradient(180deg, rgba(220,225,235,0.35) 0%, rgba(235,240,248,0.3) 50%, rgba(245,248,252,0.25) 100%)',
+          }} />
+          <div className="absolute inset-0" style={{
+            zIndex: 4,
+            background: 'radial-gradient(ellipse 50% 20% at 50% 5%, rgba(255,255,255,0.4) 0%, transparent 60%)',
+          }} />
+        </>
+      )}
+
+      {/* Fog: heavy white mist + blur */}
+      {weather === 'fog' && (
+        <>
+          <div className="absolute inset-0" style={{
+            zIndex: 3,
+            background: 'linear-gradient(180deg, rgba(210,215,220,0.45) 0%, rgba(220,225,230,0.4) 50%, rgba(230,235,240,0.35) 100%)',
+            backdropFilter: 'blur(4px)',
+          }} />
+          <div className="absolute inset-0" style={{
+            zIndex: 4,
+            background: 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(240,242,245,0.5) 0%, transparent 70%)',
+            animation: 'fogDrift 16s ease-in-out infinite',
+          }} />
+        </>
+      )}
+
+      {/* Subtle atmosphere texture */}
       <div className="absolute inset-0" style={{ zIndex: 1, opacity: 0.06, background: 'url(/assets/scene/misty-trees.jpg) center/cover no-repeat', filter: 'brightness(1.5) blur(1px)' }} />
 
       {/* Ground */}
@@ -29,16 +124,8 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
       {/* Season accent */}
       <div className="absolute inset-0" style={{ zIndex: 3, background: c.accent, transition: 'background 4s ease' }} />
 
-      {/* Light rays */}
-      <div className="absolute inset-0" style={{ zIndex: 4, background: `radial-gradient(ellipse 50% 30% at 45% 5%, ${c.rays} 0%, transparent 55%)`, animation: 'godRays 18s ease-in-out infinite' }} />
-
       {/* Subtle vignette */}
-      <div className="absolute inset-0" style={{ zIndex: 5, background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.08) 100%)' }} />
-
-      {/* Weather */}
-      {weather === 'fog' && <div className="absolute inset-0 bg-white/30 backdrop-blur-[2px] z-10" />}
-      {weather === 'light-rain' && <div className="absolute inset-0 bg-white/15 z-10" />}
-      {weather === 'heavy-rain' && <div className="absolute inset-0 bg-white/25 z-10" />}
+      <div className="absolute inset-0" style={{ zIndex: 5, background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.06) 100%)' }} />
     </div>
   );
 }
