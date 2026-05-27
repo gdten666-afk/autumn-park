@@ -12,7 +12,7 @@ interface ScenePickerProps {
 
 export default function ScenePicker({ current, onSelect, isOwner }: ScenePickerProps) {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-1 max-md:gap-0.5 flex-wrap">
       {SCENES.map(s => (
         <button
           key={s.value}

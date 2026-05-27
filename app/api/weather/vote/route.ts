@@ -1,10 +1,50 @@
 // app/api/weather/vote/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { requireSession } from '@/lib/auth';
-import { getTomorrowDate, castVote } from '@/lib/weather';
+import { ensureTables, dbAll, dbGet, dbRun } from '@/lib/db';
+import { getSession, requireSession } from '@/lib/auth';
+import { getTodayDate, getTomorrowDate, getOrComputeDailyWeather, recomputeDailyWeather } from '@/lib/weather';
 import type { ApiResponse, Weather } from '@/lib/types';
 
 const VALID_VOTES: Weather[] = ['sunny', 'cloudy', 'light-rain', 'heavy-rain', 'fog', 'snow'];
+
+export async function GET() {
+  await ensureTables();
+  const today = getTodayDate();
+  const tomorrow = getTomorrowDate();
+  const session = await getSession();
+
+  const todayWeather = await getOrComputeDailyWeather(today);
+  const tomorrowWeather = await getOrComputeDailyWeather(tomorrow);
+
+  const voteRows = await dbAll(
+    'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
+    [tomorrow]
+  );
+
+  // Build vote counts map
+  const voteCounts: Record<string, number> = {};
+  for (const vw of VALID_VOTES) voteCounts[vw] = 0;
+  for (const row of voteRows) voteCounts[row.vote] = row.cnt;
+
+  // Check current user's vote
+  let userVote: string | null = null;
+  if (session) {
+    const uv = await dbGet('SELECT vote FROM weather_votes WHERE user_id = ? AND date = ?', [session.userId, tomorrow]);
+    userVote = uv?.vote || null;
+  }
+
+  return NextResponse.json({
+    ok: true,
+    data: {
+      today: todayWeather,
+      tomorrow: tomorrowWeather,
+      voteDate: tomorrow,
+      voteCounts,
+      totalVotes: Object.values(voteCounts).reduce((a: number, b: number) => a + b, 0),
+      userVote,
+    },
+  } satisfies ApiResponse);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,7 +56,12 @@ export async function POST(req: NextRequest) {
     }
 
     const date = getTomorrowDate();
-    await castVote(session.userId, date, vote);
+
+    await dbRun(
+      'INSERT INTO weather_votes (user_id, date, vote) VALUES (?, ?, ?) ON CONFLICT(user_id, date) DO UPDATE SET vote = excluded.vote',
+      [session.userId, date, vote]
+    );
+    await recomputeDailyWeather(date);
 
     return NextResponse.json({ ok: true, data: { date, vote } } satisfies ApiResponse<{ date: string; vote: Weather }>);
   } catch (err: any) {

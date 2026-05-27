@@ -9,7 +9,7 @@ interface WeatherLayerProps {
 
 export default function WeatherLayer({ weather }: WeatherLayerProps) {
   return (
-    <div className="fixed inset-0 pointer-events-none z-5">
+    <div className="fixed inset-0 pointer-events-none z-[5]">
       {weather === 'sunny' && (
         <>
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-200/5 rounded-full blur-3xl" />

@@ -12,7 +12,7 @@ interface WeatherPickerProps {
 
 export default function WeatherPicker({ current, onSelect, isOwner }: WeatherPickerProps) {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-1 max-md:gap-0.5 flex-wrap">
       {WEATHERS.map(w => (
         <button
           key={w.value}
