@@ -123,6 +123,24 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
           </button>
         </section>
 
+        {/* Clean broken photos */}
+        <section className="mb-6">
+          <h3 className="text-white/60 text-sm mb-3">清理失效照片</h3>
+          <p className="text-white/20 text-[10px] mb-2">删除图片数据丢失的照片记录（data=NULL），清理后需重新上传</p>
+          <button
+            onClick={async () => {
+              if (!confirm('确定要清理所有失效照片吗？这些照片需要重新上传！')) return;
+              const res = await fetch('/api/admin/photos?broken=1', { method: 'DELETE' });
+              const data = await res.json();
+              if (data.ok) alert(data.data?.message || `已清理 ${data.data?.deleted || 0} 张`);
+              else alert('清理失败');
+            }}
+            className="px-4 py-2 bg-orange-500/20 hover:bg-orange-500/30 rounded text-sm text-orange-300/80 transition-colors"
+          >
+            清理失效照片
+          </button>
+        </section>
+
         {/* Delete all photos */}
         <section className="mb-6">
           <h3 className="text-white/60 text-sm mb-3">清空所有照片</h3>

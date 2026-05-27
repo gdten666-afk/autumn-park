@@ -7,11 +7,23 @@ import fs from 'fs';
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
 
-// DELETE all photos
-export async function DELETE() {
+// DELETE all photos (or only broken ones with ?broken=1)
+export async function DELETE(req: NextRequest) {
   try {
     await ensureTables();
     await requireOperator();
+    const url = new URL(req.url);
+    const brokenOnly = url.searchParams.get('broken') === '1';
+
+    if (brokenOnly) {
+      const photos = await dbAll('SELECT id, filename FROM photos WHERE data IS NULL');
+      for (const p of photos) {
+        try { const fp = path.join(UPLOAD_DIR, p.filename); if (fs.existsSync(fp)) fs.unlinkSync(fp); } catch {}
+      }
+      await dbRun('DELETE FROM photos WHERE data IS NULL');
+      return NextResponse.json({ ok: true, data: { deleted: photos.length, message: `已清理 ${photos.length} 张失效照片` } });
+    }
+
     const photos = await dbAll('SELECT filename FROM photos');
     for (const p of photos) {
       try { const fp = path.join(UPLOAD_DIR, p.filename); if (fs.existsSync(fp)) fs.unlinkSync(fp); } catch {}
