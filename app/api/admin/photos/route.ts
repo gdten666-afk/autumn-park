@@ -34,9 +34,9 @@ export async function POST(req: NextRequest) {
 
     const BATCH_SIZE = 5;
 
-    // Count remaining
+    // Only process photos with BLOB data (disk-only photos with NULL data can't be recovered)
     const [remaining] = await dbAll(
-      'SELECT COUNT(*) as cnt FROM photos WHERE thumb_data IS NULL OR data IS NULL'
+      'SELECT COUNT(*) as cnt FROM photos WHERE data IS NOT NULL AND thumb_data IS NULL'
     );
 
     if (remaining.cnt === 0) {
@@ -45,34 +45,23 @@ export async function POST(req: NextRequest) {
 
     // Fetch one batch
     const photos = await dbAll(
-      'SELECT id, filename, data, thumb_data FROM photos WHERE thumb_data IS NULL OR data IS NULL LIMIT ?',
+      'SELECT id, data FROM photos WHERE data IS NOT NULL AND thumb_data IS NULL LIMIT ?',
       [BATCH_SIZE]
     );
 
     const errors: string[] = [];
     let ok = 0;
 
-    // Process in parallel (max 5 images at once since batch is 5)
+    // Process in parallel (max 5 at once)
     const results = await Promise.all(
       photos.map(async (p: any) => {
         try {
-          let buf: Buffer | null = null;
-          if (p.data) {
-            buf = toBuffer(p.data);
-          } else {
-            const fp = path.join(UPLOAD_DIR, p.filename);
-            if (fs.existsSync(fp)) buf = fs.readFileSync(fp);
-          }
-          if (!buf) return { id: p.id, error: 'no image source' };
-
+          const buf = toBuffer(p.data);
           const thumb = await sharp(buf)
             .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
             .jpeg({ quality: 70 })
             .toBuffer();
-
-          if (!p.data) await dbRun('UPDATE photos SET data = ?, thumb_data = ? WHERE id = ?', [buf, thumb, p.id]);
-          else await dbRun('UPDATE photos SET thumb_data = ? WHERE id = ?', [thumb, p.id]);
-
+          await dbRun('UPDATE photos SET thumb_data = ? WHERE id = ?', [thumb, p.id]);
           return { id: p.id, ok: true };
         } catch (e: any) {
           return { id: p.id, error: e.message };
