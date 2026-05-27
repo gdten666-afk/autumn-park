@@ -60,18 +60,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     }
 
-    // Thumbnail: try DB first, then disk fallback
-    if (isThumb && photo.thumb_data) {
-      const buf = Buffer.isBuffer(photo.thumb_data) ? photo.thumb_data : Buffer.from(photo.thumb_data);
-      return new NextResponse(buf, { headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=31536000, immutable' } });
-    }
-
-    // Full image from DB BLOB
-    if (isFile && photo.data) {
+    // Serve from DB: thumbnail first, fall back to full image
+    const serveData = (isThumb && photo.thumb_data) ? photo.thumb_data : photo.data;
+    if (serveData) {
+      const isJpeg = isThumb || photo.filename.endsWith('.jpg') || photo.filename.endsWith('.jpeg');
       const ext = photo.filename.split('.').pop();
-      const contentType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
-      const buf = Buffer.isBuffer(photo.data) ? photo.data : Buffer.from(photo.data);
-      return new NextResponse(buf, { headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400' } });
+      const contentType = isJpeg ? 'image/jpeg' : ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+      const buf = Buffer.isBuffer(serveData) ? serveData : Buffer.from(serveData);
+      const cache = isThumb && photo.thumb_data ? 'public, max-age=31536000, immutable' : 'public, max-age=86400';
+      return new NextResponse(buf, { headers: { 'Content-Type': contentType, 'Cache-Control': cache } });
     }
 
     // Disk fallback for old photos

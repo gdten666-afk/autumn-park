@@ -32,12 +32,14 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
     if (useInviteLogin) {
       if (!loginName.trim() || !loginInviteCode.trim()) { setError('请填写名字和邀请码'); return; }
       setLoading(true);
-      const res = await fetch('/api/auth/login', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: loginName.trim(), inviteCode: loginInviteCode.trim() }),
-      });
-      const data = await res.json();
-      if (data.ok) onLogin(data.data); else setError(data.error || '登录失败');
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: loginName.trim(), inviteCode: loginInviteCode.trim() }),
+        });
+        const data = await res.json();
+        if (data.ok) onLogin(data.data); else setError(data.error || '登录失败');
+      } catch { setError('网络错误，请稍后重试'); }
       setLoading(false);
       return;
     }
@@ -46,13 +48,14 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
       return;
     }
     setLoading(true);
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: loginName.trim(), password: loginPassword }),
-    });
-    const data = await res.json();
-    if (data.ok) onLogin(data.data); else setError(data.error || '登录失败');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: loginName.trim(), password: loginPassword }),
+      });
+      const data = await res.json();
+      if (data.ok) onLogin(data.data); else setError(data.error || '登录失败');
+    } catch { setError('网络错误，请稍后重试'); }
     setLoading(false);
   };
 
@@ -71,19 +74,15 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
     }
     setLoading(true);
     setError('');
-
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: regName.trim(), inviteCode: regInviteCode.trim(), password: regPassword }),
-    });
-    const data = await res.json();
-
-    if (data.ok) {
-      onLogin(data.data);
-    } else {
-      setError(data.error || '注册失败');
-    }
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: regName.trim(), inviteCode: regInviteCode.trim(), password: regPassword }),
+      });
+      const data = await res.json();
+      if (data.ok) onLogin(data.data); else setError(data.error || '注册失败');
+    } catch { setError('网络错误，请稍后重试'); }
     setLoading(false);
   };
 
