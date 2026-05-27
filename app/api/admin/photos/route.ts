@@ -32,77 +32,69 @@ export async function POST(req: NextRequest) {
     await ensureTables();
     await requireOperator();
 
-    const photos = await dbAll(
-      'SELECT id, filename, data, thumb_data FROM photos WHERE thumb_data IS NULL OR data IS NULL'
+    const BATCH_SIZE = 5;
+
+    // Count remaining
+    const [remaining] = await dbAll(
+      'SELECT COUNT(*) as cnt FROM photos WHERE thumb_data IS NULL OR data IS NULL'
     );
 
-    if (photos.length === 0) {
-      return NextResponse.json({ ok: true, data: { total: 0, message: '所有照片已有缩略图' } });
+    if (remaining.cnt === 0) {
+      return NextResponse.json({ ok: true, data: { done: true, message: '所有照片已完成' } });
     }
 
-    // Phase 1: resolve all image buffers (parallel disk reads)
-    const resolved: { id: string; buf: Buffer; needData: boolean }[] = [];
+    // Fetch one batch
+    const photos = await dbAll(
+      'SELECT id, filename, data, thumb_data FROM photos WHERE thumb_data IS NULL OR data IS NULL LIMIT ?',
+      [BATCH_SIZE]
+    );
+
     const errors: string[] = [];
-    for (const p of photos) {
-      try {
-        let buf: Buffer | null = null;
-        if (p.data) {
-          buf = toBuffer(p.data);
-        } else {
-          const fp = path.join(UPLOAD_DIR, p.filename);
-          if (fs.existsSync(fp)) buf = fs.readFileSync(fp);
-        }
-        if (!buf) { errors.push(`${p.filename}: no source`); continue; }
-        resolved.push({ id: p.id, buf, needData: !p.data });
-      } catch (e: any) {
-        errors.push(`${p.filename}: ${e.message}`);
-      }
-    }
+    let ok = 0;
 
-    // Phase 2: generate thumbnails in parallel (CPU-bound, concurrency=6)
-    const CONCURRENCY = 6;
-    const results: { id: string; thumb: Buffer; needData: boolean; buf: Buffer; error?: string }[] = [];
-    for (let i = 0; i < resolved.length; i += CONCURRENCY) {
-      const batch = resolved.slice(i, i + CONCURRENCY);
-      const batchResults = await Promise.all(
-        batch.map(async ({ id, buf, needData }) => {
-          try {
-            const thumb = await sharp(buf)
-              .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
-              .jpeg({ quality: 70 })
-              .toBuffer();
-            return { id, thumb, needData, buf };
-          } catch (e: any) {
-            return { id, thumb: null as any, needData, buf, error: e.message };
-          }
-        })
-      );
-      results.push(...batchResults);
-    }
-
-    // Phase 3: write all results to DB (batch per 10 to avoid huge transactions)
-    let ok = 0, failed = 0;
-    for (let i = 0; i < results.length; i += 10) {
-      const batch = results.slice(i, i + 10);
-      const writes = batch.map(async ({ id, thumb, needData, buf, error }) => {
-        if (error) { failed++; errors.push(`${id}: ${error}`); return; }
+    // Process in parallel (max 5 images at once since batch is 5)
+    const results = await Promise.all(
+      photos.map(async (p: any) => {
         try {
-          if (needData) await dbRun('UPDATE photos SET data = ?, thumb_data = ? WHERE id = ?', [buf, thumb, id]);
-          else await dbRun('UPDATE photos SET thumb_data = ? WHERE id = ?', [thumb, id]);
-          ok++;
-        } catch (e: any) { failed++; errors.push(`${id}: ${e.message}`); }
-      });
-      await Promise.all(writes);
+          let buf: Buffer | null = null;
+          if (p.data) {
+            buf = toBuffer(p.data);
+          } else {
+            const fp = path.join(UPLOAD_DIR, p.filename);
+            if (fs.existsSync(fp)) buf = fs.readFileSync(fp);
+          }
+          if (!buf) return { id: p.id, error: 'no image source' };
+
+          const thumb = await sharp(buf)
+            .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 70 })
+            .toBuffer();
+
+          if (!p.data) await dbRun('UPDATE photos SET data = ?, thumb_data = ? WHERE id = ?', [buf, thumb, p.id]);
+          else await dbRun('UPDATE photos SET thumb_data = ? WHERE id = ?', [thumb, p.id]);
+
+          return { id: p.id, ok: true };
+        } catch (e: any) {
+          return { id: p.id, error: e.message };
+        }
+      })
+    );
+
+    for (const r of results) {
+      if ('ok' in r && r.ok) ok++;
+      else if ('error' in r) errors.push(`${(r.id || '').slice(0, 20)}: ${r.error}`);
     }
+
+    const left = remaining.cnt - photos.length;
 
     return NextResponse.json({
       ok: true,
       data: {
-        total: photos.length,
-        ok,
-        failed,
-        errors: errors.slice(0, 5),
-        message: `成功: ${ok}, 失败: ${failed}${errors.length ? ' — ' + errors[0] : ''}`,
+        done: left <= 0,
+        batch: ok,
+        remaining: Math.max(0, left),
+        errors: errors.slice(0, 3),
+        message: `本批: ${ok}/${photos.length}  剩余: ${Math.max(0, left)} 张`,
       },
     });
   } catch (err: any) {

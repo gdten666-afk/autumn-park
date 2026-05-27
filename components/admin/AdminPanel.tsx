@@ -95,20 +95,25 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
         {/* Generate thumbnails */}
         <section className="mb-6">
           <h3 className="text-white/60 text-sm mb-3">生成缩略图</h3>
-          <p className="text-white/20 text-[10px] mb-2">为没有缩略图的旧照片生成缩略图，加速公园加载</p>
+          <p className="text-white/20 text-[10px] mb-2">分批处理，每批5张，自动循环直到全部完成</p>
           <button
             onClick={async () => {
               const btn = document.activeElement as HTMLButtonElement;
               btn.disabled = true;
-              btn.textContent = '生成中...';
-              const res = await fetch('/api/admin/photos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}),
-              });
-              const data = await res.json();
-              if (data.ok) alert(data.data?.message || `处理 ${data.data?.total || 0} 张`);
-              else alert('失败: ' + (data.error || '未知错误'));
+              let totalDone = 0;
+              for (let round = 0; round < 20; round++) {
+                btn.textContent = `生成中... ${totalDone} 张`;
+                const res = await fetch('/api/admin/photos', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({}),
+                });
+                const data = await res.json();
+                if (!data.ok) { alert('失败: ' + (data.error || '未知错误')); break; }
+                totalDone += data.data?.batch || 0;
+                if (data.data?.done) { alert(`全部完成！共生成 ${totalDone} 张缩略图`); break; }
+                if (data.data?.remaining === 0) { alert(`完成！${totalDone} 张`); break; }
+              }
               btn.disabled = false;
               btn.textContent = '重新生成所有缩略图';
             }}
