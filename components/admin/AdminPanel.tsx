@@ -92,6 +92,32 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
           )}
         </section>
 
+        {/* Generate thumbnails */}
+        <section className="mb-6">
+          <h3 className="text-white/60 text-sm mb-3">生成缩略图</h3>
+          <p className="text-white/20 text-[10px] mb-2">为没有缩略图的旧照片生成缩略图，加速公园加载</p>
+          <button
+            onClick={async () => {
+              const btn = document.activeElement as HTMLButtonElement;
+              btn.disabled = true;
+              btn.textContent = '生成中...';
+              const res = await fetch('/api/admin/photos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({}),
+              });
+              const data = await res.json();
+              if (data.ok) alert(`已生成 ${data.data?.regenerated || 0} / ${data.data?.total || 0} 张缩略图`);
+              else alert('生成失败');
+              btn.disabled = false;
+              btn.textContent = '重新生成所有缩略图';
+            }}
+            className="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 rounded text-sm text-amber-300/80 transition-colors"
+          >
+            重新生成所有缩略图
+          </button>
+        </section>
+
         {/* Delete all photos */}
         <section className="mb-6">
           <h3 className="text-white/60 text-sm mb-3">清空所有照片</h3>
