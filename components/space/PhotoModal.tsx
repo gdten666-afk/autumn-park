@@ -142,10 +142,10 @@ export default function PhotoModal({
             style={{ transform: `scale(${zoom})`, filter: 'blur(20px) scale(1.1)', opacity: 0.6 }}
             draggable={false}
           />
-          {/* Full image loads progressively, replaces blurred thumb */}
+          {/* Full image with medium size (1200px) — faster than original */}
           <img
             ref={imageRef}
-            src={`/api/photos/${photo.id}?file=1`}
+            src={`/api/photos/${photo.id}?medium=1`}
             alt={photo.caption || 'photo'}
             className="relative max-w-full max-h-[70vh] object-contain transition-opacity duration-500"
             style={{ transform: `scale(${zoom})`, cursor: zoom > 1 ? 'grab' : 'default', opacity: 1 }}

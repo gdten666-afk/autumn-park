@@ -163,7 +163,7 @@ export default function PublicPath() {
           </button>
           <div className="flex flex-col items-center max-w-4xl max-h-[92vh] p-6" onClick={e => e.stopPropagation()}>
             <div className="relative rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-              <img src={`/api/photos/${expanded.id}?file=1`} alt={expanded.caption || 'photo'} className="max-w-full max-h-[70vh] object-contain bg-black/40" />
+              <img src={`/api/photos/${expanded.id}?medium=1`} alt={expanded.caption || 'photo'} className="max-w-full max-h-[70vh] object-contain bg-black/40" />
             </div>
             <div className="mt-4 text-center">
               {expanded.caption && <p className="text-white/90 text-lg font-serif mb-1">{expanded.caption}</p>}

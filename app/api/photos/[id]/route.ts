@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureTables, dbGet, dbRun } from '@/lib/db';
 import { requireSession, getSession } from '@/lib/auth';
+import { fullImageCache, thumbCache } from '@/lib/cache';
+import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
 
@@ -42,14 +44,57 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   }
 }
 
+function toBuf(data: any) {
+  return Buffer.isBuffer(data) ? data : Buffer.from(data as ArrayBuffer);
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await ensureTables();
   const { id } = await params;
   const url = new URL(req.url);
   const isFile = url.searchParams.get('file') === '1';
   const isThumb = url.searchParams.get('thumb') === '1';
-  if (isFile || isThumb) {
-    const photo = await dbGet('SELECT filename, data, thumb_data, is_public, user_id FROM photos WHERE id = ?', [id]);
+  const isMedium = url.searchParams.get('medium') === '1';
+  const cacheKey = `${id}:${isThumb ? 'thumb' : isMedium ? 'medium' : 'full'}`;
+
+  if (isFile || isThumb || isMedium) {
+    // --- ETag check ---
+    const etag = `"${cacheKey}"`;
+    if (req.headers.get('if-none-match') === etag) {
+      return new NextResponse(null, { status: 304 });
+    }
+
+    // --- Memory cache hit ---
+    if (isThumb) {
+      const cached = thumbCache.get(cacheKey);
+      if (cached) {
+        return new NextResponse(cached as any, {
+          headers: {
+            'Content-Type': 'image/jpeg',
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'ETag': etag,
+          },
+        });
+      }
+    }
+    if (isFile || isMedium) {
+      const cached = fullImageCache.get(cacheKey);
+      if (cached) {
+        const ext = cacheKey.includes(':') ? 'jpeg' : 'jpeg';
+        return new NextResponse(cached as any, {
+          headers: {
+            'Content-Type': 'image/jpeg',
+            'Cache-Control': 'public, max-age=86400',
+            'ETag': etag,
+          },
+        });
+      }
+    }
+
+    // --- Fetch from DB ---
+    const photo = await dbGet(
+      'SELECT filename, data, thumb_data, is_public, user_id FROM photos WHERE id = ?', [id]
+    );
     if (!photo) return new NextResponse('Not found', { status: 404 });
 
     // Permission check
@@ -60,32 +105,58 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     }
 
-    // Serve from DB: thumbnail first, fall back to full image
-    const serveData = (isThumb && photo.thumb_data) ? photo.thumb_data : photo.data;
-    if (serveData) {
-      const isJpeg = isThumb || photo.filename.endsWith('.jpg') || photo.filename.endsWith('.jpeg');
-      const ext = photo.filename.split('.').pop();
-      const contentType = isJpeg ? 'image/jpeg' : ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
-      const buf = Buffer.isBuffer(serveData) ? serveData : Buffer.from(serveData);
-      const cache = isThumb && photo.thumb_data ? 'public, max-age=31536000, immutable' : 'public, max-age=86400';
-      return new NextResponse(buf, { headers: { 'Content-Type': contentType, 'Cache-Control': cache } });
+    // Resolve source buffer
+    let buf: Buffer | null = null;
+    let isJpeg = true;
+
+    if (isThumb && photo.thumb_data) {
+      buf = toBuf(photo.thumb_data);
+      thumbCache.set(cacheKey, buf, buf.length);
+    } else if ((isFile || isMedium) && photo.data) {
+      buf = toBuf(photo.data);
+      // For medium size, resize to 1200px
+      if (isMedium && buf.length > 200 * 1024) {
+        try {
+          const resized = await sharp(buf)
+            .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 82, progressive: true })
+            .toBuffer();
+          buf = Buffer.from(resized.buffer);
+        } catch { /* keep original */ }
+      }
+      if (buf.length < 50 * 1024 * 1024) {
+        fullImageCache.set(cacheKey, buf, buf.length);
+      }
+    } else {
+      // Disk fallback
+      const fp = path.join(UPLOAD_DIR, photo.filename);
+      if (!fs.existsSync(fp)) return new NextResponse('File missing', { status: 404 });
+      buf = fs.readFileSync(fp);
+      isJpeg = photo.filename.endsWith('.jpg') || photo.filename.endsWith('.jpeg');
     }
 
-    // Disk fallback for old photos
-    let serveFilename = photo.filename;
-    if (isThumb) {
-      const thumbName = `thumb_${photo.filename}`;
-      const thumbPath = path.join(UPLOAD_DIR, thumbName);
-      if (fs.existsSync(thumbPath)) serveFilename = thumbName;
-    }
-    const filePath = path.join(UPLOAD_DIR, serveFilename);
-    if (!fs.existsSync(filePath)) return new NextResponse('File missing', { status: 404 });
-    const buffer = fs.readFileSync(filePath);
-    const ext = serveFilename.split('.').pop();
-    const contentType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
-    return new NextResponse(buffer, { headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400' } });
+    if (!buf) return new NextResponse('File missing', { status: 404 });
+
+    const ext = photo.filename.split('.').pop();
+    const contentType = isJpeg ? 'image/jpeg' : ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+    const cacheHeader = isThumb
+      ? 'public, max-age=31536000, immutable'
+      : 'public, max-age=86400';
+
+    return new NextResponse(buf as any, {
+      headers: {
+        'Content-Type': contentType,
+        'Cache-Control': cacheHeader,
+        'ETag': etag,
+      },
+    });
   }
-  const photo = await dbGet('SELECT photos.id, photos.user_id, photos.filename, photos.caption, photos.is_public, photos.created_at, users.name as author_name FROM photos JOIN users ON photos.user_id = users.id WHERE photos.id = ?', [id]);
+
+  // JSON metadata response
+  const photo = await dbGet(
+    'SELECT photos.id, photos.user_id, photos.filename, photos.caption, photos.is_public, photos.created_at, users.name as author_name FROM photos JOIN users ON photos.user_id = users.id WHERE photos.id = ?',
+    [id]
+  );
   if (!photo) return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
   return NextResponse.json({ ok: true, data: photo });
 }

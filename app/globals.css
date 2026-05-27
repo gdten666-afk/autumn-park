@@ -130,3 +130,10 @@ body {
 
 /* --- Selection --- */
 ::selection { background: rgba(200,150,100,0.25); color: #3d3226; }
+
+/* --- Performance: defer off-screen rendering --- */
+.polaroid-card,
+.break-inside-avoid {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
