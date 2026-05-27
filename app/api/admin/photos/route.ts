@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     await ensureTables();
     await requireOperator();
 
-    const BATCH_SIZE = 5;
+    const BATCH_SIZE = 1;  // Process 1 at a time — free tier CPU is too weak for parallel
 
     // Only process photos with BLOB data (disk-only photos with NULL data can't be recovered)
     const [remaining] = await dbAll(
@@ -70,8 +70,8 @@ export async function POST(req: NextRequest) {
         try {
           const buf = toBuffer(p.data);
           const thumb = await sharp(buf)
-            .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
-            .jpeg({ quality: 70 })
+            .resize(300, 300, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 60, mozjpeg: true })
             .toBuffer();
           await dbRun('UPDATE photos SET thumb_data = ? WHERE id = ?', [thumb, p.id]);
           return { id: p.id, ok: true };

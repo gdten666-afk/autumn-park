@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
     let thumbBuffer: Buffer | null = null;
     try {
       thumbBuffer = await sharp(buffer)
-        .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
-        .jpeg({ quality: 70 })
+        .resize(300, 300, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 60, mozjpeg: true })
         .toBuffer();
     } catch { /* thumbnail fails silently */ }
 
