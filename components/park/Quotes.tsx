@@ -14,7 +14,7 @@ export default function Quotes() {
       <div className="mb-6">
         <h2 className="text-black/45 text-xs tracking-[0.2em] font-serif">文字角落</h2>
       </div>
-      <div className="flex flex-wrap gap-4 md:gap-5 max-w-3xl">
+      <div className="flex flex-wrap gap-3 md:gap-5 max-w-3xl">
         {QUOTES.map((q, i) => {
           const rot = ROTS[i % ROTS.length];
           const tint = TINTS[i % TINTS.length];
@@ -24,14 +24,14 @@ export default function Quotes() {
               style={{
                 transform: `rotate(${rot})`,
                 marginTop: mt,
-                flexBasis: `clamp(180px, ${28 + (i % 3) * 6}vw, ${220 + (i % 3) * 30}px)`,
+                flexBasis: `clamp(160px, ${40 + (i % 3) * 8}vw, ${220 + (i % 3) * 30}px)`,
                 flexGrow: 1,
               }}>
-              <div className={`${tint} backdrop-blur-sm border border-black/5 rounded-2xl p-4 shadow-sm`}>
-                <p className="text-black/55 text-sm leading-relaxed font-serif mb-2">
+              <div className={`${tint} backdrop-blur-sm border border-black/5 rounded-2xl p-3 md:p-4 shadow-sm`}>
+                <p className="text-black/55 text-[13px] md:text-sm leading-relaxed font-serif mb-1.5 md:mb-2">
                   「{q.text}」
                 </p>
-                <p className="text-black/35 text-[10px] tracking-wider">
+                <p className="text-black/35 text-[9px] md:text-[10px] tracking-wider">
                   —— {q.source}
                 </p>
               </div>

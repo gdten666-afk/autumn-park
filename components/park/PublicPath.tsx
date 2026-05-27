@@ -61,15 +61,14 @@ export default function PublicPath() {
           </div>
         </div>
       ) : viewMode === 'walk' ? (
-        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'min(calc(100vw - 320px), 100%)', width: '100%', paddingLeft: 'clamp(12px, 4vw, 32px)', paddingRight: 'clamp(12px, 4vw, 32px)' }}>
-          <div className="flex flex-wrap justify-center gap-5 md:gap-8">
+        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'min(calc(100vw - 320px), 100%)', width: '100%', paddingLeft: 'clamp(8px, 3vw, 32px)', paddingRight: 'clamp(8px, 3vw, 32px)' }}>
+          <div className="flex flex-wrap justify-center gap-3 md:gap-8">
             {feedItems.map((item) => {
               if (item.type === 'quote') {
-                // Random-ish sizing and rotation for a casual scrapbook feel
-                const w = ['clamp(150px,38vw,220px)','clamp(160px,44vw,260px)','clamp(140px,36vw,200px)','clamp(170px,48vw,280px)'][item.idx % 4];
-                const rot = (['-2.5deg','1.2deg','-1deg','2deg','-1.8deg','0.6deg','-0.5deg','1.8deg'][item.idx % 8]);
-                const mt = ((item.idx * 31) % 60) - 20;
-                const ml = ((item.idx * 17) % 40) - 15;
+                const w = ['clamp(140px,85vw,220px)','clamp(150px,88vw,260px)','clamp(130px,82vw,200px)','clamp(155px,90vw,280px)'][item.idx % 4];
+                const rot = (['-1.5deg','0.8deg','-0.8deg','1.2deg','-1deg','0.5deg','-0.3deg','1deg'][item.idx % 8]);
+                const mt = ((item.idx * 17) % 30) - 10;
+                const ml = ((item.idx * 11) % 20) - 8;
                 // Varied background tints
                 const tints = [
                   'bg-white/55', 'bg-amber-50/50', 'bg-rose-50/45', 'bg-sky-50/48',
@@ -102,7 +101,7 @@ export default function PublicPath() {
                     transform: `rotate(${rotation})`,
                     marginTop: (i % 5) * 12,
                     marginLeft: (i % 3) * 20,
-                    width: 'clamp(140px, 44vw, 240px)',
+                    width: 'clamp(130px, 42vw, 240px)',
                     transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
                   }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'rotate(0deg) scale(1.04)'; e.currentTarget.style.zIndex = '20'; }}
@@ -113,11 +112,11 @@ export default function PublicPath() {
                       onLoad={e => { (e.target as HTMLImageElement).classList.replace('img-loading', 'img-loaded'); }} />
                     {/* Caption always visible with darker overlay */}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/25 to-transparent" style={{ minHeight: '40%' }} />
-                    <div className="absolute bottom-0 inset-x-0 p-2.5">
+                    <div className="absolute bottom-0 inset-x-0 p-2 max-md:p-1.5">
                       {photo.caption && (
-                        <p className="text-white/95 text-xs font-serif leading-relaxed line-clamp-2 mb-0.5">{photo.caption}</p>
+                        <p className="text-white/95 text-[11px] md:text-xs font-serif leading-relaxed line-clamp-2 mb-0.5">{photo.caption}</p>
                       )}
-                      <p className="text-white/50 text-[10px]">{photo.author_name || 'anonymous'}</p>
+                      <p className="text-white/50 text-[9px] md:text-[10px]">{photo.author_name || 'anonymous'}</p>
                     </div>
                   </div>
                 </div>
@@ -127,7 +126,7 @@ export default function PublicPath() {
         </div>
       ) : (
         <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'min(calc(100vw - 320px), 100%)', width: '100%', paddingLeft: 'clamp(12px, 4vw, 32px)', paddingRight: 'clamp(12px, 4vw, 32px)' }}>
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4">
             {photos.map(photo => (
               <div key={photo.id} className="break-inside-avoid mb-4 cursor-pointer group/gallery" onClick={() => setExpanded(photo)}>
                 <div className="relative overflow-hidden rounded-xl bg-white ring-1 ring-black/10 hover:ring-black/20 transition-all duration-300 hover:shadow-xl">

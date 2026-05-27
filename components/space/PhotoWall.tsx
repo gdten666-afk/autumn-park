@@ -118,8 +118,8 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
 
   // --- Grid class ---
   const gridClass = scene === 'starlit-camp'
-    ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
-    : 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3';
+    ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4'
+    : 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3';
 
   // --- Empty state ---
   if (!loading && photos.length === 0 && !isOwner) {
@@ -142,9 +142,9 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
       {/* === Upload area === */}
       {isOwner && (
         <div className="mb-6">
-          <div className="flex items-end gap-3 flex-wrap">
+          <div className="flex flex-col md:flex-row items-stretch md:items-end gap-2.5 md:gap-3">
             {/* Caption input */}
-            <div className="flex-1 min-w-[160px]">
+            <div className="flex-1 min-w-0">
               <input
                 type="text"
                 placeholder="写一句文案描述这张照片…"
@@ -155,6 +155,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
               />
             </div>
 
+            <div className="flex items-center gap-2">
             {/* Upload button */}
             <label className={`
               inline-flex items-center gap-2 px-5 py-2.5 rounded-xl cursor-pointer text-sm font-medium
@@ -197,6 +198,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
               />
               发布到公园
             </label>
+            </div>
           </div>
 
           {/* Caption hint */}
