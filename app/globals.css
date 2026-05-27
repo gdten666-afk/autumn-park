@@ -119,7 +119,6 @@ body {
 
 @keyframes sunPulse { 0%, 100% { opacity: 0.75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
 @keyframes cloudDrift { 0%, 100% { transform: translateX(-2%); } 50% { transform: translateX(2%); } }
-@keyframes rainFall { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
 @keyframes fogDrift { 0%, 100% { opacity: 0.4; transform: translateX(-1%); } 50% { opacity: 0.6; transform: translateX(1%); } }
 
 /* --- Scrollbar --- */

@@ -62,26 +62,13 @@ export default function SceneFrame({ scene, weather, children }: SceneFrameProps
         </>
       )}
 
-      {/* Rain: dark blue-grey + rain streaks */}
+      {/* Rain: dark blue-grey atmosphere overlay (rain streaks via ParticleOverlay canvas) */}
       {(weather === 'light-rain' || weather === 'heavy-rain') && (
-        <>
-          <div className="absolute inset-0 z-10" style={{
-            background: weather === 'heavy-rain'
-              ? 'linear-gradient(180deg, rgba(20,30,50,0.55) 0%, rgba(30,40,60,0.5) 50%, rgba(40,50,70,0.45) 100%)'
-              : 'linear-gradient(180deg, rgba(30,40,60,0.3) 0%, rgba(40,50,70,0.25) 50%, rgba(50,60,80,0.2) 100%)',
-          }} />
-          <div className="absolute inset-0 overflow-hidden z-10">
-            <div style={{
-              position: 'absolute', inset: 0,
-              backgroundImage: `repeating-linear-gradient(
-                5deg, transparent, transparent 2px,
-                rgba(150,180,210,0.2) 2px, rgba(150,180,210,0.2) 3px
-              )`,
-              backgroundSize: weather === 'heavy-rain' ? '100% 18px' : '100% 30px',
-              animation: `rainFall ${weather === 'heavy-rain' ? '0.35s' : '0.6s'} linear infinite`,
-            }} />
-          </div>
-        </>
+        <div className="absolute inset-0 z-10" style={{
+          background: weather === 'heavy-rain'
+            ? 'linear-gradient(180deg, rgba(20,30,50,0.55) 0%, rgba(30,40,60,0.5) 50%, rgba(40,50,70,0.45) 100%)'
+            : 'linear-gradient(180deg, rgba(30,40,60,0.3) 0%, rgba(40,50,70,0.25) 50%, rgba(50,60,80,0.2) 100%)',
+        }} />
       )}
 
       {/* Snow: white frost + glow */}

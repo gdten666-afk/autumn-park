@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { SEASON_PARTICLES, WEATHER_PARTICLES, createParticle, updateParticle } from '@/lib/particles';
-import type { Season, Weather, SeasonState } from '@/lib/types';
+import { SEASON_PARTICLES, WEATHER_PARTICLES, createParticle, updateParticle, getMaxParticles } from '@/lib/particles';
+import type { SeasonState, Weather } from '@/lib/types';
 import type { Particle } from '@/lib/particles';
 
 interface ParticleOverlayProps {
@@ -29,21 +29,46 @@ export default function ParticleOverlay({ seasonState, weather }: ParticleOverla
     resize();
     window.addEventListener('resize', resize);
 
-    // Initialize particles
-    const config = SEASON_PARTICLES[seasonState.season];
     const weatherConfig = WEATHER_PARTICLES[weather];
-    const count = Math.floor(config.count * (weatherConfig?.density ?? 1));
-    particlesRef.current = Array.from({ length: Math.min(count, 60) }, () =>
-      createParticle(canvas.width, canvas.height, config, weatherConfig)
-    );
+    const isRain = weatherConfig?.type === 'raindrop';
+    const replaceSeason = weatherConfig?.replaceSeason ?? false;
 
-    if (seasonState.secondarySeason && seasonState.transitionWeight > 0) {
-      const secConfig = SEASON_PARTICLES[seasonState.secondarySeason];
-      const secCount = Math.floor(secConfig.count * seasonState.transitionWeight);
-      const secParticles = Array.from({ length: Math.min(secCount, 50) }, () =>
-        createParticle(canvas.width, canvas.height, secConfig, null)
+    const config = SEASON_PARTICLES[seasonState.season];
+    const maxParticles = getMaxParticles(isRain, weatherConfig?.density ?? 1);
+
+    // Generate particles
+    if (isRain) {
+      // Rain: use only rain particles, no season particles
+      const count = Math.floor(120 * (weatherConfig!.density));
+      particlesRef.current = Array.from({ length: Math.min(count, maxParticles) }, () =>
+        createParticle(canvas.width, canvas.height, config, {
+          type: 'raindrop',
+          density: weatherConfig!.density,
+          speedMult: weatherConfig!.speedMult,
+          sizeMult: weatherConfig!.sizeMult,
+        })
       );
-      particlesRef.current = [...particlesRef.current, ...secParticles].slice(0, 60);
+    } else if (replaceSeason && weatherConfig) {
+      const count = Math.floor(config.count * weatherConfig.density);
+      particlesRef.current = Array.from({ length: Math.min(count, maxParticles) }, () =>
+        createParticle(canvas.width, canvas.height, config, weatherConfig)
+      );
+    } else {
+      // Normal season particles + optional weather enhancement
+      const count = Math.floor(config.count * (weatherConfig?.density ?? 1));
+      particlesRef.current = Array.from({ length: Math.min(count, maxParticles) }, () =>
+        createParticle(canvas.width, canvas.height, config, weatherConfig)
+      );
+
+      // Season transition particles
+      if (seasonState.secondarySeason && seasonState.transitionWeight > 0) {
+        const secConfig = SEASON_PARTICLES[seasonState.secondarySeason];
+        const secCount = Math.floor(secConfig.count * seasonState.transitionWeight);
+        const secParticles = Array.from({ length: Math.min(secCount, 50) }, () =>
+          createParticle(canvas.width, canvas.height, secConfig, null)
+        );
+        particlesRef.current = [...particlesRef.current, ...secParticles].slice(0, maxParticles);
+      }
     }
 
     const animate = () => {
@@ -70,6 +95,30 @@ export default function ParticleOverlay({ seasonState, weather }: ParticleOverla
 
 function drawParticle(ctx: CanvasRenderingContext2D, p: Particle) {
   ctx.save();
+
+  if (p.type === 'raindrop') {
+    // Rain: angled streak with gradient fade
+    const angle = p.angle || 0.28;
+    const len = p.length || 20;
+    const dx = Math.sin(angle) * len;
+    const dy = Math.cos(angle) * len;
+
+    const grad = ctx.createLinearGradient(p.x, p.y, p.x - dx, p.y - dy);
+    grad.addColorStop(0, p.color.replace(/[\d.]+\)$/, `${p.opacity + 0.2})`));
+    grad.addColorStop(0.3, p.color);
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = p.size * 0.6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x - dx, p.y - dy);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+
   ctx.globalAlpha = p.opacity;
   ctx.translate(p.x, p.y);
   ctx.rotate(p.rotation);
@@ -89,17 +138,11 @@ function drawParticle(ctx: CanvasRenderingContext2D, p: Particle) {
       break;
     case 'snowflake':
       ctx.fillStyle = p.color;
+      ctx.shadowBlur = p.size * 2;
+      ctx.shadowColor = p.color;
       ctx.beginPath();
       ctx.arc(0, 0, p.size, 0, Math.PI * 2);
       ctx.fill();
-      break;
-    case 'raindrop':
-      ctx.strokeStyle = p.color;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(0, p.size * 3);
-      ctx.stroke();
       break;
     case 'firefly':
       ctx.fillStyle = p.color;

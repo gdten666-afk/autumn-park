@@ -58,31 +58,14 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
         </>
       )}
 
-      {/* Rain: dark + blue-grey overlay */}
+      {/* Rain: dark blue-grey atmosphere overlay (rain streaks via ParticleOverlay canvas) */}
       {(weather === 'light-rain' || weather === 'heavy-rain') && (
-        <>
-          <div className="absolute inset-0" style={{
-            zIndex: 3,
-            background: weather === 'heavy-rain'
-              ? 'linear-gradient(180deg, rgba(40,50,70,0.5) 0%, rgba(50,60,80,0.45) 50%, rgba(60,70,90,0.4) 100%)'
-              : 'linear-gradient(180deg, rgba(60,70,90,0.3) 0%, rgba(80,90,110,0.25) 50%, rgba(100,110,120,0.2) 100%)',
-          }} />
-          {/* Rain streaks layer — CSS animated */}
-          <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 4 }}>
-            <div style={{
-              position: 'absolute', inset: 0,
-              backgroundImage: `repeating-linear-gradient(
-                5deg,
-                transparent,
-                transparent 2px,
-                rgba(180,200,220,0.25) 2px,
-                rgba(180,200,220,0.25) 3px
-              )`,
-              backgroundSize: weather === 'heavy-rain' ? '100% 20px' : '100% 35px',
-              animation: `rainFall ${weather === 'heavy-rain' ? '0.4s' : '0.7s'} linear infinite`,
-            }} />
-          </div>
-        </>
+        <div className="absolute inset-0" style={{
+          zIndex: 3,
+          background: weather === 'heavy-rain'
+            ? 'linear-gradient(180deg, rgba(40,50,70,0.5) 0%, rgba(50,60,80,0.45) 50%, rgba(60,70,90,0.4) 100%)'
+            : 'linear-gradient(180deg, rgba(60,70,90,0.3) 0%, rgba(80,90,110,0.25) 50%, rgba(100,110,120,0.2) 100%)',
+        }} />
       )}
 
       {/* Snow: white frost overlay */}
