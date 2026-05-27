@@ -134,13 +134,27 @@ export default function PhotoModal({
         onDoubleClick={handleDoubleClick}
       >
         <div className="relative overflow-hidden" style={{ maxHeight: '70vh' }}>
+          {/* Thumbnail shown instantly (already cached from grid) */}
+          <img
+            src={`/api/photos/${photo.id}?thumb=1`}
+            alt=""
+            className="absolute inset-0 max-w-full max-h-[70vh] object-contain"
+            style={{ transform: `scale(${zoom})`, filter: 'blur(20px) scale(1.1)', opacity: 0.6 }}
+            draggable={false}
+          />
+          {/* Full image loads progressively, replaces blurred thumb */}
           <img
             ref={imageRef}
             src={`/api/photos/${photo.id}?file=1`}
             alt={photo.caption || 'photo'}
-            className="max-w-full max-h-[70vh] object-contain transition-transform duration-200"
-            style={{ transform: `scale(${zoom})`, cursor: zoom > 1 ? 'grab' : 'default' }}
+            className="relative max-w-full max-h-[70vh] object-contain transition-opacity duration-500"
+            style={{ transform: `scale(${zoom})`, cursor: zoom > 1 ? 'grab' : 'default', opacity: 1 }}
             draggable={false}
+            onLoad={e => {
+              const el = e.target as HTMLImageElement;
+              const prev = el.previousElementSibling as HTMLImageElement;
+              if (prev) prev.style.opacity = '0';
+            }}
           />
         </div>
 

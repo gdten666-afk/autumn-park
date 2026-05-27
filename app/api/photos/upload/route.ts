@@ -27,24 +27,37 @@ export async function POST(req: NextRequest) {
     const photoId = nanoid();
     const ext = file.type.split('/')[1];
     const filename = `${photoId}.${ext}`;
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const rawBuffer = Buffer.from(await file.arrayBuffer());
+
+    // Convert to progressive JPEG/PNG for faster perceived loading
+    let progBuffer: Buffer = rawBuffer;
+    try {
+      if (file.type === 'image/jpeg') {
+        const result = await sharp(rawBuffer).jpeg({ progressive: true, quality: 85 }).toBuffer();
+        progBuffer = Buffer.from(result.buffer);
+      } else if (file.type === 'image/png') {
+        const result = await sharp(rawBuffer).png({ progressive: true, quality: 85 }).toBuffer();
+        progBuffer = Buffer.from(result.buffer);
+      }
+    } catch { /* keep raw buffer */ }
 
     // Save to disk as fallback
     try { if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true }); } catch {}
-    try { fs.writeFileSync(path.join(UPLOAD_DIR, filename), buffer); } catch {}
+    try { fs.writeFileSync(path.join(UPLOAD_DIR, filename), progBuffer); } catch {}
 
-    // Generate thumbnail (max 400px, JPEG quality 70 — small/fast for gallery)
+    // Generate thumbnail (300px, JPEG Q60)
     let thumbBuffer: Buffer | null = null;
     try {
-      thumbBuffer = await sharp(buffer)
+      const tb = await sharp(progBuffer)
         .resize(300, 300, { fit: 'inside', withoutEnlargement: true })
         .jpeg({ quality: 60, mozjpeg: true })
         .toBuffer();
+      thumbBuffer = Buffer.from(tb.buffer);
     } catch { /* thumbnail fails silently */ }
 
     await dbRun(
       'INSERT INTO photos (id, user_id, filename, data, thumb_data, caption, is_public) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [photoId, session.userId, filename, buffer, thumbBuffer, caption, isPublic ? 1 : 0]
+      [photoId, session.userId, filename, progBuffer, thumbBuffer, caption, isPublic ? 1 : 0]
     );
 
     const photo: Photo = {
