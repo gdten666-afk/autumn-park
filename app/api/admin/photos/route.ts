@@ -12,7 +12,6 @@ export async function DELETE() {
   try {
     await ensureTables();
     await requireOperator();
-
     const photos = await dbAll('SELECT filename FROM photos');
     for (const p of photos) {
       try { const fp = path.join(UPLOAD_DIR, p.filename); if (fs.existsSync(fp)) fs.unlinkSync(fp); } catch {}
@@ -23,49 +22,89 @@ export async function DELETE() {
     if (err.message === 'Unauthorized' || err.message === 'Forbidden') {
       return NextResponse.json({ ok: false, error: 'Operator only' }, { status: 403 });
     }
-    return NextResponse.json({ ok: false, error: 'Failed' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: `Failed: ${err.message}` }, { status: 500 });
   }
 }
 
-// POST: regenerate thumbnails for photos missing them
+// POST: migrate old photos (disk→DB) + regenerate thumbnails
 export async function POST(req: NextRequest) {
   try {
     await ensureTables();
     await requireOperator();
 
-    const { photoId } = await req.json().catch(() => ({}));
+    // Get all photos that need processing (missing thumb or missing data)
+    const photos = await dbAll(
+      'SELECT id, filename, data, thumb_data FROM photos WHERE thumb_data IS NULL OR data IS NULL'
+    );
 
-    if (photoId) {
-      // Single photo
-      const photo = await dbAll('SELECT id, data FROM photos WHERE id = ? AND thumb_data IS NULL', [photoId]);
-      if (!photo.length) return NextResponse.json({ ok: false, error: 'Photo not found or already has thumbnail' }, { status: 404 });
-      await generateThumb(photo[0]);
-      return NextResponse.json({ ok: true, data: { regenerated: 1 } });
-    }
+    let fromDb = 0, fromDisk = 0, failed = 0;
+    const errors: string[] = [];
 
-    // All photos without thumbnails
-    const photos = await dbAll('SELECT id, data FROM photos WHERE data IS NOT NULL AND thumb_data IS NULL');
-    let count = 0;
     for (const p of photos) {
       try {
-        await generateThumb(p);
-        count++;
-      } catch { /* skip failed ones */ }
+        let buf: Buffer | null = null;
+
+        // Try DB data first
+        if (p.data) {
+          buf = toBuffer(p.data);
+          fromDb++;
+        }
+
+        // Fall back to disk
+        if (!buf) {
+          const fp = path.join(UPLOAD_DIR, p.filename);
+          if (fs.existsSync(fp)) {
+            buf = fs.readFileSync(fp);
+            fromDisk++;
+          }
+        }
+
+        if (!buf) {
+          failed++;
+          continue;
+        }
+
+        // Store full data in DB if missing
+        if (!p.data) {
+          await dbRun('UPDATE photos SET data = ? WHERE id = ?', [buf, p.id]);
+        }
+
+        // Generate and store thumbnail
+        const thumb = await sharp(buf)
+          .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
+          .jpeg({ quality: 70 })
+          .toBuffer();
+        await dbRun('UPDATE photos SET thumb_data = ? WHERE id = ?', [thumb, p.id]);
+      } catch (e: any) {
+        failed++;
+        if (errors.length < 5) errors.push(`${(p.filename || p.id).slice(0, 30)}: ${e.message}`);
+      }
     }
-    return NextResponse.json({ ok: true, data: { regenerated: count, total: photos.length } });
+
+    return NextResponse.json({
+      ok: true,
+      data: {
+        total: photos.length,
+        fromDb,
+        fromDisk,
+        failed,
+        errors,
+        message: `DB: ${fromDb}, 磁盘: ${fromDisk}, 失败: ${failed}${errors.length ? ' — ' + errors[0] : ''}`,
+      },
+    });
   } catch (err: any) {
     if (err.message === 'Unauthorized' || err.message === 'Forbidden') {
       return NextResponse.json({ ok: false, error: 'Operator only' }, { status: 403 });
     }
-    return NextResponse.json({ ok: false, error: 'Failed' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: `Failed: ${err.message}` }, { status: 500 });
   }
 }
 
-async function generateThumb(photo: { id: string; data: Buffer | ArrayBuffer }) {
-  const buf = Buffer.isBuffer(photo.data) ? photo.data : Buffer.from(photo.data as ArrayBuffer);
-  const thumbBuffer = await sharp(buf)
-    .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
-    .jpeg({ quality: 70 })
-    .toBuffer();
-  await dbRun('UPDATE photos SET thumb_data = ? WHERE id = ?', [thumbBuffer, photo.id]);
+function toBuffer(data: any): Buffer {
+  if (Buffer.isBuffer(data)) return data;
+  if (data instanceof ArrayBuffer) return Buffer.from(data);
+  if (Array.isArray(data)) return Buffer.from(data); // libsql might return byte array
+  if (typeof data === 'object' && data !== null && 'bytes' in data) return Buffer.from(data.bytes);
+  if (typeof data === 'string') return Buffer.from(data, 'base64');
+  throw new Error(`unsupported: ${typeof data}`);
 }

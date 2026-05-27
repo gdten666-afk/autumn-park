@@ -107,8 +107,8 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                 body: JSON.stringify({}),
               });
               const data = await res.json();
-              if (data.ok) alert(`已生成 ${data.data?.regenerated || 0} / ${data.data?.total || 0} 张缩略图`);
-              else alert('生成失败');
+              if (data.ok) alert(data.data?.message || `处理 ${data.data?.total || 0} 张`);
+              else alert('失败: ' + (data.error || '未知错误'));
               btn.disabled = false;
               btn.textContent = '重新生成所有缩略图';
             }}
