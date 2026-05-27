@@ -43,8 +43,8 @@ export default function PublicPath() {
 
   return (
     <div className="relative w-full pointer-events-none">
-      {/* View mode toggle */}
-      <div className="fixed top-20 left-4 z-20 flex gap-1 pointer-events-auto">
+      {/* View mode toggle — positioned on right below user controls to avoid overlapping the hero text */}
+      <div className="fixed top-16 right-4 md:right-[296px] z-20 flex gap-1 pointer-events-auto max-md:top-14 max-md:right-2">
         <button onClick={() => setViewMode('walk')} className={`glass-btn ${viewMode === 'walk' ? '!bg-white/80 !text-black/60' : ''}`}>漫步</button>
         <button onClick={() => setViewMode('gallery')} className={`glass-btn ${viewMode === 'gallery' ? '!bg-white/80 !text-black/60' : ''}`}>画廊</button>
         <span className="text-black/20 text-xs self-center ml-3 font-mono">{photos.length}</span>
