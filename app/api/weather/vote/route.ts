@@ -48,6 +48,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureTables();
     const session = await requireSession();
     const { vote } = await req.json();
 

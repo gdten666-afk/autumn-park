@@ -4,14 +4,22 @@ import type { Weather } from './types';
 
 const WEATHER_PRIORITY: Weather[] = ['sunny', 'cloudy', 'light-rain', 'fog', 'heavy-rain', 'snow'];
 
+// Use local timezone for accurate date in user's region
+function localDate(offsetDays = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 export function getTodayDate(): string {
-  return new Date().toISOString().slice(0, 10);
+  return localDate(0);
 }
 
 export function getTomorrowDate(): string {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().slice(0, 10);
+  return localDate(1);
 }
 
 function countWinner(votes: any[], fallback: Weather): Weather {
@@ -22,20 +30,43 @@ function countWinner(votes: any[], fallback: Weather): Weather {
 }
 
 export async function getOrComputeDailyWeather(date: string, fallback: Weather = 'sunny'): Promise<Weather> {
+  const today = getTodayDate();
+
+  // For today and future dates, always recompute from votes — never trust stale cache
+  if (date >= today) {
+    const votes = await dbAll(
+      'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
+      [date]
+    );
+    const weather = countWinner(votes, fallback);
+    // Use REPLACE to overwrite any previous cached value
+    await dbRun('DELETE FROM daily_weather WHERE date = ?', [date]);
+    await dbRun('INSERT INTO daily_weather (date, weather) VALUES (?, ?)', [date, weather]);
+    return weather;
+  }
+
+  // Past dates: cache is fine (votes for them won't change)
   const existing = await dbGet('SELECT weather FROM daily_weather WHERE date = ?', [date]);
   if (existing) return existing.weather as Weather;
 
-  const votes = await dbAll('SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC', [date]);
+  const votes = await dbAll(
+    'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
+    [date]
+  );
   const weather = countWinner(votes, fallback);
-
   await dbRun('INSERT OR IGNORE INTO daily_weather (date, weather) VALUES (?, ?)', [date, weather]);
   return weather;
 }
 
 export async function recomputeDailyWeather(date: string, fallback: Weather = 'sunny'): Promise<Weather> {
-  const votes = await dbAll('SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC', [date]);
+  const votes = await dbAll(
+    'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
+    [date]
+  );
   const weather = countWinner(votes, fallback);
-  await dbRun('INSERT OR REPLACE INTO daily_weather (date, weather) VALUES (?, ?)', [date, weather]);
+  // DELETE + INSERT instead of REPLACE (more compatible with libsql)
+  await dbRun('DELETE FROM daily_weather WHERE date = ?', [date]);
+  await dbRun('INSERT INTO daily_weather (date, weather) VALUES (?, ?)', [date, weather]);
   return weather;
 }
 
