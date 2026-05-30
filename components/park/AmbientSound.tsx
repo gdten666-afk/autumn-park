@@ -111,13 +111,19 @@ class MusicPlayer {
     return true;
   }
 
-  private playTrack(url: string) {
+  private playTrack(url: string): boolean {
     this.audio = new Audio(url);
     this.audio.volume = this.vol;
     this.audio.loop = false;
     this.audio.onended = () => this.playNext();
-    this.audio.onerror = () => this.playNext(); // skip broken files
-    this.audio.play().catch(() => {});
+    this.audio.onerror = () => this.playNext();
+    const promise = this.audio.play();
+    if (promise) {
+      promise.catch(() => {
+        // Autoplay blocked — audio will play after first user interaction
+      });
+    }
+    return true;
   }
 
   private playNext() {
@@ -159,6 +165,25 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   const [soundOn, setSoundOn] = useState(false);
   const [musicOn, setMusicOn] = useState(false);
   const loaded = useRef(false);
+  const autoPlayTried = useRef(false);
+
+  // Auto-play music on page load
+  const tryAutoPlay = useCallback(async () => {
+    if (autoPlayTried.current) return;
+    autoPlayTried.current = true;
+    const playlist = (scene ? SCENE_PLAYLIST[scene] : null) || DEFAULT_PLAYLIST;
+    if (playlist.length === 0) return;
+    const ok = await musicPlayer.play(playlist);
+    if (ok) setMusicOn(true);
+  }, [scene]);
+
+  // Try auto-play immediately; if blocked, try again on first user click
+  useEffect(() => {
+    tryAutoPlay();
+    const onUserClick = () => { tryAutoPlay(); document.removeEventListener('click', onUserClick, true); };
+    document.addEventListener('click', onUserClick, true);
+    return () => document.removeEventListener('click', onUserClick, true);
+  }, [tryAutoPlay]);
 
   const toggleSound = useCallback(async () => {
     if (soundOn) { weatherAudio.stop(); setSoundOn(false); }
