@@ -29,10 +29,20 @@ export default function WeatherVote() {
   const [error, setError] = useState('');
   const [expanded, setExpanded] = useState(false);
 
+  const [loadError, setLoadError] = useState(false);
+
   const fetchData = async () => {
-    const res = await fetch('/api/weather/vote');
-    const d = await res.json();
-    if (d.ok) setData(d.data);
+    setLoadError(false);
+    // Retry up to 3 times — Render free tier cold starts are slow
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const res = await fetch('/api/weather/vote');
+        const d = await res.json();
+        if (d.ok) { setData(d.data); return; }
+      } catch {}
+      if (attempt < 3) await new Promise(r => setTimeout(r, 2000 * attempt));
+    }
+    setLoadError(true);
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -56,7 +66,25 @@ export default function WeatherVote() {
     setVoting(false);
   };
 
-  if (!data) return null;
+  if (!data) {
+    if (loadError) {
+      return (
+        <div className="fixed bottom-4 left-4 z-25 max-md:bottom-16 max-md:left-2">
+          <button onClick={fetchData} className="glass-btn flex items-center gap-1 !px-3 !py-1.5 text-xs">
+            <span className="text-black/30">🌤 加载失败，点击重试</span>
+          </button>
+        </div>
+      );
+    }
+    return (
+      <div className="fixed bottom-4 left-4 z-25 max-md:bottom-16 max-md:left-2">
+        <div className="glass-btn flex items-center gap-1 !px-3 !py-1.5 text-xs">
+          <span className="w-3 h-3 border-2 border-black/15 border-t-black/30 rounded-full animate-spin" />
+          <span className="text-black/25">天气</span>
+        </div>
+      </div>
+    );
+  }
 
   const todayW = WEATHERS.find(w => w.value === data.today);
   const tomorrowW = WEATHERS.find(w => w.value === data.tomorrow);
