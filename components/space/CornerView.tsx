@@ -5,6 +5,7 @@ import SceneFrame from './SceneFrame';
 import WeatherPicker from './WeatherPicker';
 import ScenePicker from './ScenePicker';
 import PhotoWall from './PhotoWall';
+import AmbientSound from '@/components/park/AmbientSound';
 import type { Space } from '@/lib/types';
 
 interface SpaceWithProfile extends Space {
@@ -68,6 +69,7 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
   return (
     <div className="fixed inset-0 z-30">
       <SceneFrame scene={space.scene} weather={space.weather}>
+        <AmbientSound weather={space.weather} scene={space.scene} />
         <div className="absolute top-0 left-0 right-0 z-20 p-3 flex items-center justify-between gap-3 max-md:flex-col max-md:gap-2 max-md:items-start">
           <div className="flex items-center gap-2 flex-shrink-0">
             <button onClick={onExit} className="glass-btn shrink-0 text-xs !px-3 !py-1">
