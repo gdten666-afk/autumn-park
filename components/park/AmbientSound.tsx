@@ -372,13 +372,13 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   const hasSound = WEATHER_SOUND[weather] !== 'none' || (!!scene && scenesWithSound.includes(scene));
 
   return (
-    <div className="fixed bottom-4 right-24 z-25 max-md:bottom-16 max-md:right-16">
+    <div className="fixed bottom-4 left-[170px] z-25 max-md:bottom-16 max-md:left-[100px]">
       <button onClick={toggle}
         className={`glass-btn flex items-center gap-1.5 !px-3 !py-1.5 text-xs transition-all ${enabled ? '!bg-amber-100/60 !text-amber-700/70' : ''}`}
         title={enabled ? '关闭环境音' : '开启环境音'}>
         <span>{enabled ? '🔊' : '🔇'}</span>
-        <span className={`hidden md:inline ${enabled ? '' : 'text-black/25'}`}>
-          {hasSound ? (enabled ? '音效' : '环境音') : '🎵'}
+        <span className="hidden md:inline text-black/25">
+          {enabled ? '音效中' : hasSound ? '环境音' : '无音效'}
         </span>
       </button>
     </div>
