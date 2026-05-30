@@ -14,6 +14,7 @@ import AdminPanel from '@/components/admin/AdminPanel';
 import WeatherLayer from '@/components/weather/WeatherLayer';
 import WeatherVote from '@/components/weather/WeatherVote';
 import ParticleOverlay from '@/components/park/ParticleOverlay';
+import AmbientSound from '@/components/park/AmbientSound';
 import MessageWall from '@/components/park/MessageWall';
 import StatsBar from '@/components/park/StatsBar';
 import { getSeasonState } from '@/lib/seasons';
@@ -141,6 +142,7 @@ export default function ParkPage() {
       )}
 
       <WeatherVote />
+      <AmbientSound weather={weather} />
 
       {/* Corner transition + view */}
       {cornerUserId && (
