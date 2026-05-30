@@ -273,7 +273,7 @@ class SoundEngine {
 
   private cleanup: (() => void) | null = null;
 
-  play(weather: Weather, scene?: string) {
+  async play(weather: Weather, scene?: string) {
     if (this.running) this.stop();
 
     const wType = WEATHER_SOUND[weather] || 'none';
@@ -282,6 +282,12 @@ class SoundEngine {
     if (wType === 'none' && !sType) return;
 
     const ctx = this.getCtx();
+
+    // Resume suspended context (browser autoplay policy)
+    if (ctx.state === 'suspended') {
+      try { await ctx.resume(); } catch {}
+    }
+
     this.activeNodes = [];
     const cleanups: (() => void)[] = [];
 
@@ -298,8 +304,8 @@ class SoundEngine {
     this.cleanup = () => cleanups.forEach(c => c());
     this.running = true;
 
-    // Fade in
-    this.masterGain!.gain.setTargetAtTime(this.volume, ctx.currentTime, 2);
+    // Fade in to target volume
+    this.masterGain!.gain.setTargetAtTime(this.volume, ctx.currentTime + 0.1, 2);
   }
 
   stop() {
@@ -337,14 +343,14 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   const [volume, setVolume] = useState(0.3);
   const engRef = useRef(getEngine());
 
-  const toggle = useCallback(() => {
+  const toggle = useCallback(async () => {
     const eng = engRef.current;
     if (enabled) {
       eng.stop();
       setEnabled(false);
     } else {
       eng.setVolume(volume);
-      eng.play(weather, scene);
+      await eng.play(weather, scene);
       setEnabled(true);
     }
   }, [enabled, weather, scene, volume]);
