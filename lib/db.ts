@@ -72,6 +72,15 @@ export async function ensureTables() {
       color      TEXT NOT NULL DEFAULT 'amber',
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS photo_comments (
+      id         TEXT PRIMARY KEY,
+      photo_id   TEXT NOT NULL,
+      user_id    TEXT NOT NULL,
+      content    TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (photo_id) REFERENCES photos(id) ON DELETE CASCADE
+    );
   `);
   try { await db.execute(`ALTER TABLE users ADD COLUMN password_hash TEXT DEFAULT ''`); } catch {}
   try { await db.execute(`ALTER TABLE photos ADD COLUMN data BLOB`); } catch {}

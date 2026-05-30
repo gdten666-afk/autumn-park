@@ -1,7 +1,16 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import type { Photo } from '@/lib/types';
+
+interface Comment {
+  id: string;
+  photo_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  author_name: string;
+}
 
 interface PhotoModalProps {
   photos: Photo[];
@@ -27,6 +36,48 @@ export default function PhotoModal({
   const photo = photos[index];
   const [zoom, setZoom] = useState(1);
   const imageRef = useRef<HTMLImageElement>(null);
+
+  // Comments
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentText, setCommentText] = useState('');
+  const [commentPosting, setCommentPosting] = useState(false);
+  const [commentError, setCommentError] = useState('');
+
+  const loadComments = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/comments/${photo.id}`);
+      const d = await res.json();
+      if (d.ok) setComments(d.data);
+    } catch {}
+  }, [photo.id]);
+
+  useEffect(() => { loadComments(); }, [loadComments]);
+
+  const postComment = async () => {
+    if (!commentText.trim()) return;
+    setCommentPosting(true); setCommentError('');
+    try {
+      const res = await fetch(`/api/comments/${photo.id}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: commentText.trim() }),
+      });
+      const d = await res.json();
+      if (d.ok) { setComments(prev => [...prev, d.data]); setCommentText(''); }
+      else setCommentError(d.error || '发送失败');
+    } catch { setCommentError('网络错误'); }
+    setCommentPosting(false);
+  };
+
+  const deleteComment = async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/comments/${photo.id}`, {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commentId }),
+      });
+      const d = await res.json();
+      if (d.ok) setComments(prev => prev.filter(c => c.id !== commentId));
+    } catch {}
+  };
 
   // Touch/swipe handling
   const touchStart = useRef<{ x: number; y: number; dist: number } | null>(null);
@@ -188,6 +239,43 @@ export default function PhotoModal({
           <p className="text-white/20 text-xs mt-1.5">
             {photo.is_public && <span className="mr-2">公园可见</span>}
           </p>
+
+          {/* Comments section */}
+          <div className="mt-4 pt-4 border-t border-white/10 text-left w-full max-w-lg max-h-[25vh] flex flex-col">
+            {/* Comment list */}
+            <div className="flex-1 overflow-y-auto space-y-2 mb-3">
+              {comments.length === 0 && (
+                <p className="text-white/15 text-[10px] text-center">还没有评论</p>
+              )}
+              {comments.map(c => (
+                <div key={c.id} className="flex items-start gap-2 group">
+                  <p className="text-white/30 text-[10px] flex-shrink-0 mt-0.5 w-14 truncate text-right">{c.author_name}</p>
+                  <p className="text-white/60 text-xs flex-1 leading-relaxed">{c.content}</p>
+                  {c.user_id === photo.user_id && (
+                    <button onClick={() => deleteComment(c.id)}
+                      className="text-white/10 hover:text-red-400/60 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Comment input */}
+            <div className="flex gap-2">
+              <input
+                type="text" value={commentText} onChange={e => setCommentText(e.target.value)}
+                placeholder="说点什么…" maxLength={300}
+                onKeyDown={e => { if (e.key === 'Enter') postComment(); }}
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white/80 placeholder:text-white/20 outline-none focus:border-white/20"
+              />
+              <button onClick={postComment} disabled={commentPosting || !commentText.trim()}
+                className="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 disabled:opacity-30 transition-colors flex-shrink-0">
+                {commentPosting ? '…' : '发送'}
+              </button>
+            </div>
+            {commentError && <p className="text-red-400/50 text-[10px] mt-1">{commentError}</p>}
+          </div>
         </div>
       </div>
     </div>
