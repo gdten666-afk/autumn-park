@@ -212,7 +212,7 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   const hasWeatherSound = weather !== 'sunny' && weather !== 'cloudy';
 
   return (
-    <div className="fixed bottom-4 left-[170px] z-25 flex gap-2 max-md:bottom-16 max-md:left-[100px] max-md:gap-1">
+    <div className="fixed bottom-4 left-[250px] z-25 flex gap-2 max-md:bottom-4 max-md:left-[130px] max-md:gap-1">
       <button onClick={toggleSound}
         className={`glass-btn flex items-center gap-1.5 !px-3 !py-1.5 text-xs transition-all ${soundOn ? '!bg-blue-100/50 !text-blue-700/60' : ''}`}
         title={soundOn ? '关闭天气音效' : '开启天气音效'}>
