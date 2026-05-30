@@ -27,15 +27,19 @@ class SoundEngine {
   private masterGain: GainNode | null = null;
   private activeNodes: AudioNode[] = [];
   private running = false;
-  private volume = 0;
+  private volume = 0.5;
 
-  private getCtx(): AudioContext {
-    if (!this.ctx) {
-      this.ctx = new AudioContext();
-      this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.value = 0;
-      this.masterGain.connect(this.ctx.destination);
+  private initCtx(): AudioContext {
+    if (this.ctx) {
+      // Reuse existing context if possible
+      if (this.ctx.state !== 'closed') return this.ctx;
+      this.ctx = null;
+      this.masterGain = null;
     }
+    this.ctx = new AudioContext();
+    this.masterGain = this.ctx.createGain();
+    this.masterGain.gain.value = 0;
+    this.masterGain.connect(this.ctx.destination);
     return this.ctx;
   }
 
@@ -71,7 +75,7 @@ class SoundEngine {
 
   // Rain: filtered noise with modulation
   private createRain(heavy: boolean): { nodes: AudioNode[]; cleanup: () => void } {
-    const ctx = this.getCtx();
+    const ctx = this.initCtx();
     const nodes: AudioNode[] = [];
 
     // Base noise
@@ -115,7 +119,7 @@ class SoundEngine {
 
   // Wind: low-frequency brown noise with slow modulation
   private createWind(): { nodes: AudioNode[]; cleanup: () => void } {
-    const ctx = this.getCtx();
+    const ctx = this.initCtx();
     const nodes: AudioNode[] = [];
 
     const noise = this.noiseNode(ctx, 'brown') as AudioBufferSourceNode;
@@ -154,7 +158,7 @@ class SoundEngine {
 
   // Fire crackle: high-frequency noise bursts + low rumble
   private createFire(): { nodes: AudioNode[]; cleanup: () => void } {
-    const ctx = this.getCtx();
+    const ctx = this.initCtx();
     const nodes: AudioNode[] = [];
 
     // High crackle
@@ -194,7 +198,7 @@ class SoundEngine {
 
   // Waves: low oscillation
   private createWaves(): { nodes: AudioNode[]; cleanup: () => void } {
-    const ctx = this.getCtx();
+    const ctx = this.initCtx();
     const nodes: AudioNode[] = [];
 
     const noise = this.noiseNode(ctx, 'brown') as AudioBufferSourceNode;
@@ -233,7 +237,7 @@ class SoundEngine {
 
   // Pages: subtle high-frequency rustle
   private createPages(): { nodes: AudioNode[]; cleanup: () => void } {
-    const ctx = this.getCtx();
+    const ctx = this.initCtx();
     const nodes: AudioNode[] = [];
 
     const noise = this.noiseNode(ctx, 'white') as AudioBufferSourceNode;
@@ -279,13 +283,13 @@ class SoundEngine {
     const wType = WEATHER_SOUND[weather] || 'none';
     const sType = (scene ? SCENE_AMBIENT[scene as Scene] : undefined) || undefined;
 
-    if (wType === 'none' && !sType) return;
+    if (wType === 'none' && !sType) return false;
 
-    const ctx = this.getCtx();
+    const ctx = this.initCtx();
 
-    // Resume suspended context (browser autoplay policy)
+    // Resume — must happen after user gesture
     if (ctx.state === 'suspended') {
-      try { await ctx.resume(); } catch {}
+      try { await ctx.resume(); } catch { return false; }
     }
 
     this.activeNodes = [];
@@ -306,6 +310,7 @@ class SoundEngine {
 
     // Fade in to target volume
     this.masterGain!.gain.setTargetAtTime(this.volume, ctx.currentTime + 0.1, 2);
+    return true;
   }
 
   stop() {
@@ -340,7 +345,7 @@ interface AmbientSoundProps {
 
 export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   const [enabled, setEnabled] = useState(false);
-  const [volume, setVolume] = useState(0.3);
+  const [volume, setVolume] = useState(0.5);
   const engRef = useRef(getEngine());
 
   const toggle = useCallback(async () => {
@@ -350,8 +355,8 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
       setEnabled(false);
     } else {
       eng.setVolume(volume);
-      await eng.play(weather, scene);
-      setEnabled(true);
+      const ok = await eng.play(weather, scene);
+      setEnabled(ok);
     }
   }, [enabled, weather, scene, volume]);
 
