@@ -3,338 +3,248 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Weather, Scene } from '@/lib/types';
 
-// Weather → sound type
-const WEATHER_SOUND: Record<Weather, 'rain-light' | 'rain-heavy' | 'wind' | 'none'> = {
-  'sunny': 'none',
-  'cloudy': 'wind',
-  'light-rain': 'rain-light',
-  'heavy-rain': 'rain-heavy',
-  'fog': 'wind',
-  'snow': 'wind',
-};
+// === Weather sounds (noise-based) ===
 
-// Scene → extra ambient layer
-const SCENE_AMBIENT: Partial<Record<Scene, 'fire' | 'waves' | 'pages'>> = {
-  'starlit-camp': 'fire',
-  'lighthouse-coast': 'waves',
-  'bookstore': 'pages',
-};
-
-// === Web Audio sound generators ===
-
-class SoundEngine {
+class WeatherAudio {
   private ctx: AudioContext | null = null;
-  private masterGain: GainNode | null = null;
-  private activeNodes: AudioNode[] = [];
-  private running = false;
-  private volume = 0.5;
+  private master: GainNode | null = null;
+  private cleanup: (() => void) | null = null;
+  private vol = 0.35;
 
-  private initCtx(): AudioContext {
-    if (this.ctx) {
-      // Reuse existing context if possible
-      if (this.ctx.state !== 'closed') return this.ctx;
-      this.ctx = null;
-      this.masterGain = null;
-    }
+  private init() {
+    if (this.ctx && this.ctx.state !== 'closed') return;
     this.ctx = new AudioContext();
-    this.masterGain = this.ctx.createGain();
-    this.masterGain.gain.value = 0;
-    this.masterGain.connect(this.ctx.destination);
-    return this.ctx;
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0;
+    this.master.connect(this.ctx.destination);
   }
 
-  private noiseNode(ctx: AudioContext, color: 'white' | 'pink' | 'brown'): AudioNode {
-    const len = ctx.sampleRate * 2;
+  private noise(len: number, color: 'white' | 'pink' | 'brown'): AudioBuffer {
+    const ctx = this.ctx!;
     const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-
-    // Generate noise
-    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-
-    // Approximate pink/brown noise with simple filtering
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     if (color === 'pink' || color === 'brown') {
-      let b0 = 0, b1 = 0, b2 = 0;
+      let b0 = 0, b1 = 0;
       for (let i = 0; i < len; i++) {
-        const white = data[i];
         if (color === 'pink') {
-          b0 = 0.99886 * b0 + white * 0.0555179;
-          b1 = 0.99332 * b1 + white * 0.0750759;
-          data[i] = b0 + b1 + white * 0.048;
+          b0 = 0.99886 * b0 + d[i] * 0.0555179;
+          b1 = 0.99332 * b1 + d[i] * 0.0750759;
+          d[i] = (b0 + b1 + d[i] * 0.048) * 0.5;
         } else {
-          b0 = (b0 + white * 0.02) * 0.99;
-          data[i] = b0;
+          b0 = (b0 + d[i] * 0.02) * 0.99;
+          d[i] = b0 * 3;
         }
       }
     }
-
-    const source = ctx.createBufferSource();
-    source.buffer = buf;
-    source.loop = true;
-    return source;
+    return buf;
   }
 
-  // Rain: filtered noise with modulation
-  private createRain(heavy: boolean): { nodes: AudioNode[]; cleanup: () => void } {
-    const ctx = this.initCtx();
+  private playNoise(ctx: AudioContext, color: 'white' | 'pink' | 'brown', filterFreq: number, filterQ: number, gainVal: number, lfoFreq = 0): AudioNode[] {
     const nodes: AudioNode[] = [];
-
-    // Base noise
-    const noise = this.noiseNode(ctx, 'pink') as AudioBufferSourceNode;
-    nodes.push(noise);
-
-    // Bandpass filter for rain sound (focus on mid-high frequencies)
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.value = heavy ? 3000 : 4000;
-    filter.Q.value = heavy ? 0.8 : 0.5;
-    nodes.push(filter);
-
-    noise.connect(filter);
-
-    // Rain intensity modulation (gentle variation)
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = heavy ? 0.3 : 0.15;
-    nodes.push(lfo);
-
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = heavy ? 0.4 : 0.25;
-    nodes.push(lfoGain);
-
-    lfo.connect(lfoGain);
-    lfoGain.connect(filter.frequency);
-    lfo.start();
-
-    // Gain for this sound
-    const gain = ctx.createGain();
-    gain.gain.value = heavy ? 0.35 : 0.2;
-    nodes.push(gain);
-
-    filter.connect(gain);
-    gain.connect(this.masterGain!);
-    noise.start();
-
-    return { nodes, cleanup: () => { try { noise.stop(); lfo.stop(); } catch {} } };
-  }
-
-  // Wind: low-frequency brown noise with slow modulation
-  private createWind(): { nodes: AudioNode[]; cleanup: () => void } {
-    const ctx = this.initCtx();
-    const nodes: AudioNode[] = [];
-
-    const noise = this.noiseNode(ctx, 'brown') as AudioBufferSourceNode;
-    nodes.push(noise);
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 300;
-    nodes.push(filter);
-
-    noise.connect(filter);
-
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 0.08;
-    nodes.push(lfo);
-
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 150;
-    nodes.push(lfoGain);
-
-    lfo.connect(lfoGain);
-    lfoGain.connect(filter.frequency);
-    lfo.start();
-
-    const gain = ctx.createGain();
-    gain.gain.value = 0.15;
-    nodes.push(gain);
-
-    filter.connect(gain);
-    gain.connect(this.masterGain!);
-    noise.start();
-
-    return { nodes, cleanup: () => { try { noise.stop(); lfo.stop(); } catch {} } };
-  }
-
-  // Fire crackle: high-frequency noise bursts + low rumble
-  private createFire(): { nodes: AudioNode[]; cleanup: () => void } {
-    const ctx = this.initCtx();
-    const nodes: AudioNode[] = [];
-
-    // High crackle
-    const noise = this.noiseNode(ctx, 'white') as AudioBufferSourceNode;
-    nodes.push(noise);
-
-    const hp = ctx.createBiquadFilter();
-    hp.type = 'highpass';
-    hp.frequency.value = 2000;
-    nodes.push(hp);
-
-    noise.connect(hp);
-
-    // Rapid amplitude modulation for crackling effect
-    const lfo = ctx.createOscillator();
-    lfo.type = 'square';
-    lfo.frequency.value = 12;
-    nodes.push(lfo);
-
-    const ampMod = ctx.createGain();
-    ampMod.gain.value = 1;
-    nodes.push(ampMod);
-
-    // Use lfo to modulate crackle intensity via a waveshaper
-    // Simpler: just connect with low gain
-    const gain = ctx.createGain();
-    gain.gain.value = 0.08;
-    nodes.push(gain);
-
-    hp.connect(gain);
-    gain.connect(this.masterGain!);
-    noise.start();
-    lfo.start();
-
-    return { nodes, cleanup: () => { try { noise.stop(); lfo.stop(); } catch {} } };
-  }
-
-  // Waves: low oscillation
-  private createWaves(): { nodes: AudioNode[]; cleanup: () => void } {
-    const ctx = this.initCtx();
-    const nodes: AudioNode[] = [];
-
-    const noise = this.noiseNode(ctx, 'brown') as AudioBufferSourceNode;
-    nodes.push(noise);
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 150;
-    nodes.push(filter);
-
-    noise.connect(filter);
-
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 0.12; // ~8 second wave cycle
-    nodes.push(lfo);
-
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 100;
-    nodes.push(lfoGain);
-
-    lfo.connect(lfoGain);
-    lfoGain.connect(filter.frequency);
-    lfo.start();
-
-    const gain = ctx.createGain();
-    gain.gain.value = 0.12;
-    nodes.push(gain);
-
-    filter.connect(gain);
-    gain.connect(this.masterGain!);
-    noise.start();
-
-    return { nodes, cleanup: () => { try { noise.stop(); lfo.stop(); } catch {} } };
-  }
-
-  // Pages: subtle high-frequency rustle
-  private createPages(): { nodes: AudioNode[]; cleanup: () => void } {
-    const ctx = this.initCtx();
-    const nodes: AudioNode[] = [];
-
-    const noise = this.noiseNode(ctx, 'white') as AudioBufferSourceNode;
-    nodes.push(noise);
+    const src = ctx.createBufferSource();
+    src.buffer = this.noise(ctx.sampleRate * 3, color);
+    src.loop = true;
+    nodes.push(src);
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.value = 6000;
-    filter.Q.value = 0.3;
+    filter.frequency.value = filterFreq;
+    filter.Q.value = filterQ;
     nodes.push(filter);
+    src.connect(filter);
 
-    noise.connect(filter);
-
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 0.5;
-    nodes.push(lfo);
-
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.5;
-    nodes.push(lfoGain);
-
-    const ampGain = ctx.createGain();
-    ampGain.gain.value = 0;
-    nodes.push(ampGain);
-
-    lfo.connect(lfoGain);
-    lfoGain.connect(ampGain.gain);
-    filter.connect(ampGain);
-    ampGain.connect(this.masterGain!);
-
-    lfo.start();
-    noise.start();
-
-    return { nodes, cleanup: () => { try { noise.stop(); lfo.stop(); } catch {} } };
-  }
-
-  private cleanup: (() => void) | null = null;
-
-  async play(weather: Weather, scene?: string) {
-    if (this.running) this.stop();
-
-    const wType = WEATHER_SOUND[weather] || 'none';
-    const sType = (scene ? SCENE_AMBIENT[scene as Scene] : undefined) || undefined;
-
-    if (wType === 'none' && !sType) return false;
-
-    const ctx = this.initCtx();
-
-    // Resume — must happen after user gesture
-    if (ctx.state === 'suspended') {
-      try { await ctx.resume(); } catch { return false; }
+    if (lfoFreq > 0) {
+      const lfo = ctx.createOscillator();
+      lfo.type = 'sine'; lfo.frequency.value = lfoFreq;
+      nodes.push(lfo);
+      const lfoG = ctx.createGain(); lfoG.gain.value = filterFreq * 0.3;
+      nodes.push(lfoG);
+      lfo.connect(lfoG); lfoG.connect(filter.frequency);
+      lfo.start();
     }
 
-    this.activeNodes = [];
-    const cleanups: (() => void)[] = [];
+    const gain = ctx.createGain(); gain.gain.value = gainVal;
+    nodes.push(gain);
+    filter.connect(gain); gain.connect(this.master!);
+    src.start();
+    return nodes;
+  }
 
-    // Weather layer
-    if (wType === 'rain-light') { const r = this.createRain(false); this.activeNodes.push(...r.nodes); cleanups.push(r.cleanup); }
-    else if (wType === 'rain-heavy') { const r = this.createRain(true); this.activeNodes.push(...r.nodes); cleanups.push(r.cleanup); }
-    else if (wType === 'wind') { const r = this.createWind(); this.activeNodes.push(...r.nodes); cleanups.push(r.cleanup); }
+  async play(weather: Weather) {
+    this.stop();
+    if (weather === 'sunny' || weather === 'cloudy') return false;
+    this.init();
+    const ctx = this.ctx!;
+    if (ctx.state === 'suspended') { try { await ctx.resume(); } catch { return false; } }
 
-    // Scene layer
-    if (sType === 'fire') { const r = this.createFire(); this.activeNodes.push(...r.nodes); cleanups.push(r.cleanup); }
-    else if (sType === 'waves') { const r = this.createWaves(); this.activeNodes.push(...r.nodes); cleanups.push(r.cleanup); }
-    else if (sType === 'pages') { const r = this.createPages(); this.activeNodes.push(...r.nodes); cleanups.push(r.cleanup); }
+    const allNodes: AudioNode[] = [];
 
-    this.cleanup = () => cleanups.forEach(c => c());
-    this.running = true;
+    if (weather === 'light-rain') {
+      allNodes.push(...this.playNoise(ctx, 'pink', 3500, 0.4, 0.2, 0.15));
+    } else if (weather === 'heavy-rain') {
+      allNodes.push(...this.playNoise(ctx, 'pink', 2500, 0.7, 0.35, 0.3));
+      // Lower rumble layer
+      allNodes.push(...this.playNoise(ctx, 'brown', 200, 0.5, 0.12, 0));
+    } else if (weather === 'fog' || weather === 'snow') {
+      allNodes.push(...this.playNoise(ctx, 'brown', 250, 0.3, 0.12, 0.08));
+    }
 
-    // Fade in to target volume
-    this.masterGain!.gain.setTargetAtTime(this.volume, ctx.currentTime + 0.1, 2);
+    this.cleanup = () => allNodes.forEach(n => { try { (n as any).stop?.(); } catch {} });
+    this.master!.gain.setTargetAtTime(this.vol, ctx.currentTime + 0.1, 2);
+    return true;
+  }
+
+  stop() { if (this.cleanup) { this.cleanup(); this.cleanup = null; } }
+  setVolume(v: number) { this.vol = v; if (this.master) this.master.gain.setTargetAtTime(v, this.ctx!.currentTime, 0.3); }
+}
+
+// === Procedural music generator ===
+
+type MusicMood = 'calm' | 'warm' | 'melancholic' | 'reflective';
+
+const SCENE_MOOD: Partial<Record<Scene, MusicMood>> = {
+  'autumn-bench': 'calm',
+  'darkroom': 'melancholic',
+  'starlit-camp': 'warm',
+  'lighthouse-coast': 'melancholic',
+  'bookstore': 'reflective',
+};
+
+// Pentatonic scales
+const SCALES: Record<MusicMood, { notes: number[]; baseOctave: number; tempo: number }> = {
+  calm:        { notes: [0,2,4,7,9], baseOctave: 4, tempo: 3.5 },    // C D E G A — major pentatonic
+  warm:        { notes: [0,2,4,7,9], baseOctave: 3, tempo: 4.5 },    // lower, slower
+  melancholic: { notes: [0,3,5,7,10], baseOctave: 4, tempo: 5 },     // C Eb F G Bb — minor pentatonic
+  reflective:  { notes: [0,2,4,7,9], baseOctave: 5, tempo: 6 },      // higher, sparse
+};
+
+class MusicGenerator {
+  private ctx: AudioContext | null = null;
+  private master: GainNode | null = null;
+  private playing = false;
+  private timer: ReturnType<typeof setTimeout> | null = null;
+  private vol = 0.12;
+
+  private init() {
+    if (this.ctx && this.ctx.state !== 'closed') return;
+    this.ctx = new AudioContext();
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0;
+    // Add subtle reverb via delayed feedback
+    const delay = this.ctx.createDelay(0.4);
+    delay.delayTime.value = 0.35;
+    const feedback = this.ctx.createGain();
+    feedback.gain.value = 0.25;
+    delay.connect(feedback); feedback.connect(delay);
+    this.master.connect(delay);
+    delay.connect(this.ctx.destination);
+  }
+
+  private playNote(freq: number, duration: number, velocity = 0.6) {
+    const ctx = this.ctx!;
+    // Soft sine pad
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0, ctx.currentTime);
+    env.gain.linearRampToValueAtTime(velocity, ctx.currentTime + 0.3);
+    env.gain.linearRampToValueAtTime(velocity * 0.5, ctx.currentTime + duration * 0.7);
+    env.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+
+    // Add subtle harmonic
+    const osc2 = ctx.createOscillator();
+    osc2.type = 'triangle';
+    osc2.frequency.value = freq * 2;
+    const env2 = ctx.createGain();
+    env2.gain.setValueAtTime(0, ctx.currentTime);
+    env2.gain.linearRampToValueAtTime(velocity * 0.3, ctx.currentTime + 0.2);
+    env2.gain.linearRampToValueAtTime(0, ctx.currentTime + duration * 0.5);
+
+    osc.connect(env); env.connect(this.master!);
+    osc2.connect(env2); env2.connect(this.master!);
+
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration + 0.5);
+    osc2.start(ctx.currentTime);
+    osc2.stop(ctx.currentTime + duration + 0.5);
+  }
+
+  private scheduleNote(mood: MusicMood) {
+    const cfg = SCALES[mood];
+    const scale = cfg.notes;
+    const octave = cfg.baseOctave;
+    const rootFreq = 130.81 * Math.pow(2, octave - 3); // C in chosen octave
+
+    // Pick random note from scale
+    const noteIdx = Math.floor(Math.random() * scale.length);
+    const note = scale[noteIdx];
+    // Occasionally jump up an octave
+    const o = Math.random() < 0.2 ? 1 : 0;
+    const freq = rootFreq * Math.pow(2, (note + o * 12) / 12);
+
+    // Duration: long, sustained notes
+    const duration = cfg.tempo * (0.5 + Math.random() * 1.5);
+
+    // Velocity: gentle
+    const vel = 0.4 + Math.random() * 0.4;
+
+    this.playNote(freq, duration, vel);
+
+    // Schedule next note
+    const nextDelay = duration * 800 + Math.random() * cfg.tempo * 500;
+    this.timer = setTimeout(() => { if (this.playing) this.scheduleNote(mood); }, nextDelay);
+  }
+
+  // Drone: sustained bass note
+  private droneInterval: ReturnType<typeof setInterval> | null = null;
+  private startDrone(freq: number) {
+    const ctx = this.ctx!;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const env = ctx.createGain();
+    env.gain.value = 0.04;
+    osc.connect(env); env.connect(this.master!);
+    osc.start();
+    // Pulse the drone slowly
+    this.droneInterval = setInterval(() => {
+      env.gain.setTargetAtTime(0.03 + Math.random() * 0.03, ctx.currentTime, 2);
+    }, 4000);
+  }
+
+  async play(mood: MusicMood) {
+    this.stop();
+    this.init();
+    const ctx = this.ctx!;
+    if (ctx.state === 'suspended') { try { await ctx.resume(); } catch { return false; } }
+
+    this.playing = true;
+    this.master!.gain.setTargetAtTime(this.vol, ctx.currentTime + 0.5, 3);
+
+    // Start drone
+    const rootFreq = 130.81 * Math.pow(2, SCALES[mood].baseOctave - 3);
+    this.startDrone(rootFreq);
+
+    // Start melody
+    this.scheduleNote(mood);
     return true;
   }
 
   stop() {
-    if (this.cleanup) this.cleanup();
-    this.activeNodes = [];
-    this.running = false;
+    this.playing = false;
+    if (this.timer) { clearTimeout(this.timer); this.timer = null; }
+    if (this.droneInterval) { clearInterval(this.droneInterval); this.droneInterval = null; }
   }
 
-  setVolume(v: number) {
-    this.volume = v;
-    if (this.masterGain) {
-      this.masterGain.gain.setTargetAtTime(v, this.ctx!.currentTime, 0.5);
-    }
-  }
-
-  getVolume() { return this.volume; }
+  setVolume(v: number) { this.vol = v; if (this.master) this.master.gain.setTargetAtTime(v, this.ctx!.currentTime, 0.3); }
 }
 
-// Singleton engine
-let engine: SoundEngine | null = null;
-function getEngine(): SoundEngine {
-  if (!engine) engine = new SoundEngine();
-  return engine;
-}
+// === Singletons ===
+const weatherAudio = new WeatherAudio();
+const musicGen = new MusicGenerator();
 
 // === React component ===
 
@@ -344,41 +254,59 @@ interface AmbientSoundProps {
 }
 
 export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
-  const [enabled, setEnabled] = useState(false);
-  const [volume, setVolume] = useState(0.5);
-  const engRef = useRef(getEngine());
+  const [soundOn, setSoundOn] = useState(false);
+  const [musicOn, setMusicOn] = useState(false);
+  const loaded = useRef(false);
 
-  const toggle = useCallback(async () => {
-    const eng = engRef.current;
-    if (enabled) {
-      eng.stop();
-      setEnabled(false);
-    } else {
-      eng.setVolume(volume);
-      const ok = await eng.play(weather, scene);
-      setEnabled(ok);
+  // Determine mood from scene
+  const mood: MusicMood | null = (scene ? SCENE_MOOD[scene as Scene] : null) || null;
+
+  const toggleSound = useCallback(async () => {
+    if (soundOn) { weatherAudio.stop(); setSoundOn(false); }
+    else {
+      const ok = await weatherAudio.play(weather);
+      if (ok) setSoundOn(true);
     }
-  }, [enabled, weather, scene, volume]);
+  }, [soundOn, weather]);
 
-  // Update sound when weather/scene changes
+  const toggleMusic = useCallback(async () => {
+    if (musicOn) { musicGen.stop(); setMusicOn(false); }
+    else if (mood) {
+      const ok = await musicGen.play(mood);
+      if (ok) setMusicOn(true);
+    }
+  }, [musicOn, mood]);
+
+  // Update weather sound when weather changes
   useEffect(() => {
-    if (enabled) engRef.current.play(weather, scene);
-  }, [weather, scene]); // eslint-disable-line
+    if (loaded.current && soundOn) { weatherAudio.stop(); weatherAudio.play(weather).then(ok => { if (!ok) setSoundOn(false); }); }
+  }, [weather]); // eslint-disable-line
+  useEffect(() => { loaded.current = true; }, []);
 
-  // Cleanup on unmount
-  useEffect(() => () => { engRef.current.stop(); }, []);
+  // Stop on unmount
+  useEffect(() => () => { weatherAudio.stop(); musicGen.stop(); }, []);
 
-  const scenesWithSound = ['starlit-camp', 'lighthouse-coast', 'bookstore'];
-  const hasSound = WEATHER_SOUND[weather] !== 'none' || (!!scene && scenesWithSound.includes(scene));
+  const hasWeatherSound = weather !== 'sunny' && weather !== 'cloudy';
 
   return (
-    <div className="fixed bottom-4 left-[170px] z-25 max-md:bottom-16 max-md:left-[100px]">
-      <button onClick={toggle}
-        className={`glass-btn flex items-center gap-1.5 !px-3 !py-1.5 text-xs transition-all ${enabled ? '!bg-amber-100/60 !text-amber-700/70' : ''}`}
-        title={enabled ? '关闭环境音' : '开启环境音'}>
-        <span>{enabled ? '🔊' : '🔇'}</span>
-        <span className="hidden md:inline text-black/25">
-          {enabled ? '音效中' : hasSound ? '环境音' : '无音效'}
+    <div className="fixed bottom-4 left-[170px] z-25 flex gap-2 max-md:bottom-16 max-md:left-[100px] max-md:gap-1">
+      {/* Weather sound button */}
+      <button onClick={toggleSound}
+        className={`glass-btn flex items-center gap-1.5 !px-3 !py-1.5 text-xs transition-all ${soundOn ? '!bg-blue-100/50 !text-blue-700/60' : ''}`}
+        title={soundOn ? '关闭天气音效' : '开启天气音效'}>
+        <span className="text-sm">{soundOn ? '🌧' : '🔇'}</span>
+        <span className="hidden md:inline text-black/25 text-[10px]">
+          {hasWeatherSound ? (soundOn ? '音效' : '天气音') : '无'}
+        </span>
+      </button>
+
+      {/* Music button */}
+      <button onClick={toggleMusic}
+        className={`glass-btn flex items-center gap-1.5 !px-3 !py-1.5 text-xs transition-all ${musicOn ? '!bg-purple-100/50 !text-purple-700/60' : ''}`}
+        title={musicOn ? '关闭背景音乐' : '开启背景音乐'}>
+        <span className="text-sm">{musicOn ? '🎵' : '🎶'}</span>
+        <span className="hidden md:inline text-black/25 text-[10px]">
+          {mood ? (musicOn ? '播放' : '音乐') : '无'}
         </span>
       </button>
     </div>
