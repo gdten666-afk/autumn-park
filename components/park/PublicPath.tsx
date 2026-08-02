@@ -74,7 +74,7 @@ export default function PublicPath() {
           </div>
         </div>
       ) : viewMode === 'walk' ? (
-        <div className="relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'min(calc(100vw - 320px), 100%)', width: '100%', paddingLeft: 'clamp(8px, 3vw, 32px)', paddingRight: 'clamp(8px, 3vw, 32px)' }}>
+        <div className="reveal relative w-full pointer-events-auto" style={{ paddingTop: '12vh', paddingBottom: '20vh', maxWidth: 'min(calc(100vw - 320px), 100%)', width: '100%', paddingLeft: 'clamp(8px, 3vw, 32px)', paddingRight: 'clamp(8px, 3vw, 32px)' }}>
           <div className="flex flex-wrap justify-center gap-3 md:gap-8">
             {feedItems.map((item) => {
               if (item.type === 'quote') {

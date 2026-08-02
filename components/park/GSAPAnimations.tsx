@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function GSAPAnimations() {
   const initialized = useRef(false);
@@ -9,20 +12,33 @@ export default function GSAPAnimations() {
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
 
-    // Entrance animations — one-shot, no observers
     const timer = setTimeout(() => {
       gsap.from('.welcome-text', { opacity: 0, y: 30, duration: 1, ease: 'power3.out' });
       gsap.from('.scroll-hint', { opacity: 0, duration: 0.8, delay: 0.8 });
 
-      // Animate existing polaroid cards
-      const cards = document.querySelectorAll('.polaroid-card');
-      if (cards.length > 0) {
-        gsap.from(cards, { opacity: 0, y: 30, scale: 0.9, duration: 0.6, stagger: 0.05, ease: 'back.out(1.2)' });
-      }
-    }, 500);
+      gsap.utils.toArray<HTMLElement>('.reveal').forEach((el) => {
+        gsap.from(el, {
+          opacity: 0,
+          y: 24,
+          duration: 0.7,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+        });
+      });
 
-    return () => clearTimeout(timer);
+      gsap.utils.toArray<HTMLElement>('.parallax-slow').forEach((el) => {
+        gsap.to(el, {
+          yPercent: 18,
+          ease: 'none',
+          scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 0.6 },
+        });
+      });
+    }, 400);
+
+    return () => { clearTimeout(timer); ScrollTrigger.getAll().forEach(t => t.kill()); };
   }, []);
 
   return null;

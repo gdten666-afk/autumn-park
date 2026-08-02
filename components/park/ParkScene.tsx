@@ -59,10 +59,14 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
           <div className="parallax-slow absolute" style={{
             top: '5%', left: '55%',
             width: 'clamp(120px, 20vw, 240px)', height: 'clamp(120px, 20vw, 240px)',
-            background: 'radial-gradient(circle, rgba(249,232,200,0.9) 0%, rgba(242,213,160,0.4) 35%, rgba(242,213,160,0) 68%)',
-            borderRadius: '50%', zIndex: 2,
-            animation: 'sunPulse 9s ease-in-out infinite',
-          }} />
+            zIndex: 2,
+          }}>
+            <div className="absolute inset-0" style={{
+              background: 'radial-gradient(circle, rgba(249,232,200,0.9) 0%, rgba(242,213,160,0.4) 35%, rgba(242,213,160,0) 68%)',
+              borderRadius: '50%',
+              animation: 'sunPulse 9s ease-in-out infinite',
+            }} />
+          </div>
           <div className="absolute inset-0" style={{
             zIndex: 3,
             background: 'linear-gradient(180deg, rgba(255,248,235,0.28) 0%, rgba(255,252,246,0.12) 40%, transparent 70%)',
@@ -77,11 +81,12 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
             zIndex: 3,
             background: 'linear-gradient(180deg, rgba(180,180,190,0.35) 0%, rgba(200,200,210,0.25) 40%, rgba(220,220,225,0.15) 100%)',
           }} />
-          <div className="absolute inset-0" style={{
-            zIndex: 4,
-            background: 'radial-gradient(ellipse 70% 30% at 40% 10%, rgba(220,220,230,0.3) 0%, transparent 60%)',
-            animation: 'cloudDrift 20s ease-in-out infinite',
-          }} />
+          <div className="parallax-slow absolute inset-0" style={{ zIndex: 4 }}>
+            <div className="absolute inset-0" style={{
+              background: 'radial-gradient(ellipse 70% 30% at 40% 10%, rgba(220,220,230,0.3) 0%, transparent 60%)',
+              animation: 'cloudDrift 20s ease-in-out infinite',
+            }} />
+          </div>
         </>
       )}
 
@@ -129,7 +134,7 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
       <div className="absolute bottom-0 left-0 right-0" style={{ height: '30vh', zIndex: 2, background: c.ground }} />
 
       {/* 简约线稿插画：地平线 + 树 */}
-      <div className="absolute inset-0" style={{ zIndex: 2, pointerEvents: 'none' }}>
+      <div className="parallax-slow absolute inset-0" style={{ zIndex: 2, pointerEvents: 'none' }}>
         <svg viewBox="0 0 1440 400" preserveAspectRatio="xMidYMax slice" style={{ position: 'absolute', inset: 'auto 0 0 0', width: '100%', height: '42%', opacity: 0.9 }}>
           <line x1="0" y1="330" x2="1440" y2="330" stroke="rgba(60,52,40,0.14)" strokeWidth="1.2" />
           <g stroke="rgba(60,52,40,0.5)" strokeWidth="2.4" strokeLinecap="round" fill="none">

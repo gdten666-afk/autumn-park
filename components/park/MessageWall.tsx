@@ -56,7 +56,7 @@ export default function MessageWall() {
       </button>
 
       {/* Wall panel */}
-      <div className={`fixed pointer-events-auto ${open ? 'flex' : 'hidden'} md:flex`} style={{
+      <div className={`reveal fixed pointer-events-auto ${open ? 'flex' : 'hidden'} md:flex`} style={{
         right: 0, top: 0, bottom: 0, width: 'min(280px, 85vw)',
         zIndex: 15, flexDirection: 'column',
       }}>
