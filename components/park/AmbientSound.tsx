@@ -303,7 +303,7 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
     if (playlist && playlist.length > 0 && musicPlayer.isActive()) {
       musicPlayer.play(playlist);
     }
-  }, [scene]); // eslint-disable-line
+  }, [scene]);
 
   useEffect(() => () => { weatherAudio.stop(); musicPlayer.teardown(); }, []);
 
