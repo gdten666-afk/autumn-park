@@ -19,13 +19,13 @@ export default function StatsBar() {
 
   return (
     <div className="fixed left-1/2 -translate-x-1/2 z-30 pointer-events-none max-md:top-2 md:top-16">
-      <div className="glass flex items-center gap-4 px-4 py-1.5 text-[10px]">
-        <span className="text-black/45">👥 <span className="text-black/65">{stats.users}</span></span>
-        <span className="text-black/45">🖼 <span className="text-black/65">{stats.photos}</span></span>
-        <span className="text-black/45">💬 <span className="text-black/65">{stats.messages}</span></span>
+      <div className="chip" style={{ gap: 16 }}>
+        <span style={{ color: 'var(--ink-soft)' }}>👥 <b style={{ color: 'var(--ink)' }}>{stats.users}</b></span>
+        <span style={{ color: 'var(--ink-soft)' }}>🖼 <b style={{ color: 'var(--ink)' }}>{stats.photos}</b></span>
+        <span style={{ color: 'var(--ink-soft)' }}>💬 <b style={{ color: 'var(--ink)' }}>{stats.messages}</b></span>
         {voteTotal > 0 && (
-          <span className="text-black/40">
-            今日投票 <span className="text-black/55">{voteTotal}</span>
+          <span style={{ color: 'var(--ink-weak)' }}>
+            今日投票 <b style={{ color: 'var(--ink-soft)' }}>{voteTotal}</b>
             {Object.entries(stats.votes || {}).slice(0,2).map(([k,v]) => (
               <span key={k} className="ml-1">{weatherEmoji[k]||k}{v}</span>
             ))}

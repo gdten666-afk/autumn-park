@@ -73,17 +73,17 @@ export default function WeatherVote() {
     if (loadError) {
       return (
         <div className="fixed bottom-4 left-4 z-25 max-md:bottom-16 max-md:left-2">
-          <button onClick={fetchData} className="glass-btn flex items-center gap-1 !px-3 !py-1.5 text-xs">
-            <span className="text-black/30">🌤 加载失败，点击重试</span>
+          <button onClick={fetchData} className="chip text-xs" style={{ cursor: 'pointer' }}>
+            <span style={{ color: 'var(--ink-soft)' }}>🌤 加载失败，点击重试</span>
           </button>
         </div>
       );
     }
     return (
       <div className="fixed bottom-4 left-4 z-25 max-md:bottom-16 max-md:left-2">
-        <div className="glass-btn flex items-center gap-1 !px-3 !py-1.5 text-xs">
+        <div className="chip text-xs">
           <span className="w-3 h-3 border-2 border-black/15 border-t-black/30 rounded-full animate-spin" />
-          <span className="text-black/25">天气</span>
+          <span style={{ color: 'var(--ink-weak)' }}>天气</span>
         </div>
       </div>
     );
@@ -99,16 +99,16 @@ export default function WeatherVote() {
       {/* Compact collapsed button */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="glass-btn flex items-center gap-2 !px-3 !py-1.5 text-xs"
+        className="chip cursor-pointer text-xs"
         title="天气投票"
       >
         <span className="text-base">{todayW?.emoji}</span>
-        <span className="text-black/30 hidden md:inline">{todayLabel}</span>
-        <span className="text-black/20 text-[10px] hidden md:inline">|</span>
+        <span className="hidden md:inline" style={{ color: 'var(--ink-soft)' }}>{todayLabel}</span>
+        <span className="text-[10px] hidden md:inline" style={{ color: 'var(--ink-weak)' }}>|</span>
         <span className="text-sm">{tomorrowW?.emoji}</span>
-        <span className="text-black/30 hidden md:inline">明日</span>
+        <span className="hidden md:inline" style={{ color: 'var(--ink-soft)' }}>明日</span>
         {data.totalVotes > 0 && (
-          <span className="text-black/20 text-[10px] ml-0.5">{data.totalVotes}票</span>
+          <span className="text-[10px] ml-0.5" style={{ color: 'var(--ink-weak)' }}>{data.totalVotes}票</span>
         )}
       </button>
 
@@ -121,29 +121,30 @@ export default function WeatherVote() {
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="text-black/40 text-xs tracking-wider">天气投票</h3>
-              <p className="text-black/20 text-[10px] mt-0.5">{todayLabel}</p>
+              <h3 className="text-xs tracking-wider" style={{ color: 'var(--ink-soft)' }}>天气投票</h3>
+              <p className="text-[10px] mt-0.5" style={{ color: 'var(--ink-weak)' }}>{todayLabel}</p>
             </div>
             <button
               onClick={() => setExpanded(false)}
-              className="text-black/20 hover:text-black/50 text-xs transition-colors"
+              className="text-xs transition-colors"
+              style={{ color: 'var(--ink-weak)' }}
             >
               ✕
             </button>
           </div>
 
           {/* Today + Tomorrow */}
-          <div className="flex items-center justify-center gap-4 mb-3 pb-3 border-b border-black/5">
+          <div className="flex items-center justify-center gap-4 mb-3 pb-3" style={{ borderBottom: '1px solid var(--hairline)' }}>
             <div className="text-center">
-              <p className="text-black/25 text-[10px] mb-1">今日</p>
+              <p className="text-[10px] mb-1" style={{ color: 'var(--ink-weak)' }}>今日</p>
               <span className="text-3xl">{todayW?.emoji}</span>
-              <p className="text-black/30 text-[10px] mt-0.5">{todayW?.label}</p>
+              <p className="text-[10px] mt-0.5" style={{ color: 'var(--ink-soft)' }}>{todayW?.label}</p>
             </div>
             <div className="text-black/15 text-sm">→</div>
             <div className="text-center">
-              <p className="text-black/25 text-[10px] mb-1">明日预测</p>
+              <p className="text-[10px] mb-1" style={{ color: 'var(--ink-weak)' }}>明日预测</p>
               <span className="text-3xl">{tomorrowW?.emoji}</span>
-              <p className="text-black/30 text-[10px] mt-0.5">{tomorrowW?.label}</p>
+              <p className="text-[10px] mt-0.5" style={{ color: 'var(--ink-soft)' }}>{tomorrowW?.label}</p>
             </div>
           </div>
 
@@ -164,14 +165,14 @@ export default function WeatherVote() {
                   `}
                 >
                   <span className="text-base w-6 text-center flex-shrink-0">{w.emoji}</span>
-                  <span className="text-black/40 w-7 flex-shrink-0">{w.label}</span>
+                  <span className="w-7 flex-shrink-0" style={{ color: 'var(--ink-soft)' }}>{w.label}</span>
                   <div className="flex-1 h-1.5 bg-black/5 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-amber-300/60 rounded-full transition-all duration-500"
-                      style={{ width: `${barWidth}%` }}
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${barWidth}%`, background: 'var(--accent-2)' }}
                     />
                   </div>
-                  <span className="text-black/25 text-[10px] w-5 text-right flex-shrink-0">{count}</span>
+                  <span className="text-[10px] w-5 text-right flex-shrink-0" style={{ color: 'var(--ink-weak)' }}>{count}</span>
                 </button>
               );
             })}
@@ -182,7 +183,7 @@ export default function WeatherVote() {
           )}
 
           {!data.userVote && !error && (
-            <p className="text-black/15 text-[10px] mt-2 text-center">
+            <p className="text-[10px] mt-2 text-center" style={{ color: 'var(--ink-weak)' }}>
               点击天气图标投票明天的天气
             </p>
           )}
