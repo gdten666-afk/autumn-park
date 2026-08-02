@@ -18,7 +18,14 @@ export function verifyPassword(password: string, stored: string): boolean {
 }
 
 const SESSION_COOKIE = 'park_session';
-const SESSION_SECRET = process.env.BOOTSTRAP_CODE || 'park-session-secret';
+const SESSION_SECRET =
+  process.env.SESSION_SECRET ||
+  process.env.BOOTSTRAP_CODE ||
+  'park-session-secret';
+
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET && !process.env.BOOTSTRAP_CODE) {
+  console.warn('[auth] SESSION_SECRET is not set in production — sessions are NOT secure. Set SESSION_SECRET now.');
+}
 
 function sign(payload: string): string {
   return crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
@@ -36,7 +43,12 @@ export async function createSession(user: { id: string; name: string; role: stri
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: false,
+    // Secure in production by default; COOKIE_SECURE=false allows plain-HTTP
+    // local development/testing against a production build.
+    secure:
+      process.env.NODE_ENV === 'production'
+        ? process.env.COOKIE_SECURE !== 'false'
+        : false,
     sameSite: 'lax',
     path: '/',
     maxAge: 30 * 24 * 60 * 60,
@@ -66,12 +78,8 @@ export async function getSession(): Promise<UserSession | null> {
       return { userId: user.id, name: user.name, role: user.role };
     }
 
-    // Old format (pre-HMAC): base64(payload) — backward compat during transition
-    const data = JSON.parse(Buffer.from(token, 'base64').toString());
-    if (data.exp < Date.now()) return null;
-    const user = await dbGet('SELECT id, name, role FROM users WHERE id = ?', [data.userId]);
-    if (!user) return null;
-    return { userId: user.id, name: user.name, role: user.role };
+    // Legacy unsigned tokens are no longer accepted (session forgery fix).
+    return null;
   } catch {
     return null;
   }

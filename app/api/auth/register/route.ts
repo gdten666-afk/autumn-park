@@ -4,17 +4,22 @@ import { nanoid } from 'nanoid';
 import { ensureTables, dbGet, dbRun } from '@/lib/db';
 import { createSession, hashPassword } from '@/lib/auth';
 import type { ApiResponse, UserSession } from '@/lib/types';
+import { clientIp, rateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
     await ensureTables();
+    const ip = clientIp(req);
+    if (!rateLimit(`register:${ip}`, 5, 60_000)) {
+      return NextResponse.json({ ok: false, error: '注册太频繁，请稍后再试' }, { status: 429 });
+    }
     const { name, inviteCode, password } = await req.json();
 
     if (!name || !inviteCode || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json({ ok: false, error: 'Name and invite code are required' }, { status: 400 });
     }
-    if (!password || password.length < 4) {
-      return NextResponse.json({ ok: false, error: 'Password must be at least 4 characters' }, { status: 400 });
+    if (!password || password.length < 8) {
+      return NextResponse.json({ ok: false, error: '密码至少需要 8 位' }, { status: 400 });
     }
 
     const bootstrapCode = process.env.BOOTSTRAP_CODE;

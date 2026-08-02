@@ -3,6 +3,8 @@ import { nanoid } from 'nanoid';
 import { ensureTables, dbAll, dbRun } from '@/lib/db';
 import { getSession, requireSession } from '@/lib/auth';
 import type { ApiResponse } from '@/lib/types';
+import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { dbGet } from '@/lib/db';
 
 export async function GET(
   req: NextRequest,
@@ -10,6 +12,14 @@ export async function GET(
 ) {
   await ensureTables();
   const { photoId } = await params;
+  const photo = await dbGet('SELECT is_public, user_id FROM photos WHERE id = ?', [photoId]);
+  if (!photo) return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
+  if (!photo.is_public) {
+    const session = await getSession();
+    if (!session || (session.userId !== photo.user_id && session.role !== 'operator')) {
+      return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
+    }
+  }
   const comments = await dbAll(
     `SELECT c.id, c.photo_id, c.user_id, c.content, c.created_at, u.name as author_name
      FROM photo_comments c JOIN users u ON c.user_id = u.id
@@ -26,6 +36,10 @@ export async function POST(
   try {
     await ensureTables();
     const session = await requireSession();
+    const ip = clientIp(req);
+    if (!rateLimit(`comment:${ip}`, 30, 60_000)) {
+      return NextResponse.json({ ok: false, error: '评论太频繁，请稍后再试' }, { status: 429 });
+    }
     const { photoId } = await params;
     const { content } = await req.json();
 
