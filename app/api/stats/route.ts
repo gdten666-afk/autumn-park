@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ensureTables, dbAll, dbGet } from '@/lib/db';
+import { ensureTables, dbAll } from '@/lib/db';
 import { getTodayDate } from '@/lib/weather';
 
 export async function GET() {

@@ -28,7 +28,11 @@ export default function MessageWall() {
     try { const res = await fetch('/api/messages'); const data = await res.json(); if (data.ok) setMessages(data.data); } catch {}
   }, []);
 
-  useEffect(() => { fetchMessages(); const t = setInterval(fetchMessages, 30000); return () => clearInterval(t); }, [fetchMessages]);
+  useEffect(() => {
+    const t0 = setTimeout(fetchMessages, 0);
+    const t = setInterval(fetchMessages, 30000);
+    return () => { clearTimeout(t0); clearInterval(t); };
+  }, [fetchMessages]);
 
   const handlePost = async () => {
     if (!input.trim()) return;

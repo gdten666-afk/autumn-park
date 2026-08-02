@@ -45,7 +45,10 @@ export default function WeatherVote() {
     setLoadError(true);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    const t = setTimeout(fetchData, 0);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleVote = async (vote: Weather) => {
     if (voting) return;

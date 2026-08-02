@@ -43,7 +43,12 @@ fly deploy
 
 ## Render
 
-在 Render 面板配置环境变量（不要在 `render.yaml` 里写明文），然后部署。
+在 Render 控制台（服务 → Environment）配置以下环境变量，然后部署：
+
+- `SESSION_SECRET`、`BOOTSTRAP_CODE`、`TURSO_DATABASE_URL`、`TURSO_AUTH_TOKEN`
+- 使用对象存储时再加：`S3_ENDPOINT`、`S3_REGION`、`S3_BUCKET`、`S3_ACCESS_KEY_ID`、`S3_SECRET_ACCESS_KEY`
+
+`render.yaml` 中不再包含任何密钥字段，只保留非敏感配置。
 
 ## Git 历史瘦身（可选，需 force push）
 

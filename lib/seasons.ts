@@ -45,7 +45,6 @@ export function getSeasonState(date: Date = new Date()): SeasonState {
 
   const currentBoundary = boundaries.find(b => b.season === currentSeason)!.doy;
   const nextBoundaryDoy = boundaries.find(b => b.season === nextSeason)!.doy;
-  const transitionStart = nextBoundaryDoy - 7;
 
   // If next boundary is in the next calendar year
   const effectiveNextDoy = nextBoundaryDoy < currentBoundary
@@ -55,7 +54,7 @@ export function getSeasonState(date: Date = new Date()): SeasonState {
   const effectiveDoy = doy < currentBoundary ? doy + (isLeapYear(year) ? 366 : 365) : doy;
   const effectiveStart = effectiveNextDoy - 7;
 
-  const transitionWeight = computeTransitionWeight(effectiveDoy, effectiveStart, effectiveNextDoy);
+  const transitionWeight = computeTransitionWeight(effectiveDoy, effectiveStart);
 
   return {
     season: currentSeason,
@@ -64,7 +63,7 @@ export function getSeasonState(date: Date = new Date()): SeasonState {
   };
 }
 
-function computeTransitionWeight(doy: number, start: number, end: number): number {
+function computeTransitionWeight(doy: number, start: number): number {
   const TRANSITION_DAYS = 14;
   const mid = start + 7;
 

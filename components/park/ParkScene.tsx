@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { SeasonState, Weather } from '@/lib/types';
-import { getTimeOfDay, type TimeOfDay } from '@/lib/time';
+import { getTimeOfDay } from '@/lib/time';
 
 interface ParkSceneProps { seasonState: SeasonState; weather: Weather; }
 

@@ -4,12 +4,8 @@ services:
     runtime: docker
     plan: free
     healthCheckPath: /park
+    # 密钥（SESSION_SECRET / BOOTSTRAP_CODE / TURSO_DATABASE_URL / TURSO_AUTH_TOKEN /
+    # S3_* 等）请在 Render 控制台的服务 Environment 中配置，不要写入仓库。
     envVars:
-      - key: BOOTSTRAP_CODE
-        value: ${BOOTSTRAP_CODE}
-      - key: TURSO_DATABASE_URL
-        value: ${TURSO_DATABASE_URL}
-      - key: TURSO_AUTH_TOKEN
-        value: ${TURSO_AUTH_TOKEN}
       - key: UPLOAD_DIR
         value: /app/uploads

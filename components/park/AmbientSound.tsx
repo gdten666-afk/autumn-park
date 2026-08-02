@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import type { Weather, Scene } from '@/lib/types';
+import type { Weather } from '@/lib/types';
 import { SCENE_PLAYLIST, DEFAULT_PLAYLIST } from '@/lib/playlist';
 
 // === Weather sound engine (noise-based, same as before) ===
@@ -179,10 +179,10 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
 
   // Try auto-play immediately; if blocked, try again on first user click
   useEffect(() => {
-    tryAutoPlay();
+    const t = setTimeout(tryAutoPlay, 0);
     const onUserClick = () => { tryAutoPlay(); document.removeEventListener('click', onUserClick, true); };
     document.addEventListener('click', onUserClick, true);
-    return () => document.removeEventListener('click', onUserClick, true);
+    return () => { clearTimeout(t); document.removeEventListener('click', onUserClick, true); };
   }, [tryAutoPlay]);
 
   const toggleSound = useCallback(async () => {

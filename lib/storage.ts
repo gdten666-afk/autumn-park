@@ -12,7 +12,13 @@ import {
 
 export type ImageVariant = "full" | "thumb";
 
-const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || "./uploads");
+function uploadDir(): string {
+  // 上传目录依赖运行时环境变量，不能静态追踪进打包产物。
+  const dir = process.env.UPLOAD_DIR || "uploads";
+  return path.isAbsolute(dir)
+    ? dir
+    : path.join(/* turbopackIgnore: true */ process.cwd(), dir);
+}
 const S3_ENDPOINT = process.env.S3_ENDPOINT || "";
 const S3_REGION = process.env.S3_REGION || "auto";
 const S3_BUCKET = process.env.S3_BUCKET || "";
@@ -48,8 +54,9 @@ export function keyFor(photoId: string, variant: ImageVariant): string {
 
 export function ensureStorageDirs(): void {
   if (useObjectStorage) return;
-  fs.mkdirSync(path.join(UPLOAD_DIR, "full"), { recursive: true });
-  fs.mkdirSync(path.join(UPLOAD_DIR, "thumb"), { recursive: true });
+  const dir = uploadDir();
+  fs.mkdirSync(path.join(dir, "full"), { recursive: true });
+  fs.mkdirSync(path.join(dir, "thumb"), { recursive: true });
 }
 
 export async function writeImageBytes(
@@ -69,7 +76,7 @@ export async function writeImageBytes(
     );
     return;
   }
-  const file = path.join(UPLOAD_DIR, key);
+  const file = path.join(uploadDir(), key);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, bytes);
 }
@@ -88,7 +95,7 @@ export async function readImageBytes(
       return null;
     }
   }
-  const file = path.join(UPLOAD_DIR, key);
+  const file = path.join(uploadDir(), key);
   if (!fs.existsSync(file)) return null;
   return { bytes: fs.readFileSync(file), contentType: "image/jpeg" };
 }
@@ -102,7 +109,7 @@ export async function deleteImageKeys(keys: string[]): Promise<void> {
           new DeleteObjectCommand({ Bucket: S3_BUCKET, Key: key }),
         );
       } else {
-        const file = path.join(UPLOAD_DIR, key);
+        const file = path.join(uploadDir(), key);
         if (fs.existsSync(file)) fs.unlinkSync(file);
       }
     } catch {
