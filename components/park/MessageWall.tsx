@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
 
 interface Message {
   id: string;
@@ -10,7 +11,52 @@ interface Message {
   canDelete?: boolean;
 }
 
-export default function MessageWall() {
+interface MessageWallProps {
+  mode?: 'panel' | 'page';
+}
+
+const COLOR_DOT: Record<string, string> = {
+  amber: '#c98a4b', rose: '#b56a4c', sky: '#8faeb8', violet: '#9b8fb8', emerald: '#8fa184', slate: '#9aa3ad',
+};
+
+function MessageCard({ m, onDelete }: { m: Message; onDelete: (id: string) => void }) {
+  return (
+    <div className="card-hover" style={{
+      background: 'var(--surface)',
+      border: '1px solid var(--hairline)',
+      borderRadius: 12,
+      padding: '10px 14px',
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: 10,
+      boxShadow: 'var(--shadow-card)',
+    }}>
+      <span style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 6, flex: 'none',
+        background: COLOR_DOT[m.color] || '#c98a4b' }} />
+      <div style={{ flex: 1 }}>
+        <p className="m-0 text-[13px] leading-[1.8]" style={{ color: 'var(--ink-soft)' }}>{m.content}</p>
+        <p className="m-0 mt-1 text-[10px]" style={{ color: 'var(--ink-weak)' }}>{m.created_at?.replace('T', ' ').slice(0, 16)}</p>
+      </div>
+      {m.canDelete && (
+        <button
+          onClick={e => {
+            e.stopPropagation();
+            if (window.confirm('删除这条留言？')) onDelete(m.id);
+          }}
+          className="flex-none text-[11px] leading-none rounded-full px-1.5 py-0.5 transition-colors"
+          style={{ color: 'var(--ink-weak)', background: 'transparent' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#b0563c')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--ink-weak)')}
+          title="删除留言（管理员）"
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}
+
+export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [posting, setPosting] = useState(false);
@@ -58,100 +104,89 @@ export default function MessageWall() {
     } catch {}
   };
 
-  // 移动端默认收起留言墙，避免遮挡公园内容；桌面端默认展开
-  const [open, setOpen] = useState<boolean>(() =>
-    typeof window === 'undefined' ? true : window.innerWidth >= 768
+  const renderInput = () => (
+    <div>
+      <div className="flex gap-2">
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="写点什么..."
+          maxLength={500}
+          onKeyDown={e => { if (e.key === 'Enter') handlePost(); }}
+          className="glass-input flex-1 text-xs"
+          style={{ borderRadius: '10px', padding: '8px 12px' }}
+        />
+        <button onClick={handlePost} disabled={posting || !input.trim()}
+          className="glass-btn text-xs flex-shrink-0 disabled:opacity-30">
+          {posting ? '...' : '贴上'}
+        </button>
+      </div>
+      {error && <p className="text-[10px] mt-1.5" style={{ color: '#b0563c' }}>{error}</p>}
+    </div>
   );
 
+  // 独立页面模式（移动端）：整页展示，不被公园底部控件遮挡
+  if (mode === 'page') {
+    return (
+      <div className="flex flex-col" style={{ height: 'calc(100dvh - 53px)' }}>
+        <div ref={listRef} className="flex-1 overflow-y-auto px-4 py-3">
+          <div className="flex flex-col gap-3">
+            {messages.length === 0 && (
+              <div className="text-center py-10">
+                <p className="text-xs" style={{ color: 'var(--ink-weak)' }}>墙上还没有留言</p>
+                <p className="text-[10px] mt-1" style={{ color: 'var(--ink-weak)' }}>写下第一张纸条吧</p>
+              </div>
+            )}
+            {messages.map(m => (
+              <MessageCard key={m.id} m={m} onDelete={deleteMessage} />
+            ))}
+          </div>
+        </div>
+        <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid var(--hairline)', background: 'var(--surface)' }}>
+          {renderInput()}
+        </div>
+      </div>
+    );
+  }
+
+  // 面板模式（桌面端）：右侧固定面板；移动端用链接跳转到独立留言页
   return (
     <>
-      {/* Mobile toggle */}
-      <button onClick={() => setOpen(!open)}
-        className="chip fixed md:hidden z-30"
-        style={{ right: 8, bottom: 80, cursor: 'pointer' }}>
-        💬 {open ? '隐藏' : '留言墙'}
-      </button>
+      <Link href="/wall" className="chip fixed md:hidden z-30" style={{ right: 8, bottom: 80 }}>
+        💬 留言墙
+      </Link>
 
-      {/* Wall panel */}
-      <div className={`reveal fixed pointer-events-auto ${open ? 'flex' : 'hidden'} md:flex`} style={{
-        right: 0, top: 0, bottom: 0, width: 'min(280px, 85vw)',
+      <div className="reveal fixed pointer-events-auto hidden md:flex" style={{
+        right: 0, top: 0, bottom: 0, width: 280,
         zIndex: 15, flexDirection: 'column',
       }}>
-      {/* Wall background */}
-      <div style={{ position: 'absolute', inset: 0, background: 'var(--surface)', borderLeft: '1px solid var(--hairline)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'var(--surface)', borderLeft: '1px solid var(--hairline)' }} />
 
-      {/* Header */}
-      <div className="relative p-5 pb-2 flex-shrink-0">
-        <h2 className="text-base font-serif tracking-wider text-center" style={{ color: 'var(--ink)' }}>留言墙</h2>
-        <p className="text-[10px] text-center mt-0.5" style={{ color: 'var(--ink-weak)' }}>把想说的话留在这里 · 匿名</p>
-      </div>
+        <div className="relative p-5 pb-2 flex-shrink-0">
+          <h2 className="text-base font-serif tracking-wider text-center" style={{ color: 'var(--ink)' }}>留言墙</h2>
+          <p className="text-[10px] text-center mt-0.5" style={{ color: 'var(--ink-weak)' }}>把想说的话留在这里 · 匿名</p>
+        </div>
 
-      {/* Messages — pinned notes */}
-      <div ref={listRef} className="relative flex-1 overflow-y-auto px-4 py-2" style={{ maskImage: 'linear-gradient(180deg, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-        <div className="columns-2 gap-3">
-          {messages.length === 0 && (
-            <div className="text-center py-8 col-span-2">
-              <p className="text-xs" style={{ color: 'var(--ink-weak)' }}>墙上还没有留言</p>
-              <p className="text-[10px] mt-1" style={{ color: 'var(--ink-weak)' }}>写下第一张纸条吧</p>
-            </div>
-          )}
-          {messages.map((m) => (
-            <div key={m.id} className="card-hover break-inside-avoid mb-3" style={{
-              background: 'var(--surface)',
-              border: '1px solid var(--hairline)',
-              borderRadius: 12,
-              padding: '10px 14px',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 10,
-              boxShadow: 'var(--shadow-card)',
-            }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 6, flex: 'none',
-                background: { amber: '#c98a4b', rose: '#b56a4c', sky: '#8faeb8', violet: '#9b8fb8', emerald: '#8fa184', slate: '#9aa3ad' }[m.color] || '#c98a4b' }} />
-              <div style={{ flex: 1 }}>
-                <p className="m-0 text-[13px] leading-[1.8]" style={{ color: 'var(--ink-soft)' }}>{m.content}</p>
-                <p className="m-0 mt-1 text-[10px]" style={{ color: 'var(--ink-weak)' }}>{m.created_at?.replace('T', ' ').slice(0, 16)}</p>
+        <div ref={listRef} className="relative flex-1 overflow-y-auto px-4 py-2" style={{ maskImage: 'linear-gradient(180deg, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+          <div className="columns-2 gap-3">
+            {messages.length === 0 && (
+              <div className="text-center py-8 col-span-2">
+                <p className="text-xs" style={{ color: 'var(--ink-weak)' }}>墙上还没有留言</p>
+                <p className="text-[10px] mt-1" style={{ color: 'var(--ink-weak)' }}>写下第一张纸条吧</p>
               </div>
-              {m.canDelete && (
-                <button
-                  onClick={e => {
-                    e.stopPropagation();
-                    if (window.confirm('删除这条留言？')) deleteMessage(m.id);
-                  }}
-                  className="flex-none text-[11px] leading-none rounded-full px-1.5 py-0.5 transition-colors"
-                  style={{ color: 'var(--ink-weak)', background: 'transparent' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#b0563c')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--ink-weak)')}
-                  title="删除留言（管理员）"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
+            )}
+            {messages.map(m => (
+              <div key={m.id} className="break-inside-avoid mb-3">
+                <MessageCard m={m} onDelete={deleteMessage} />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Input area */}
-      <div className="relative p-4 flex-shrink-0">
-        <div className="flex gap-2">
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            placeholder="写点什么..."
-            maxLength={500}
-            onKeyDown={e => { if (e.key === 'Enter') handlePost(); }}
-            className="glass-input flex-1 text-xs"
-            style={{ borderRadius: '10px', padding: '8px 12px' }}
-          />
-          <button onClick={handlePost} disabled={posting || !input.trim()}
-            className="glass-btn text-xs flex-shrink-0 disabled:opacity-30">
-            {posting ? '...' : '贴上'}
-          </button>
+        <div className="relative p-4 flex-shrink-0">
+          {renderInput()}
         </div>
-        {error && <p className="text-red-400/60 text-[10px] mt-1.5">{error}</p>}
       </div>
-    </div>
     </>
   );
 }
