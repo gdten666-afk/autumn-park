@@ -41,10 +41,10 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
   const tod = getTimeOfDay();
 
   const palette: Record<string, { sky: string; ground: string; accent: string; rays: string }> = {
-    spring: { sky: 'linear-gradient(180deg, #d4eaf7 0%, #e8f2fa 40%, #f5f0e8 100%)', ground: 'linear-gradient(0deg, rgba(180,165,140,0.7) 0%, rgba(200,185,160,0.4) 40%, transparent 100%)', accent: 'rgba(140,200,160,0.06)', rays: 'rgba(255,250,240,0.15)' },
-    summer: { sky: 'linear-gradient(180deg, #b8daf5 0%, #dce8f0 40%, #f0ebe0 100%)', ground: 'linear-gradient(0deg, rgba(160,150,120,0.7) 0%, rgba(190,175,145,0.4) 40%, transparent 100%)', accent: 'rgba(120,180,140,0.08)', rays: 'rgba(255,245,220,0.2)' },
-    autumn: { sky: 'linear-gradient(180deg, #d4c8b8 0%, #e8ddd0 40%, #f2e8d8 100%)', ground: 'linear-gradient(0deg, rgba(150,120,80,0.7) 0%, rgba(180,150,110,0.4) 40%, transparent 100%)', accent: 'rgba(200,140,80,0.08)', rays: 'rgba(255,230,190,0.12)' },
-    winter: { sky: 'linear-gradient(180deg, #c8d4e0 0%, #dce4ed 40%, #eef0f4 100%)', ground: 'linear-gradient(0deg, rgba(160,165,175,0.6) 0%, rgba(190,195,205,0.35) 40%, transparent 100%)', accent: 'rgba(150,160,180,0.05)', rays: 'rgba(240,240,250,0.08)' },
+    spring: { sky: 'linear-gradient(180deg,#f2efe7 0%,#f7f5ef 55%,#ece8dc 100%)', ground: 'linear-gradient(0deg, rgba(120,140,110,0.14) 0%, rgba(160,170,140,0.06) 45%, transparent 100%)', accent: 'rgba(140,170,130,0.05)', rays: 'rgba(255,250,240,0.25)' },
+    summer: { sky: 'linear-gradient(180deg,#eef0ea 0%,#f6f4ec 55%,#ebe5d6 100%)', ground: 'linear-gradient(0deg, rgba(130,150,110,0.14) 0%, rgba(170,175,140,0.06) 45%, transparent 100%)', accent: 'rgba(120,160,120,0.05)', rays: 'rgba(255,246,225,0.3)' },
+    autumn: { sky: 'linear-gradient(180deg,#f3efe6 0%,#f7f4ec 55%,#eee7da 100%)', ground: 'linear-gradient(0deg, rgba(150,110,70,0.14) 0%, rgba(180,150,110,0.06) 45%, transparent 100%)', accent: 'rgba(181,106,76,0.05)', rays: 'rgba(255,238,210,0.28)' },
+    winter: { sky: 'linear-gradient(180deg,#eef1f2 0%,#f5f5f1 55%,#e8e9e4 100%)', ground: 'linear-gradient(0deg, rgba(150,155,165,0.12) 0%, rgba(180,185,190,0.05) 45%, transparent 100%)', accent: 'rgba(150,160,180,0.04)', rays: 'rgba(245,245,250,0.2)' },
   };
   const c = palette[season] || palette.spring;
 
@@ -56,22 +56,16 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
       {/* Sunny: bright warm glow + sun */}
       {weather === 'sunny' && (
         <>
-          <div className="absolute" style={{
+          <div className="parallax-slow absolute" style={{
             top: '5%', left: '55%',
-            width: 'clamp(120px, 20vw, 280px)', height: 'clamp(120px, 20vw, 280px)',
-            background: 'radial-gradient(circle, rgba(255,240,200,0.7) 0%, rgba(255,220,150,0.3) 30%, rgba(255,200,100,0.05) 60%, transparent 75%)',
+            width: 'clamp(120px, 20vw, 240px)', height: 'clamp(120px, 20vw, 240px)',
+            background: 'radial-gradient(circle, rgba(249,232,200,0.9) 0%, rgba(242,213,160,0.4) 35%, rgba(242,213,160,0) 68%)',
             borderRadius: '50%', zIndex: 2,
-            animation: 'sunPulse 8s ease-in-out infinite',
+            animation: 'sunPulse 9s ease-in-out infinite',
           }} />
           <div className="absolute inset-0" style={{
             zIndex: 3,
-            background: 'linear-gradient(180deg, rgba(255,240,210,0.25) 0%, rgba(255,250,240,0.1) 40%, transparent 70%)',
-          }} />
-          {/* Light rays */}
-          <div className="absolute inset-0" style={{
-            zIndex: 4,
-            background: `radial-gradient(ellipse 60% 40% at 55% 5%, rgba(255,250,220,0.4) 0%, transparent 55%)`,
-            animation: 'godRays 12s ease-in-out infinite',
+            background: 'linear-gradient(180deg, rgba(255,248,235,0.28) 0%, rgba(255,252,246,0.12) 40%, transparent 70%)',
           }} />
         </>
       )}
@@ -131,11 +125,27 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
         </>
       )}
 
-      {/* Subtle atmosphere texture */}
-      <div className="absolute inset-0" style={{ zIndex: 1, opacity: 0.06, background: 'url(/assets/scene/misty-trees.jpg) center/cover no-repeat', filter: 'brightness(1.5) blur(1px)' }} />
-
       {/* Ground */}
       <div className="absolute bottom-0 left-0 right-0" style={{ height: '30vh', zIndex: 2, background: c.ground }} />
+
+      {/* 简约线稿插画：地平线 + 树 */}
+      <div className="absolute inset-0" style={{ zIndex: 2, pointerEvents: 'none' }}>
+        <svg viewBox="0 0 1440 400" preserveAspectRatio="xMidYMax slice" style={{ position: 'absolute', inset: 'auto 0 0 0', width: '100%', height: '42%', opacity: 0.9 }}>
+          <line x1="0" y1="330" x2="1440" y2="330" stroke="rgba(60,52,40,0.14)" strokeWidth="1.2" />
+          <g stroke="rgba(60,52,40,0.5)" strokeWidth="2.4" strokeLinecap="round" fill="none">
+            <path d="M260 332 C256 296 250 268 262 234" />
+            <path d="M264 262 C238 244 222 246 206 228 M264 246 C244 228 238 220 226 200" />
+            <path d="M1170 334 C1174 300 1180 274 1168 244" />
+            <path d="M1168 270 C1192 254 1206 256 1220 240 M1168 254 C1186 238 1192 230 1202 212" />
+          </g>
+          <circle cx="206" cy="228" r="7" fill="rgba(201,138,75,0.5)" />
+          <circle cx="226" cy="200" r="6" fill="rgba(217,160,94,0.5)" />
+          <circle cx="1220" cy="240" r="6" fill="rgba(201,138,75,0.5)" />
+          <circle cx="1202" cy="212" r="5" fill="rgba(217,160,94,0.5)" />
+          <path d="M180 340 C320 322 480 322 620 340" stroke="rgba(60,52,40,0.22)" strokeWidth="1.2" />
+          <path d="M860 344 C1020 328 1180 328 1300 344" stroke="rgba(60,52,40,0.2)" strokeWidth="1.2" />
+        </svg>
+      </div>
 
       {/* Season accent */}
       <div className="absolute inset-0" style={{ zIndex: 3, background: c.accent, transition: 'background 4s ease' }} />
