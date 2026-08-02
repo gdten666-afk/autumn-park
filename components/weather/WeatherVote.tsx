@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Weather } from '@/lib/types';
 import { WEATHERS } from '@/lib/constants';
 
@@ -28,6 +28,7 @@ export default function WeatherVote() {
   const [voting, setVoting] = useState(false);
   const [error, setError] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [loadError, setLoadError] = useState(false);
 
@@ -44,6 +45,18 @@ export default function WeatherVote() {
     }
     setLoadError(true);
   };
+
+  // 点击面板外部时关闭，不再使用全屏遮罩（遮罩会挡住其他控件）
+  useEffect(() => {
+    if (!expanded) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setExpanded(false);
+      }
+    };
+    document.addEventListener('click', onDocClick);
+    return () => document.removeEventListener('click', onDocClick);
+  }, [expanded]);
 
   useEffect(() => {
     const t = setTimeout(fetchData, 0);
@@ -95,7 +108,7 @@ export default function WeatherVote() {
   const todayLabel = formatDate(data.voteDate);
 
   return (
-    <div className="fixed bottom-4 left-4 z-25 flex flex-col items-start gap-2 max-md:bottom-16 max-md:left-2">
+    <div ref={containerRef} className="fixed bottom-4 left-4 z-25 flex flex-col items-start gap-2 max-md:bottom-16 max-md:left-2">
       {/* Compact collapsed button */}
       <button
         onClick={() => setExpanded(!expanded)}
@@ -197,10 +210,6 @@ export default function WeatherVote() {
         </div>
       )}
 
-      {/* Click outside to close */}
-      {expanded && (
-        <div className="fixed inset-0 z-20" onClick={() => setExpanded(false)} />
-      )}
     </div>
   );
 }
