@@ -4,13 +4,20 @@ import { ensureTables, dbAll, dbRun } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import type { ApiResponse } from '@/lib/types';
 import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { apiCacheClear, apiCacheGet, apiCacheSet } from '@/lib/cache';
 
 const MESSAGE_COLORS = ['amber', 'rose', 'sky', 'violet', 'emerald', 'slate'];
 
 export async function GET() {
+  const cached = apiCacheGet<ApiResponse>('messages');
+  if (cached) {
+    return NextResponse.json(cached, { headers: { 'Cache-Control': 'no-cache' } });
+  }
   await ensureTables();
   const messages = await dbAll('SELECT * FROM messages ORDER BY created_at DESC LIMIT 200');
-  return NextResponse.json({ ok: true, data: messages });
+  const body = { ok: true, data: messages } satisfies ApiResponse;
+  apiCacheSet('messages', body, 10_000);
+  return NextResponse.json(body, { headers: { 'Cache-Control': 'no-cache' } });
 }
 
 export async function POST(req: NextRequest) {
@@ -37,6 +44,7 @@ export async function POST(req: NextRequest) {
     const id = nanoid();
     const color = MESSAGE_COLORS[Math.floor(Math.random() * MESSAGE_COLORS.length)];
     await dbRun('INSERT INTO messages (id, content, color) VALUES (?, ?, ?)', [id, content.trim(), color]);
+    apiCacheClear('messages');
 
     const msg = { id, content: content.trim(), color, created_at: new Date().toISOString() };
     return NextResponse.json({ ok: true, data: msg } satisfies ApiResponse<typeof msg>);

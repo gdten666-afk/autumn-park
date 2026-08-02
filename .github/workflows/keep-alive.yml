@@ -16,3 +16,10 @@ jobs:
         run: curl -fsS -o /dev/null -w 'park %{http_code}\n' https://autumn-park.onrender.com/park
       - name: Ping DB-backed API
         run: curl -fsS -o /dev/null -w 'stats %{http_code}\n' https://autumn-park.onrender.com/api/stats
+      - name: Warm photo list and thumbnails
+        run: |
+          curl -fsS -o /dev/null https://autumn-park.onrender.com/api/messages || true
+          ids=$(curl -fsS https://autumn-park.onrender.com/api/photos/public | python3 -c "import sys,json; print(' '.join(p['id'] for p in json.load(sys.stdin)['data'][:5]))" || true)
+          for id in $ids; do
+            curl -fsS -o /dev/null "https://autumn-park.onrender.com/api/photos/$id?thumb=1" || true
+          done

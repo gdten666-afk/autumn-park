@@ -5,6 +5,7 @@ import { getSession, requireSession } from '@/lib/auth';
 import { getTodayDate, getTomorrowDate, getOrComputeDailyWeather, recomputeDailyWeather } from '@/lib/weather';
 import type { ApiResponse, Weather } from '@/lib/types';
 import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { apiCacheClear, apiCacheGet, apiCacheSet } from '@/lib/cache';
 
 const VALID_VOTES: Weather[] = ['sunny', 'cloudy', 'light-rain', 'heavy-rain', 'fog', 'snow'];
 
@@ -14,18 +15,37 @@ export async function GET() {
   const tomorrow = getTomorrowDate();
   const session = await getSession();
 
-  const todayWeather = await getOrComputeDailyWeather(today);
-  const tomorrowWeather = await getOrComputeDailyWeather(tomorrow, todayWeather);
+  interface VoteBase {
+    today: Weather;
+    tomorrow: Weather;
+    voteDate: string;
+    voteCounts: Record<string, number>;
+    totalVotes: number;
+  }
 
-  const voteRows = await dbAll(
-    'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
-    [tomorrow]
-  );
+  let base = apiCacheGet<VoteBase>('weather:vote:base');
+  if (!base) {
+    const todayWeather = await getOrComputeDailyWeather(today);
+    const tomorrowWeather = await getOrComputeDailyWeather(tomorrow, todayWeather);
 
-  // Build vote counts map
-  const voteCounts: Record<string, number> = {};
-  for (const vw of VALID_VOTES) voteCounts[vw] = 0;
-  for (const row of voteRows) voteCounts[row.vote] = row.cnt;
+    const voteRows = await dbAll(
+      'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
+      [tomorrow]
+    );
+
+    const voteCounts: Record<string, number> = {};
+    for (const vw of VALID_VOTES) voteCounts[vw] = 0;
+    for (const row of voteRows) voteCounts[row.vote] = row.cnt;
+
+    base = {
+      today: todayWeather,
+      tomorrow: tomorrowWeather,
+      voteDate: tomorrow,
+      voteCounts,
+      totalVotes: Object.values(voteCounts).reduce((a: number, b: number) => a + b, 0),
+    };
+    apiCacheSet('weather:vote:base', base, 30_000);
+  }
 
   // Check current user's vote
   let userVote: string | null = null;
@@ -34,17 +54,14 @@ export async function GET() {
     userVote = uv?.vote || null;
   }
 
-  return NextResponse.json({
+  const body = {
     ok: true,
     data: {
-      today: todayWeather,
-      tomorrow: tomorrowWeather,
-      voteDate: tomorrow,
-      voteCounts,
-      totalVotes: Object.values(voteCounts).reduce((a: number, b: number) => a + b, 0),
+      ...base,
       userVote,
     },
-  } satisfies ApiResponse);
+  } satisfies ApiResponse;
+  return NextResponse.json(body, { headers: { 'Cache-Control': 'no-cache' } });
 }
 
 export async function POST(req: NextRequest) {
@@ -69,6 +86,8 @@ export async function POST(req: NextRequest) {
       [session.userId, date, vote]
     );
     await recomputeDailyWeather(date, todayWeather);
+    apiCacheClear('weather:vote');
+    apiCacheClear('stats');
 
     return NextResponse.json({ ok: true, data: { date, vote } } satisfies ApiResponse<{ date: string; vote: Weather }>);
   } catch (err: any) {

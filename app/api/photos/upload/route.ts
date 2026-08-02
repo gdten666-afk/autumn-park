@@ -10,6 +10,7 @@ import {
   writeImageBytes,
 } from '@/lib/storage';
 import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { apiCacheClear } from '@/lib/cache';
 
 const MAX_SIZE = 20 * 1024 * 1024;
 const MAX_DIMENSION = 12000;
@@ -79,6 +80,8 @@ export async function POST(req: NextRequest) {
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [photoId, session.userId, `${photoId}.jpg`, fullKey, thumbKey, caption, isPublic ? 1 : 0],
     );
+    apiCacheClear('photos:public');
+    apiCacheClear('stats');
 
     const photo: Photo = {
       id: photoId,

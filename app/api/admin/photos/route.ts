@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
 import { deleteImageKeys, ensureStorageDirs, keyFor, writeImageBytes } from '@/lib/storage';
+import { apiCacheClear } from '@/lib/cache';
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
 
@@ -35,6 +36,8 @@ export async function DELETE(req: NextRequest) {
         } catch {}
       }
       await dbRun('DELETE FROM photos WHERE data IS NULL');
+      apiCacheClear('photos:public');
+      apiCacheClear('stats');
       return NextResponse.json({ ok: true, data: { deleted: photos.length, message: `已清理 ${photos.length} 张失效照片` } });
     }
 
@@ -48,6 +51,8 @@ export async function DELETE(req: NextRequest) {
     }
     await dbRun('DELETE FROM photos');
     await dbRun('DELETE FROM photo_comments');
+    apiCacheClear('photos:public');
+    apiCacheClear('stats');
     return NextResponse.json({ ok: true, data: { deleted: photos.length } });
   } catch (err: any) {
     if (err.message === 'Unauthorized' || err.message === 'Forbidden') {

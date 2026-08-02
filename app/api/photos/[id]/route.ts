@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureTables, dbGet, dbRun } from '@/lib/db';
 import { requireSession, getSession } from '@/lib/auth';
-import { fullImageCache, thumbCache } from '@/lib/cache';
+import { apiCacheClear, fullImageCache, thumbCache } from '@/lib/cache';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
@@ -58,6 +58,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (fs.existsSync(legacyFile)) fs.unlinkSync(legacyFile);
     await dbRun('DELETE FROM photos WHERE id = ?', [id]);
     await dbRun('DELETE FROM photo_comments WHERE photo_id = ?', [id]);
+    apiCacheClear('photos:public');
+    apiCacheClear('stats');
+    fullImageCache.delete(`${id}:full`);
+    fullImageCache.delete(`${id}:medium`);
+    thumbCache.delete(`${id}:thumb`);
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     if (err.message === 'Unauthorized') return NextResponse.json({ ok: false, error: 'Login required' }, { status: 401 });
@@ -91,10 +96,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       });
     }
 
-    const photo = await dbGet(
-      'SELECT id, filename, data, thumb_data, full_key, thumb_key, is_public, user_id FROM photos WHERE id = ?',
-      [id],
-    );
+    // 缩略图只取缩略图字段，避免为一张小图把整张原图 blob 从数据库拖回来。
+    const photo = isThumb
+      ? await dbGet(
+          'SELECT id, thumb_key, thumb_data, is_public, user_id FROM photos WHERE id = ?',
+          [id],
+        )
+      : await dbGet(
+          'SELECT id, filename, data, full_key, is_public, user_id FROM photos WHERE id = ?',
+          [id],
+        );
     if (!photo) return new NextResponse('Not found', { status: 404 });
     if (!(await canView(photo))) return new NextResponse('Not found', { status: 404 });
 

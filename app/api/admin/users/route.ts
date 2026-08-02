@@ -4,6 +4,7 @@ import { requireOperator } from '@/lib/auth';
 import path from 'path';
 import fs from 'fs';
 import { deleteImageKeys } from '@/lib/storage';
+import { apiCacheClear } from '@/lib/cache';
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
 
@@ -37,6 +38,8 @@ export async function DELETE(req: NextRequest) {
     await dbRun('DELETE FROM spaces WHERE user_id = ?', [userId]);
     await dbRun('UPDATE invite_codes SET used_by = NULL WHERE used_by = ?', [userId]);
     await dbRun('DELETE FROM users WHERE id = ? AND role != ?', [userId, 'operator']);
+    apiCacheClear('photos:public');
+    apiCacheClear('stats');
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     if (err.message === 'Unauthorized' || err.message === 'Forbidden') return NextResponse.json({ ok: false, error: 'Operator only' }, { status: 403 });
