@@ -23,6 +23,12 @@ export const SCENE_PLAYLIST: Partial<Record<string, string[]>> = {
 
 export const DEFAULT_PLAYLIST: string[] = [
   '/music/autumn-bench/canon.mp3',
+  '/music/autumn-bench/air-in-g-minor.mp3',
+  '/music/darkroom/gymnopedie.mp3',
+  '/music/starlit-camp/liebestraum.mp3',
+  '/music/lighthouse-coast/adagio.mp3',
+  '/music/lighthouse-coast/pavane.mp3',
+  '/music/bookstore/cello-suite.mp3',
 ];
 
 // 曲目显示名（key 为 public 下音频路径）

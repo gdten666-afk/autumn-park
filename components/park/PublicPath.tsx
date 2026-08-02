@@ -114,7 +114,7 @@ export default function PublicPath() {
                     transform: `rotate(${rotation})`,
                     marginTop: (i % 5) * 12,
                     marginLeft: (i % 3) * 20,
-                    width: 'clamp(130px, 42vw, 240px)',
+                    width: 'clamp(240px, 82vw, 320px)',
                     transition: 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
                   }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'rotate(0deg) scale(1.04)'; e.currentTarget.style.zIndex = '20'; }}
@@ -139,7 +139,7 @@ export default function PublicPath() {
         </div>
       ) : (
         <div className="relative w-full pointer-events-auto md:max-w-[calc(100vw-320px)]" style={{ paddingTop: '12vh', paddingBottom: '20vh', width: '100%', paddingLeft: 'clamp(12px, 4vw, 32px)', paddingRight: 'clamp(12px, 4vw, 32px)' }}>
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4">
+          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4">
             {photos.map(photo => (
               <div key={photo.id} className="break-inside-avoid mb-4 cursor-pointer group/gallery" onClick={() => setExpanded(photo)}>
                 <div className="relative overflow-hidden rounded-xl bg-white ring-1 ring-black/10 hover:ring-black/20 transition-all duration-300 hover:shadow-xl">

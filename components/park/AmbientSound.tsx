@@ -230,6 +230,10 @@ class MusicPlayer {
     return this.playlist.length > 0 && !this.stopped;
   }
 
+  isActive(): boolean {
+    return Boolean(this.audio && !this.stopped && !this.audio.paused);
+  }
+
   stop() {
     sessionStorage.setItem('park_music_off', '1');
     this.stopped = true;
@@ -292,6 +296,15 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   }, [weather]); // eslint-disable-line
   useEffect(() => { loaded.current = true; }, []);
 
+  // 进入角落场景时，若音乐已在播放则切换到该场景歌单
+  useEffect(() => {
+    if (!scene) return;
+    const playlist = SCENE_PLAYLIST[scene];
+    if (playlist && playlist.length > 0 && musicPlayer.isActive()) {
+      musicPlayer.play(playlist);
+    }
+  }, [scene]); // eslint-disable-line
+
   useEffect(() => () => { weatherAudio.stop(); musicPlayer.teardown(); }, []);
 
   const hasWeatherSound = weather !== 'sunny' && weather !== 'cloudy';
@@ -330,9 +343,9 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
               <span className="text-[10px]" style={{ color: 'var(--ink-weak)' }}>{player.playing ? '播放中' : '已暂停'}</span>
             </div>
             <div className="flex items-center gap-3 mb-3">
-              <button className="glass-btn !px-2.5 !py-1" onClick={() => musicPlayer.prev()} title="上一首">⏮</button>
-              <button className="glass-btn !px-3 !py-1" onClick={() => musicPlayer.toggle()} title="播放/暂停">{player.playing ? '暂停' : '播放'}</button>
-              <button className="glass-btn !px-2.5 !py-1" onClick={() => musicPlayer.next()} title="下一首">⏭</button>
+              <button className="glass-btn !px-3 !py-1.5" style={{ minWidth: 40, minHeight: 32 }} onClick={() => musicPlayer.prev()} title="上一首">⏮</button>
+              <button className="glass-btn !px-3 !py-1.5" style={{ minWidth: 40, minHeight: 32 }} onClick={() => musicPlayer.toggle()} title="播放/暂停">{player.playing ? '暂停' : '播放'}</button>
+              <button className="glass-btn !px-3 !py-1.5" style={{ minWidth: 40, minHeight: 32 }} onClick={() => musicPlayer.next()} title="下一首">⏭</button>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[10px]" style={{ color: 'var(--ink-weak)' }}>音量</span>

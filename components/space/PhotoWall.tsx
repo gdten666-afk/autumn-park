@@ -119,8 +119,8 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
 
   // --- Grid class ---
   const gridClass = scene === 'starlit-camp'
-    ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4'
-    : 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3';
+    ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4'
+    : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3';
 
   // --- Empty state ---
   if (!loading && photos.length === 0 && !isOwner) {

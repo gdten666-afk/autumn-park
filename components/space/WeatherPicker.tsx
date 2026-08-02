@@ -12,16 +12,16 @@ interface WeatherPickerProps {
 
 export default function WeatherPicker({ current, onSelect, isOwner }: WeatherPickerProps) {
   return (
-    <div className="flex gap-1 max-md:gap-0.5 flex-wrap">
+    <div className="flex gap-1.5 flex-wrap">
       {WEATHERS.map(w => (
         <button
           key={w.value}
           onClick={() => isOwner && onSelect(w.value)}
           disabled={!isOwner}
-          className={`px-2 py-1 rounded text-sm transition-all ${
+          className={`px-2.5 py-1.5 rounded-lg text-sm border border-white/10 transition-all ${
             current === w.value
-              ? 'bg-white/20 text-white scale-110'
-              : 'bg-white/5 text-white/40 hover:bg-white/10'
+              ? 'bg-white/25 text-white scale-110'
+              : 'bg-white/10 text-white/70 hover:bg-white/20'
           } ${!isOwner && 'cursor-default'}`}
           title={w.label}
         >

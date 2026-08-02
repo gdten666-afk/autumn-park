@@ -12,16 +12,16 @@ interface ScenePickerProps {
 
 export default function ScenePicker({ current, onSelect, isOwner }: ScenePickerProps) {
   return (
-    <div className="flex gap-1 max-md:gap-0.5 flex-wrap">
+    <div className="flex gap-1.5 flex-wrap">
       {SCENES.map(s => (
         <button
           key={s.value}
           onClick={() => isOwner && onSelect(s.value)}
           disabled={!isOwner}
-          className={`px-3 py-1 rounded-full text-sm transition-all ${
+          className={`px-3 py-1.5 rounded-full text-xs border border-white/10 transition-all ${
             current === s.value
-              ? 'bg-white/20 text-white'
-              : 'bg-white/5 text-white/40 hover:bg-white/10'
+              ? 'bg-white/25 text-white'
+              : 'bg-white/10 text-white/70 hover:bg-white/20'
           } ${!isOwner && 'cursor-default'}`}
           title={s.label}
         >

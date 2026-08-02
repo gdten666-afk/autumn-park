@@ -70,21 +70,21 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
     <div className="fixed inset-0 z-30">
       <SceneFrame scene={space.scene} weather={space.weather}>
         <AmbientSound weather={space.weather} scene={space.scene} />
-        <div className="absolute top-0 left-0 right-0 z-20 p-3 flex items-center justify-between gap-3 max-md:flex-col max-md:gap-2 max-md:items-start">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={onExit} className="glass-btn shrink-0 text-xs !px-3 !py-1">
+        <div className="absolute top-0 left-0 right-0 z-20 px-3 pt-3 pb-2 flex flex-col md:flex-row md:items-center md:justify-between gap-2"
+          style={{ background: 'linear-gradient(180deg, rgba(10,12,18,0.5) 0%, rgba(10,12,18,0.18) 70%, transparent 100%)' }}>
+          <div className="flex items-center justify-between gap-2">
+            <button onClick={onExit} className="glass-btn shrink-0 text-xs !px-3 !py-1.5">
               ← 回到公园
             </button>
-            <div className="glass px-3 py-1.5 shrink-0 max-md:hidden">
-              <p className="text-white/40 text-xs">
-                {displayName && <span className="text-white/60">{displayName}</span>}
-                {!displayName && <span className="text-white/40">{space.owner_name}</span>}
-                <span className="text-white/25"> 的角落</span>
+            <div className="glass px-3 py-1.5 shrink-0 hidden md:block">
+              <p className="text-xs" style={{ color: 'var(--ink-soft)' }}>
+                <span style={{ color: 'var(--ink)' }}>{displayName || space.owner_name}</span>
+                <span style={{ color: 'var(--ink-weak)' }}> 的角落</span>
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 max-md:gap-1 max-md:flex-wrap max-md:w-full">
+          <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:gap-2">
             <WeatherPicker current={space.weather} onSelect={w => updateSpace({ weather: w })} isOwner={isOwner} />
             <ScenePicker current={space.scene} onSelect={s => updateSpace({ scene: s })} isOwner={isOwner} />
           </div>
