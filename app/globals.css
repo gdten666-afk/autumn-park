@@ -44,18 +44,19 @@ body {
 }
 .glass-btn {
   background: var(--surface);
-  border: 1px solid var(--hairline-strong);
+  border: 1px solid rgba(60, 52, 40, 0.3);
   border-radius: 999px;
   padding: 7px 16px;
   font-size: 12px;
   letter-spacing: 0.05em;
-  color: var(--ink-soft);
+  color: var(--ink);
+  font-weight: 500;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   cursor: pointer;
 }
 .glass-btn:hover {
-  background: #faf9f5;
-  border-color: var(--hairline-strong);
+  background: #f4f1ea;
+  border-color: rgba(60, 52, 40, 0.45);
   color: var(--ink);
   transform: translateY(-1px);
   box-shadow: var(--shadow-card);
@@ -63,7 +64,7 @@ body {
 .glass-btn:active { transform: scale(0.97); }
 .glass-input {
   background: #fbfaf7;
-  border: 1px solid var(--hairline-strong);
+  border: 1px solid rgba(60, 52, 40, 0.32);
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 13px;
@@ -73,7 +74,7 @@ body {
   font-family: inherit;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.glass-input::placeholder { color: rgba(60, 52, 40, 0.28); }
+.glass-input::placeholder { color: rgba(60, 52, 40, 0.45); }
 .glass-input:focus { border-color: rgba(60, 52, 40, 0.35); box-shadow: 0 0 0 3px rgba(60, 52, 40, 0.05); }
 
 /* --- Buttons --- */
@@ -92,7 +93,7 @@ body {
 .btn-primary:active { transform: scale(0.97); }
 .btn-ghost {
   background: transparent;
-  border: 1px solid rgba(60, 52, 40, 0.18);
+  border: 1px solid rgba(60, 52, 40, 0.45);
   border-radius: 999px;
   padding: 9px 18px;
   font-size: 12px;
@@ -105,13 +106,14 @@ body {
 
 /* --- Minimal utility classes --- */
 .chip {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid var(--hairline-strong);
+  background: var(--surface);
+  border: 1px solid rgba(60, 52, 40, 0.3);
   border-radius: 999px;
   padding: 7px 14px;
   font-size: 11px;
   letter-spacing: 0.05em;
-  color: var(--ink-soft);
+  color: var(--ink);
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 7px;

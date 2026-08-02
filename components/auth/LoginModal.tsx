@@ -95,14 +95,14 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
         <div className="flex mb-4" style={{ borderBottom: '1px solid var(--hairline)' }}>
           <button
             onClick={() => { setTab('login'); setError(''); }}
-            className={`flex-1 pb-2 text-sm transition-colors ${tab === 'login' ? 'text-[#2c2822]' : 'text-[#8a8377]'}`}
+            className={`flex-1 pb-2 text-sm transition-colors ${tab === 'login' ? 'text-[#2c2822]' : 'text-[#6f685e]'}`}
             style={{ borderBottom: tab === 'login' ? '2px solid var(--accent)' : '2px solid transparent' }}
           >
             登录
           </button>
           <button
             onClick={() => { setTab('register'); setError(''); }}
-            className={`flex-1 pb-2 text-sm transition-colors ${tab === 'register' ? 'text-[#2c2822]' : 'text-[#8a8377]'}`}
+            className={`flex-1 pb-2 text-sm transition-colors ${tab === 'register' ? 'text-[#2c2822]' : 'text-[#6f685e]'}`}
             style={{ borderBottom: tab === 'register' ? '2px solid var(--accent)' : '2px solid transparent' }}
           >
             注册

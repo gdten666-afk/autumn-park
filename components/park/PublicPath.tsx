@@ -50,7 +50,7 @@ export default function PublicPath() {
             onClick={() => setViewMode(mode)}
             className="px-3 py-1 text-[11px] rounded-full transition-colors"
             style={{
-              color: viewMode === mode ? 'var(--ink)' : 'var(--ink-weak)',
+              color: viewMode === mode ? 'var(--ink)' : 'var(--ink-faint)',
               background: viewMode === mode ? 'rgba(60,52,40,0.06)' : 'transparent',
               letterSpacing: '0.1em',
             }}

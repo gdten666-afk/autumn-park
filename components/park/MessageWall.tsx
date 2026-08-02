@@ -44,7 +44,10 @@ export default function MessageWall() {
     setPosting(false);
   };
 
-  const [open, setOpen] = useState(true);
+  // 移动端默认收起留言墙，避免遮挡公园内容；桌面端默认展开
+  const [open, setOpen] = useState<boolean>(() =>
+    typeof window === 'undefined' ? true : window.innerWidth >= 768
+  );
 
   return (
     <>
