@@ -99,14 +99,37 @@ export async function ensureTables() {
     CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_comments_photo ON photo_comments(photo_id);
   `);
-  try { await db.execute(`ALTER TABLE users ADD COLUMN password_hash TEXT DEFAULT ''`); } catch {}
-  try { await db.execute(`ALTER TABLE photos ADD COLUMN data BLOB`); } catch {}
-  try { await db.execute(`ALTER TABLE photos ADD COLUMN thumb_data BLOB`); } catch {}
-  try { await db.execute(`ALTER TABLE photos ADD COLUMN full_key TEXT DEFAULT ''`); } catch {}
-  try { await db.execute(`ALTER TABLE photos ADD COLUMN thumb_key TEXT DEFAULT ''`); } catch {}
-  try { await db.execute(`ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT ''`); } catch {}
-  try { await db.execute(`ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''`); } catch {}
-  try { await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_name ON users(name)`); } catch {}
+  // 只对确实缺失的列执行 ALTER，避免冷启动时跨洋做多次必然失败的 DDL。
+  const tableCols = async (table: string): Promise<Set<string>> => {
+    const r = await db.execute(`PRAGMA table_info(${table})`);
+    const names = new Set<string>();
+    for (const row of r.rows) {
+      const name = (row as Record<string, unknown>).name;
+      if (typeof name === 'string') names.add(name);
+    }
+    return names;
+  };
+  const [userCols, photoCols] = await Promise.all([
+    tableCols('users'),
+    tableCols('photos'),
+  ]);
+  if (!userCols.has('password_hash')) {
+    await db.execute(`ALTER TABLE users ADD COLUMN password_hash TEXT DEFAULT ''`);
+  }
+  if (!photoCols.has('data')) await db.execute(`ALTER TABLE photos ADD COLUMN data BLOB`);
+  if (!photoCols.has('thumb_data')) await db.execute(`ALTER TABLE photos ADD COLUMN thumb_data BLOB`);
+  if (!photoCols.has('full_key')) await db.execute(`ALTER TABLE photos ADD COLUMN full_key TEXT DEFAULT ''`);
+  if (!photoCols.has('thumb_key')) await db.execute(`ALTER TABLE photos ADD COLUMN thumb_key TEXT DEFAULT ''`);
+  if (!userCols.has('display_name')) {
+    await db.execute(`ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT ''`);
+  }
+  if (!userCols.has('bio')) await db.execute(`ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''`);
+  const idx = await db.execute(
+    `SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_users_name'`,
+  );
+  if (idx.rows.length === 0) {
+    try { await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_name ON users(name)`); } catch {}
+  }
   const bootstrap = process.env.BOOTSTRAP_CODE;
   if (bootstrap) {
     await db.execute({ sql: 'INSERT OR IGNORE INTO invite_codes (code) VALUES (?)', args: [bootstrap] });

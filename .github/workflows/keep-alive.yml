@@ -1,0 +1,18 @@
+name: keep-alive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping page
+        run: curl -fsS -o /dev/null -w 'park %{http_code}\n' https://autumn-park.onrender.com/park
+      - name: Ping DB-backed API
+        run: curl -fsS -o /dev/null -w 'stats %{http_code}\n' https://autumn-park.onrender.com/api/stats
