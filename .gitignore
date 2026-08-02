@@ -48,6 +48,7 @@ yarn-error.log*
 /qa_flow.py
 /start_server.py
 /verify_refactor.py
+/.playwright-cli/
 
 # typescript
 *.tsbuildinfo

@@ -44,7 +44,7 @@ export async function GET() {
       voteCounts,
       totalVotes: Object.values(voteCounts).reduce((a: number, b: number) => a + b, 0),
     };
-    apiCacheSet('weather:vote:base', base, 30_000);
+    apiCacheSet('weather:vote:base', base, 60_000);
   }
 
   // Check current user's vote

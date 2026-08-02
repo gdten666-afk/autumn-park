@@ -19,6 +19,7 @@ jobs:
       - name: Warm photo list and thumbnails
         run: |
           curl -fsS -o /dev/null https://autumn-park.onrender.com/api/messages || true
+          curl -fsS -o /dev/null https://autumn-park.onrender.com/api/weather/vote || true
           ids=$(curl -fsS https://autumn-park.onrender.com/api/photos/public | python3 -c "import sys,json; print(' '.join(p['id'] for p in json.load(sys.stdin)['data'][:5]))" || true)
           for id in $ids; do
             curl -fsS -o /dev/null "https://autumn-park.onrender.com/api/photos/$id?thumb=1" || true
