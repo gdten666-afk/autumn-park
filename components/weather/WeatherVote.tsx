@@ -116,6 +116,7 @@ export default function WeatherVote() {
       {expanded && (
         <div
           className="glass-strong p-4 min-w-[210px] max-w-[calc(100vw-2rem)] animate-slideUp"
+          style={{ zIndex: 30 }}
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}

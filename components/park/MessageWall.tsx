@@ -7,6 +7,7 @@ interface Message {
   content: string;
   color: string;
   created_at: string;
+  canDelete?: boolean;
 }
 
 export default function MessageWall() {
@@ -42,6 +43,18 @@ export default function MessageWall() {
       setError(data.status === 401 ? '登录后才能留言' : (data.error || '发送失败'));
     }
     setPosting(false);
+  };
+
+  const deleteMessage = async (id: string) => {
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      const d = await res.json();
+      if (d.ok) setMessages(prev => prev.filter(m => m.id !== id));
+    } catch {}
   };
 
   // 移动端默认收起留言墙，避免遮挡公园内容；桌面端默认展开
@@ -98,6 +111,21 @@ export default function MessageWall() {
                 <p className="m-0 text-[13px] leading-[1.8]" style={{ color: 'var(--ink-soft)' }}>{m.content}</p>
                 <p className="m-0 mt-1 text-[10px]" style={{ color: 'var(--ink-weak)' }}>{m.created_at?.replace('T', ' ').slice(0, 16)}</p>
               </div>
+              {m.canDelete && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (window.confirm('删除这条留言？')) deleteMessage(m.id);
+                  }}
+                  className="flex-none text-[11px] leading-none rounded-full px-1.5 py-0.5 transition-colors"
+                  style={{ color: 'var(--ink-weak)', background: 'transparent' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#b0563c')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--ink-weak)')}
+                  title="删除留言（管理员）"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           ))}
         </div>
