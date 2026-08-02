@@ -5,7 +5,6 @@ primary_region = "nrt"
   dockerfile = "Dockerfile"
 
 [env]
-  BOOTSTRAP_CODE = "park-founder-2026"
   DB_PATH = "/app/data/park.db"
   UPLOAD_DIR = "/app/uploads"
 

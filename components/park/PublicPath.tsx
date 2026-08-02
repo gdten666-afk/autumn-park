@@ -18,10 +18,10 @@ export default function PublicPath() {
   }, []);
 
   useEffect(() => {
-    loadPhotos();
+    const t = setTimeout(loadPhotos, 0);
     const handler = () => loadPhotos();
     window.addEventListener('photo-uploaded', handler);
-    return () => window.removeEventListener('photo-uploaded', handler);
+    return () => { clearTimeout(t); window.removeEventListener('photo-uploaded', handler); };
   }, [loadPhotos]);
 
   const noPhotos = photos.length === 0;

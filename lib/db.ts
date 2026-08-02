@@ -1,9 +1,21 @@
 // lib/db.ts
 // Works with Turso cloud or local SQLite via @libsql/client
 import { createClient, type Client } from '@libsql/client';
+import fs from 'fs';
+import path from 'path';
 
 const TURSO_URL = process.env.TURSO_DATABASE_URL || 'file:./data/park.db';
 const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN || '';
+
+// Local SQLite needs its parent directory to exist before the client opens it.
+if (TURSO_URL.startsWith('file:')) {
+  const dbPath = TURSO_URL.replace(/^file:/, '');
+  try {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+  } catch {
+    // Directory creation failure will surface as a clear connection error later.
+  }
+}
 
 let client: Client | null = null;
 
@@ -81,12 +93,20 @@ export async function ensureTables() {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (photo_id) REFERENCES photos(id) ON DELETE CASCADE
     );
+
+    CREATE INDEX IF NOT EXISTS idx_photos_user ON photos(user_id);
+    CREATE INDEX IF NOT EXISTS idx_photos_public ON photos(is_public, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_comments_photo ON photo_comments(photo_id);
   `);
   try { await db.execute(`ALTER TABLE users ADD COLUMN password_hash TEXT DEFAULT ''`); } catch {}
   try { await db.execute(`ALTER TABLE photos ADD COLUMN data BLOB`); } catch {}
   try { await db.execute(`ALTER TABLE photos ADD COLUMN thumb_data BLOB`); } catch {}
+  try { await db.execute(`ALTER TABLE photos ADD COLUMN full_key TEXT DEFAULT ''`); } catch {}
+  try { await db.execute(`ALTER TABLE photos ADD COLUMN thumb_key TEXT DEFAULT ''`); } catch {}
   try { await db.execute(`ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT ''`); } catch {}
   try { await db.execute(`ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''`); } catch {}
+  try { await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_name ON users(name)`); } catch {}
   const bootstrap = process.env.BOOTSTRAP_CODE;
   if (bootstrap) {
     await db.execute({ sql: 'INSERT OR IGNORE INTO invite_codes (code) VALUES (?)', args: [bootstrap] });

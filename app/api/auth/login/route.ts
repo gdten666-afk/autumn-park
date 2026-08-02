@@ -3,10 +3,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureTables, dbGet } from '@/lib/db';
 import { createSession, verifyPassword } from '@/lib/auth';
 import type { ApiResponse, UserSession } from '@/lib/types';
+import { clientIp, rateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
     await ensureTables();
+    const ip = clientIp(req);
+    if (!rateLimit(`login:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ ok: false, error: '尝试过于频繁，请稍后再试' }, { status: 429 });
+    }
     const { name, password, inviteCode } = await req.json();
     const trimmedName = (name || '').trim();
 
@@ -15,6 +20,11 @@ export async function POST(req: NextRequest) {
       const user = await dbGet('SELECT id, name, role FROM users WHERE invite_code = ? AND name = ?', [inviteCode.trim(), trimmedName]);
       if (!user) {
         return NextResponse.json({ ok: false, error: '邀请码和用户名不匹配' }, { status: 404 });
+      }
+      // Operators must use a password — the reusable bootstrap code must not
+      // remain a passwordless backdoor into the admin role.
+      if (user.role === 'operator') {
+        return NextResponse.json({ ok: false, error: '管理员账号请使用密码登录' }, { status: 403 });
       }
       await createSession({ id: user.id, name: user.name, role: user.role });
       return NextResponse.json({ ok: true, data: { userId: user.id, name: user.name, role: user.role } satisfies UserSession } satisfies ApiResponse<UserSession>);

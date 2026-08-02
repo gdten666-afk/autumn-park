@@ -54,7 +54,6 @@ export function createParticle(
   config: typeof SEASON_PARTICLES[keyof typeof SEASON_PARTICLES],
   weatherMult?: { type: Particle['type']; density: number; speedMult: number; sizeMult: number } | null
 ): Particle {
-  const densityMult = weatherMult?.density ?? 1;
   const speedMult = weatherMult?.speedMult ?? 1;
   const sizeMult = weatherMult?.sizeMult ?? 1;
 
@@ -106,7 +105,8 @@ export function updateParticle(p: Particle, canvasW: number, canvasH: number): P
     return { ...p };
   }
 
-  let { x, y, vx, vy, opacity, rotation, rotationSpeed } = p;
+  let { x, y, opacity, rotation } = p;
+  const { vx, vy, rotationSpeed } = p;
 
   x += vx;
   y += vy;

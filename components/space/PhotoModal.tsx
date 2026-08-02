@@ -51,7 +51,11 @@ export default function PhotoModal({
     } catch {}
   }, [photo.id]);
 
-  useEffect(() => { loadComments(); }, [loadComments]);
+  useEffect(() => {
+    // 延后一帧再发起请求，避免在 effect 体内同步触发 setState（react-hooks 规则）
+    const t = setTimeout(loadComments, 0);
+    return () => clearTimeout(t);
+  }, [loadComments]);
 
   const postComment = async () => {
     if (!commentText.trim()) return;

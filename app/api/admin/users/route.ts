@@ -3,6 +3,7 @@ import { ensureTables, dbAll, dbRun } from '@/lib/db';
 import { requireOperator } from '@/lib/auth';
 import path from 'path';
 import fs from 'fs';
+import { deleteImageKeys } from '@/lib/storage';
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
 
@@ -24,12 +25,14 @@ export async function DELETE(req: NextRequest) {
     await requireOperator();
     const { userId } = await req.json();
     if (!userId) return NextResponse.json({ ok: false, error: 'userId required' }, { status: 400 });
-    const photos = await dbAll('SELECT filename FROM photos WHERE user_id = ?', [userId]);
+    const photos = await dbAll('SELECT filename, full_key, thumb_key FROM photos WHERE user_id = ?', [userId]);
     for (const p of photos) {
+      await deleteImageKeys([p.full_key, p.thumb_key]);
       const filePath = path.join(UPLOAD_DIR, p.filename);
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     }
     await dbRun('DELETE FROM photos WHERE user_id = ?', [userId]);
+    await dbRun('DELETE FROM photo_comments WHERE user_id = ?', [userId]);
     await dbRun('DELETE FROM weather_votes WHERE user_id = ?', [userId]);
     await dbRun('DELETE FROM spaces WHERE user_id = ?', [userId]);
     await dbRun('UPDATE invite_codes SET used_by = NULL WHERE used_by = ?', [userId]);

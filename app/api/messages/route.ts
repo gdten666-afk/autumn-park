@@ -3,12 +3,13 @@ import { nanoid } from 'nanoid';
 import { ensureTables, dbAll, dbRun } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import type { ApiResponse } from '@/lib/types';
+import { clientIp, rateLimit } from '@/lib/rate-limit';
 
 const MESSAGE_COLORS = ['amber', 'rose', 'sky', 'violet', 'emerald', 'slate'];
 
 export async function GET() {
   await ensureTables();
-  const messages = await dbAll('SELECT * FROM messages ORDER BY created_at DESC LIMIT 100');
+  const messages = await dbAll('SELECT * FROM messages ORDER BY created_at DESC LIMIT 200');
   return NextResponse.json({ ok: true, data: messages });
 }
 
@@ -18,6 +19,11 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ ok: false, error: 'Login required to post messages' }, { status: 401 });
+    }
+
+    const ip = clientIp(req);
+    if (!rateLimit(`message:${ip}`, 20, 60_000)) {
+      return NextResponse.json({ ok: false, error: '留言太频繁，请稍后再试' }, { status: 429 });
     }
 
     const { content } = await req.json();

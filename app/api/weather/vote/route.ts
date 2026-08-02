@@ -4,6 +4,7 @@ import { ensureTables, dbAll, dbGet, dbRun } from '@/lib/db';
 import { getSession, requireSession } from '@/lib/auth';
 import { getTodayDate, getTomorrowDate, getOrComputeDailyWeather, recomputeDailyWeather } from '@/lib/weather';
 import type { ApiResponse, Weather } from '@/lib/types';
+import { clientIp, rateLimit } from '@/lib/rate-limit';
 
 const VALID_VOTES: Weather[] = ['sunny', 'cloudy', 'light-rain', 'heavy-rain', 'fog', 'snow'];
 
@@ -50,6 +51,10 @@ export async function POST(req: NextRequest) {
   try {
     await ensureTables();
     const session = await requireSession();
+    const ip = clientIp(req);
+    if (!rateLimit(`vote:${ip}`, 30, 60_000)) {
+      return NextResponse.json({ ok: false, error: '投票太频繁，请稍后再试' }, { status: 429 });
+    }
     const { vote } = await req.json();
 
     if (!VALID_VOTES.includes(vote)) {

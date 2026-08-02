@@ -4,8 +4,18 @@ import { requireOperator } from '@/lib/auth';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
+import { deleteImageKeys, ensureStorageDirs, keyFor, writeImageBytes } from '@/lib/storage';
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
+
+function toBuffer(data: any): Buffer {
+  if (Buffer.isBuffer(data)) return data;
+  if (data instanceof ArrayBuffer) return Buffer.from(data);
+  if (Array.isArray(data)) return Buffer.from(data);
+  if (typeof data === 'object' && data !== null && 'bytes' in data) return Buffer.from(data.bytes);
+  if (typeof data === 'string') return Buffer.from(data, 'base64');
+  throw new Error(`unsupported: ${typeof data}`);
+}
 
 // DELETE all photos (or only broken ones with ?broken=1)
 export async function DELETE(req: NextRequest) {
@@ -16,19 +26,28 @@ export async function DELETE(req: NextRequest) {
     const brokenOnly = url.searchParams.get('broken') === '1';
 
     if (brokenOnly) {
-      const photos = await dbAll('SELECT id, filename FROM photos WHERE data IS NULL');
+      const photos = await dbAll('SELECT id, full_key, thumb_key FROM photos WHERE data IS NULL');
       for (const p of photos) {
-        try { const fp = path.join(UPLOAD_DIR, p.filename); if (fs.existsSync(fp)) fs.unlinkSync(fp); } catch {}
+        await deleteImageKeys([p.full_key, p.thumb_key]);
+        try {
+          const fp = path.join(UPLOAD_DIR, p.filename);
+          if (fs.existsSync(fp)) fs.unlinkSync(fp);
+        } catch {}
       }
       await dbRun('DELETE FROM photos WHERE data IS NULL');
       return NextResponse.json({ ok: true, data: { deleted: photos.length, message: `已清理 ${photos.length} 张失效照片` } });
     }
 
-    const photos = await dbAll('SELECT filename FROM photos');
+    const photos = await dbAll('SELECT id, full_key, thumb_key FROM photos');
     for (const p of photos) {
-      try { const fp = path.join(UPLOAD_DIR, p.filename); if (fs.existsSync(fp)) fs.unlinkSync(fp); } catch {}
+      await deleteImageKeys([p.full_key, p.thumb_key]);
+      try {
+        const fp = path.join(UPLOAD_DIR, p.filename);
+        if (fs.existsSync(fp)) fs.unlinkSync(fp);
+      } catch {}
     }
     await dbRun('DELETE FROM photos');
+    await dbRun('DELETE FROM photo_comments');
     return NextResponse.json({ ok: true, data: { deleted: photos.length } });
   } catch (err: any) {
     if (err.message === 'Unauthorized' || err.message === 'Forbidden') {
@@ -38,42 +57,44 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-// POST: migrate old photos (disk→DB) + regenerate thumbnails
+// POST: migrate legacy DB-blob photos into the storage layer + regenerate thumbs
 export async function POST(req: NextRequest) {
   try {
     await ensureTables();
     await requireOperator();
+    ensureStorageDirs();
 
-    const BATCH_SIZE = 1;  // Process 1 at a time — free tier CPU is too weak for parallel
-
-    // Only process photos with BLOB data (disk-only photos with NULL data can't be recovered)
+    const BATCH_SIZE = 1; // free-tier CPU is weak; keep batches tiny
     const [remaining] = await dbAll(
-      'SELECT COUNT(*) as cnt FROM photos WHERE data IS NOT NULL AND thumb_data IS NULL'
+      'SELECT COUNT(*) as cnt FROM photos WHERE data IS NOT NULL AND (full_key = \'\' OR thumb_key = \'\')'
     );
-
     if (remaining.cnt === 0) {
       return NextResponse.json({ ok: true, data: { done: true, message: '所有照片已完成' } });
     }
 
-    // Fetch one batch
     const photos = await dbAll(
-      'SELECT id, data FROM photos WHERE data IS NOT NULL AND thumb_data IS NULL LIMIT ?',
+      'SELECT id, data FROM photos WHERE data IS NOT NULL AND (full_key = \'\' OR thumb_key = \'\') LIMIT ?',
       [BATCH_SIZE]
     );
 
     const errors: string[] = [];
     let ok = 0;
-
-    // Process in parallel (max 5 at once)
     const results = await Promise.all(
       photos.map(async (p: any) => {
         try {
           const buf = toBuffer(p.data);
+          const fullKey = keyFor(p.id, 'full');
+          const thumbKey = keyFor(p.id, 'thumb');
           const thumb = await sharp(buf)
-            .resize(300, 300, { fit: 'inside', withoutEnlargement: true })
-            .jpeg({ quality: 60, mozjpeg: true })
+            .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 65, mozjpeg: true })
             .toBuffer();
-          await dbRun('UPDATE photos SET thumb_data = ? WHERE id = ?', [thumb, p.id]);
+          await writeImageBytes(fullKey, Buffer.from(buf));
+          await writeImageBytes(thumbKey, Buffer.from(thumb));
+          await dbRun(
+            'UPDATE photos SET full_key = ?, thumb_key = ?, data = NULL, thumb_data = NULL WHERE id = ?',
+            [fullKey, thumbKey, p.id]
+          );
           return { id: p.id, ok: true };
         } catch (e: any) {
           return { id: p.id, error: e.message };
@@ -87,7 +108,6 @@ export async function POST(req: NextRequest) {
     }
 
     const left = remaining.cnt - photos.length;
-
     return NextResponse.json({
       ok: true,
       data: {
@@ -104,13 +124,4 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ ok: false, error: `Failed: ${err.message}` }, { status: 500 });
   }
-}
-
-function toBuffer(data: any): Buffer {
-  if (Buffer.isBuffer(data)) return data;
-  if (data instanceof ArrayBuffer) return Buffer.from(data);
-  if (Array.isArray(data)) return Buffer.from(data); // libsql might return byte array
-  if (typeof data === 'object' && data !== null && 'bytes' in data) return Buffer.from(data.bytes);
-  if (typeof data === 'string') return Buffer.from(data, 'base64');
-  throw new Error(`unsupported: ${typeof data}`);
 }

@@ -64,8 +64,8 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
       setError('请填写名字和邀请码');
       return;
     }
-    if (!regPassword || regPassword.length < 4) {
-      setError('密码至少4位');
+    if (!regPassword || regPassword.length < 8) {
+      setError('密码至少8位');
       return;
     }
     if (regPassword !== regConfirm) {
@@ -169,7 +169,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
             />
             <input
               type="password"
-              placeholder="设置密码（至少4位）"
+              placeholder="设置密码（至少8位）"
               value={regPassword}
               onChange={e => setRegPassword(e.target.value)}
               className="glass-input mb-3"

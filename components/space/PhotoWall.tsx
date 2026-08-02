@@ -25,11 +25,12 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
   const [editValue, setEditValue] = useState('');
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     fetch(`/api/photos/user/${userId}`)
       .then(r => r.json())
-      .then(data => { if (data.ok) setPhotos(data.data); })
-      .finally(() => setLoading(false));
+      .then(data => { if (!cancelled && data.ok) setPhotos(data.data); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [userId]);
 
   // --- Upload ---

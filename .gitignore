@@ -32,12 +32,22 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
 
 # local database
 /data
+/uploads
+*.log
+/server.log*
+
+# local QA harness (never commit)
+/qa/
+/qa_flow.py
+/start_server.py
+/verify_refactor.py
 
 # typescript
 *.tsbuildinfo
