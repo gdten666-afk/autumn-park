@@ -77,7 +77,7 @@ export default function ParkPage() {
         <ParkScene seasonState={seasonState} weather={weather} />
 
         {/* Welcome hero */}
-        <div className="welcome-text relative px-4 md:px-0" style={{ paddingTop: 'clamp(72px, 14vh, 140px)', paddingLeft: '4vw', zIndex: 20 }}>
+        <div className="welcome-text pointer-events-none relative px-4 md:px-0" style={{ paddingTop: 'clamp(72px, 14vh, 140px)', paddingLeft: '4vw', zIndex: 20 }}>
           <div className="flex flex-col items-start max-w-lg">
             <div className="kicker mb-5">AUTUMN PARK · 四季流转</div>
             <h1 className="m-0 text-[clamp(30px,5vw,52px)] leading-[1.22] font-medium tracking-wide">
@@ -87,7 +87,7 @@ export default function ParkPage() {
             <p className="text-[13px] leading-[2] max-w-[300px] mb-7" style={{ color: 'var(--ink-faint)' }}>
               照片、留言与天气都安静地留在这里。向下走，逛逛这座公园。
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 pointer-events-auto">
               <button
                 onClick={() => { if (session) enterCorner(session.userId, session.name); else setShowLogin(true); }}
                 className="btn-primary"
