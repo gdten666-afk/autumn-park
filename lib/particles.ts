@@ -28,7 +28,7 @@ export const SEASON_PARTICLES: Record<Season, {
 }> = {
   spring:   { type: 'petal',    colors: ['#fce4ec', '#f8bbd0', '#f48fb1', '#fff'], count: 80,  minSize: 3, maxSize: 8,  minSpeed: 0.3, maxSpeed: 0.8 },
   summer:   { type: 'firefly',  colors: ['#fff9c4', '#ffecb3', '#ffe082'],          count: 40,  minSize: 2, maxSize: 4,  minSpeed: 0.1, maxSpeed: 0.3 },
-  autumn:   { type: 'leaf',     colors: ['#ff8f00', '#d84315', '#bf360c', '#f9a825'], count: 100, minSize: 4, maxSize: 12, minSpeed: 0.4, maxSpeed: 1.0 },
+  autumn:   { type: 'leaf',     colors: ['#c98a4b', '#b56a4c', '#d9a05e'], count: 18, minSize: 4, maxSize: 10, minSpeed: 0.12, maxSpeed: 0.35 },
   winter:   { type: 'snowflake',colors: ['#fff', '#e3f2fd', '#bbdefb'],               count: 120, minSize: 2, maxSize: 6,  minSpeed: 0.1, maxSpeed: 0.4 },
 };
 
