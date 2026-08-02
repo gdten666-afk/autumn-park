@@ -20,10 +20,6 @@ import StatsBar from '@/components/park/StatsBar';
 import { getSeasonState } from '@/lib/seasons';
 import type { SeasonState, Weather, UserSession } from '@/lib/types';
 
-const SEASON_NAME: Record<string, string> = {
-  spring: '春', summer: '夏', autumn: '秋', winter: '冬',
-};
-
 export default function ParkPage() {
   const [seasonState, setSeasonState] = useState<SeasonState>(() => getSeasonState());
   const [weather, setWeather] = useState<Weather>('sunny');
@@ -81,37 +77,38 @@ export default function ParkPage() {
         <ParkScene seasonState={seasonState} weather={weather} />
 
         {/* Welcome hero */}
-        <div className="welcome-text relative px-4 md:px-0" style={{ paddingTop: 'clamp(60px, 12vh, 120px)', paddingLeft: '4vw', zIndex: 20 }}>
+        <div className="welcome-text relative px-4 md:px-0" style={{ paddingTop: 'clamp(72px, 14vh, 140px)', paddingLeft: '4vw', zIndex: 20 }}>
           <div className="flex flex-col items-start max-w-lg">
-            {/* Season badge */}
-            <div className="glass-btn inline-flex items-center gap-2 mb-6 cursor-default">
-              <span className="w-2 h-2 rounded-full bg-amber-400/70 animate-breathe" />
-              <span className="text-black/50 text-xs tracking-wider">
-                {SEASON_NAME[seasonState.season]} · 四季公园
-              </span>
-            </div>
-
-            {/* Subtitle */}
-            <p className="text-black/50 text-sm leading-relaxed max-w-xs mb-8" style={{ lineHeight: '1.8' }}>
-              一个随四季流转的数字公园，
-              <br />每个人在这里都有自己的角落。
+            <div className="kicker mb-5">AUTUMN PARK · 四季流转</div>
+            <h1 className="m-0 text-[clamp(30px,5vw,52px)] leading-[1.22] font-medium tracking-wide">
+              在秋天，<br />
+              慢慢<em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>散步</em>。
+            </h1>
+            <p className="text-[13px] leading-[2] max-w-[300px] mb-7" style={{ color: 'var(--ink-faint)' }}>
+              照片、留言与天气都安静地留在这里。向下走，逛逛这座公园。
             </p>
-
-            {/* CTA hint */}
-            <div className="flex items-center gap-3 text-black/40 text-xs">
-              <span className="w-8 h-px bg-black/20" />
-              向下漫步，探索公园
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => { if (session) enterCorner(session.userId, session.name); else setShowLogin(true); }}
+                className="btn-primary"
+              >
+                进入公园 →
+              </button>
+              <button
+                onClick={() => window.scrollTo({ top: window.innerHeight * 0.95, behavior: 'smooth' })}
+                className="btn-ghost"
+              >
+                浏览相册
+              </button>
+            </div>
           </div>
-        </div>
         </div>
 
         {/* Scroll hint — bottom center */}
         <div className="scroll-hint relative z-10 flex justify-center py-12">
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-5 h-8 rounded-full border border-black/10 flex items-start justify-center p-1">
-              <div className="w-1 h-2 rounded-full bg-black/15 animate-bounce" style={{animationDuration: '1.5s'}} />
-            </div>
-            <p className="text-black/35 text-[10px] tracking-[0.3em]">向下漫步</p>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-px" style={{ background: 'rgba(60,52,40,0.22)' }} />
+            <p className="m-0 text-[10px] tracking-[0.34em]" style={{ color: 'var(--ink-weak)' }}>向下漫步</p>
           </div>
         </div>
 
