@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Weather } from '@/lib/types';
-import { SCENE_PLAYLIST, DEFAULT_PLAYLIST } from '@/lib/playlist';
+import { SCENE_PLAYLIST, DEFAULT_PLAYLIST, trackName } from '@/lib/playlist';
 
 // === Weather sound engine (noise-based, same as before) ===
 
@@ -85,14 +85,45 @@ class WeatherAudio {
 
 // === MP3 Music Player ===
 
+type PlayerState = { playing: boolean; trackName: string; index: number };
+
 class MusicPlayer {
   private audio: HTMLAudioElement | null = null;
   private playlist: string[] = [];
-  private currentIdx = -1;
+  private order: string[] = [];
+  private currentIdx = 0;
   private vol = 0.3;
+  private fadeTimer: ReturnType<typeof setInterval> | null = null;
+  private stopped = true;
+  private onState: ((s: PlayerState) => void) | null = null;
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      // 首次用户交互后轻柔淡入启动（若用户本会话未主动关闭过音乐）
+      window.addEventListener('pointerdown', () => this.autoStart(), { once: true });
+      window.addEventListener('keydown', () => this.autoStart(), { once: true });
+    }
+  }
+
+  setOnState(fn: ((s: PlayerState) => void) | null) { this.onState = fn; }
+
+  private emit() {
+    const active = Boolean(this.audio && !this.stopped && !this.audio.paused);
+    this.onState?.({
+      playing: active,
+      trackName: active ? trackName(this.order[this.currentIdx]) : '',
+      index: this.currentIdx,
+    });
+  }
+
+  private autoStart() {
+    if (this.stopped && !sessionStorage.getItem('park_music_off')) {
+      if (this.playlist.length === 0) this.playlist = DEFAULT_PLAYLIST;
+      this.startQuietly();
+    }
+  }
 
   private shuffle() {
-    // Fisher-Yates
     const arr = [...this.playlist];
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -101,52 +132,120 @@ class MusicPlayer {
     return arr;
   }
 
+  private fadeTo(target: number, ms: number, done?: () => void) {
+    if (this.fadeTimer) clearInterval(this.fadeTimer);
+    const el = this.audio;
+    if (!el) { done?.(); return; }
+    const from = el.volume;
+    const steps = Math.max(1, Math.round(ms / 50));
+    let i = 0;
+    this.fadeTimer = setInterval(() => {
+      i++;
+      el.volume = from + (target - from) * (i / steps);
+      if (i >= steps) {
+        if (this.fadeTimer) clearInterval(this.fadeTimer);
+        this.fadeTimer = null;
+        el.volume = target;
+        done?.();
+      }
+    }, 50);
+  }
+
+  private playTrack(url: string, fadeIn = true) {
+    this.stopAudio();
+    const audio = new Audio(url);
+    audio.volume = 0;
+    audio.loop = false;
+    audio.onended = () => this.next();
+    audio.onerror = () => this.next();
+    this.audio = audio;
+    const p = audio.play();
+    p?.catch(() => {});
+    if (fadeIn) this.fadeTo(this.vol, 1200);
+    else audio.volume = this.vol;
+    this.emit();
+  }
+
+  startQuietly() {
+    this.stopped = false;
+    if (!this.audio && this.order.length === 0) {
+      this.order = this.shuffle();
+      this.currentIdx = 0;
+      this.playTrack(this.order[0], true);
+    } else if (this.audio) {
+      this.audio.play()?.catch(() => {});
+      this.fadeTo(this.vol, 1200);
+      this.emit();
+    }
+  }
+
   async play(playlist: string[]) {
-    this.stop();
     if (playlist.length === 0) return false;
     this.playlist = playlist;
-    const shuffled = this.shuffle();
+    this.order = this.shuffle();
     this.currentIdx = 0;
-    this.playTrack(shuffled[0]);
+    this.stopped = false;
+    this.playTrack(this.order[0], true);
     return true;
   }
 
-  private playTrack(url: string): boolean {
-    this.audio = new Audio(url);
-    this.audio.volume = this.vol;
-    this.audio.loop = false;
-    this.audio.onended = () => this.playNext();
-    this.audio.onerror = () => this.playNext();
-    const promise = this.audio.play();
-    if (promise) {
-      promise.catch(() => {
-        // Autoplay blocked — audio will play after first user interaction
-      });
-    }
-    return true;
+  pause() {
+    if (!this.audio || this.stopped) return;
+    this.fadeTo(0, 500, () => { this.audio?.pause(); this.emit(); });
   }
 
-  private playNext() {
-    if (this.playlist.length === 0) return;
-    // Reshuffle when all tracks played
-    if (this.currentIdx >= this.playlist.length - 1) {
-      const shuffled = this.shuffle();
-      this.currentIdx = 0;
-      this.playTrack(shuffled[0]);
-    } else {
-      this.currentIdx++;
-      // Use shuffled order by re-shuffling on wrap, otherwise just advance
-      this.playTrack(this.playlist[(this.currentIdx) % this.playlist.length]);
-    }
+  resume() {
+    if (this.stopped || !this.audio) return;
+    this.audio.play()?.catch(() => {});
+    this.fadeTo(this.vol, 800);
+    this.emit();
   }
 
-  stop() {
-    if (this.audio) { this.audio.pause(); this.audio = null; }
+  toggle() {
+    if (this.stopped) { this.startQuietly(); return; }
+    if (this.audio && !this.audio.paused) this.pause();
+    else this.resume();
+  }
+
+  next() {
+    if (this.order.length === 0) return;
+    this.stopped = false;
+    this.currentIdx = (this.currentIdx + 1) % this.order.length;
+    this.playTrack(this.order[this.currentIdx], true);
+  }
+
+  prev() {
+    if (this.order.length === 0) return;
+    this.stopped = false;
+    this.currentIdx = (this.currentIdx - 1 + this.order.length) % this.order.length;
+    this.playTrack(this.order[this.currentIdx], true);
   }
 
   setVolume(v: number) {
-    this.vol = v;
-    if (this.audio) this.audio.volume = v;
+    this.vol = Math.max(0, Math.min(1, v));
+    if (this.audio && !this.audio.paused) this.fadeTo(this.vol, 200);
+  }
+
+  resumeSafe(): boolean {
+    return this.playlist.length > 0 && !this.stopped;
+  }
+
+  stop() {
+    sessionStorage.setItem('park_music_off', '1');
+    this.stopped = true;
+    this.stopAudio();
+    this.emit();
+  }
+
+  teardown() {
+    this.stopped = true;
+    this.stopAudio();
+    this.emit();
+  }
+
+  private stopAudio() {
+    if (this.fadeTimer) { clearInterval(this.fadeTimer); this.fadeTimer = null; }
+    if (this.audio) { this.audio.pause(); this.audio.onended = null; this.audio.onerror = null; this.audio = null; }
   }
 }
 
@@ -163,73 +262,89 @@ interface AmbientSoundProps {
 
 export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   const [soundOn, setSoundOn] = useState(false);
-  const [musicOn, setMusicOn] = useState(false);
+  const [player, setPlayer] = useState<PlayerState>({ playing: false, trackName: '', index: 0 });
+  const [volume, setVolume] = useState(0.3);
+  const [showMusicPanel, setShowMusicPanel] = useState(false);
   const loaded = useRef(false);
-  const autoPlayTried = useRef(false);
 
-  // Auto-play music on page load
-  const tryAutoPlay = useCallback(async () => {
-    if (autoPlayTried.current) return;
-    autoPlayTried.current = true;
-    const playlist = (scene ? SCENE_PLAYLIST[scene] : null) || DEFAULT_PLAYLIST;
-    if (playlist.length === 0) return;
-    const ok = await musicPlayer.play(playlist);
-    if (ok) setMusicOn(true);
-  }, [scene]);
-
-  // Try auto-play immediately; if blocked, try again on first user click
   useEffect(() => {
-    const t = setTimeout(tryAutoPlay, 0);
-    const onUserClick = () => { tryAutoPlay(); document.removeEventListener('click', onUserClick, true); };
-    document.addEventListener('click', onUserClick, true);
-    return () => { clearTimeout(t); document.removeEventListener('click', onUserClick, true); };
-  }, [tryAutoPlay]);
+    musicPlayer.setOnState(setPlayer);
+    return () => musicPlayer.setOnState(null);
+  }, []);
 
   const toggleSound = useCallback(async () => {
     if (soundOn) { weatherAudio.stop(); setSoundOn(false); }
     else { const ok = await weatherAudio.play(weather); if (ok) setSoundOn(true); }
   }, [soundOn, weather]);
 
-  const toggleMusic = useCallback(async () => {
-    if (musicOn) { musicPlayer.stop(); setMusicOn(false); }
+  const toggleMusic = useCallback(() => {
+    if (player.playing) musicPlayer.pause();
+    else if (musicPlayer.resumeSafe()) musicPlayer.resume();
     else {
       const playlist = (scene ? SCENE_PLAYLIST[scene] : null) || DEFAULT_PLAYLIST;
-      if (playlist.length === 0) return;
-      const ok = await musicPlayer.play(playlist);
-      if (ok) setMusicOn(true);
+      musicPlayer.play(playlist);
     }
-  }, [musicOn, scene]);
+  }, [player.playing, scene]);
 
-  // Auto-update weather sound
+  // 天气变化时更新环境音
   useEffect(() => {
     if (loaded.current && soundOn) { weatherAudio.stop(); weatherAudio.play(weather).then(ok => { if (!ok) setSoundOn(false); }); }
   }, [weather]); // eslint-disable-line
   useEffect(() => { loaded.current = true; }, []);
 
-  // Cleanup on unmount
-  useEffect(() => () => { weatherAudio.stop(); musicPlayer.stop(); }, []);
+  useEffect(() => () => { weatherAudio.stop(); musicPlayer.teardown(); }, []);
 
   const hasWeatherSound = weather !== 'sunny' && weather !== 'cloudy';
 
+  const changeVolume = (v: number) => {
+    setVolume(v);
+    musicPlayer.setVolume(v);
+  };
+
   return (
-    <div className="fixed bottom-4 left-[250px] z-25 flex gap-2 max-md:bottom-4 max-md:left-[130px] max-md:gap-1">
+    <div className="fixed bottom-4 left-4 z-25 flex gap-2 items-end max-md:bottom-4 max-md:left-2">
+      {/* 天气音效 */}
       <button onClick={toggleSound}
-        className={`glass-btn flex items-center gap-1.5 !px-3 !py-1.5 text-xs transition-all ${soundOn ? '!bg-blue-100/50 !text-blue-700/60' : ''}`}
+        className={`chip ${soundOn ? '!border-[rgba(181,106,76,0.4)] !text-[#a25a3e]' : ''}`}
         title={soundOn ? '关闭天气音效' : '开启天气音效'}>
-        <span className="text-sm">{soundOn ? '🌧' : '🔇'}</span>
-        <span className="hidden md:inline text-black/25 text-[10px]">
-          {hasWeatherSound ? (soundOn ? '音效' : '天气音') : '无'}
-        </span>
+        <span>{soundOn ? '◍' : '○'}</span>
+        <span className="hidden md:inline">{hasWeatherSound ? (soundOn ? '天气音效' : '天气音') : '无'}</span>
       </button>
 
-      <button onClick={toggleMusic}
-        className={`glass-btn flex items-center gap-1.5 !px-3 !py-1.5 text-xs transition-all ${musicOn ? '!bg-purple-100/50 !text-purple-700/60' : ''}`}
-        title={musicOn ? '关闭背景音乐' : '开启背景音乐'}>
-        <span className="text-sm">{musicOn ? '🎵' : '🎶'}</span>
-        <span className="hidden md:inline text-black/25 text-[10px]">
-          {musicOn ? '播放' : '音乐'}
-        </span>
-      </button>
+      {/* 音乐 */}
+      <div className="relative">
+        <div className="chip cursor-pointer select-none" onClick={toggleMusic} title={player.playing ? '暂停' : '播放'}>
+          <span>{player.playing ? 'Ⅱ' : '▶'}</span>
+          <b style={{ color: 'var(--ink)', fontWeight: 600 }}>{player.trackName || '背景音乐'}</b>
+          <button
+            className="ml-1 text-[11px]"
+            style={{ color: 'var(--ink-weak)' }}
+            onClick={e => { e.stopPropagation(); setShowMusicPanel(v => !v); }}
+            title="播放设置"
+          >⋯</button>
+        </div>
+        {showMusicPanel && (
+          <div className="glass-strong absolute bottom-11 left-0 w-56 p-4" style={{ zIndex: 30 }}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-semibold" style={{ color: 'var(--ink)' }}>{player.trackName || '背景音乐'}</span>
+              <span className="text-[10px]" style={{ color: 'var(--ink-weak)' }}>{player.playing ? '播放中' : '已暂停'}</span>
+            </div>
+            <div className="flex items-center gap-3 mb-3">
+              <button className="glass-btn !px-2.5 !py-1" onClick={() => musicPlayer.prev()} title="上一首">⏮</button>
+              <button className="glass-btn !px-3 !py-1" onClick={() => musicPlayer.toggle()} title="播放/暂停">{player.playing ? '暂停' : '播放'}</button>
+              <button className="glass-btn !px-2.5 !py-1" onClick={() => musicPlayer.next()} title="下一首">⏭</button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px]" style={{ color: 'var(--ink-weak)' }}>音量</span>
+              <input
+                type="range" min="0" max="1" step="0.05" value={volume}
+                onChange={e => changeVolume(parseFloat(e.target.value))}
+                className="flex-1" style={{ accentColor: 'var(--accent)' }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
