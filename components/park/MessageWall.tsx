@@ -9,14 +9,6 @@ interface Message {
   created_at: string;
 }
 
-const NOTE_COLORS = [
-  { bg: 'rgba(255,248,225,0.92)', text: '#5d4037', shadow: 'rgba(0,0,0,0.2)' },
-  { bg: 'rgba(240,244,248,0.9)', text: '#37474f', shadow: 'rgba(0,0,0,0.15)' },
-  { bg: 'rgba(255,240,245,0.9)', text: '#6d4c41', shadow: 'rgba(0,0,0,0.18)' },
-  { bg: 'rgba(240,255,240,0.88)', text: '#3e4a3c', shadow: 'rgba(0,0,0,0.16)' },
-  { bg: 'rgba(255,250,240,0.9)', text: '#5d4e37', shadow: 'rgba(0,0,0,0.14)' },
-];
-
 export default function MessageWall() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -58,8 +50,8 @@ export default function MessageWall() {
     <>
       {/* Mobile toggle */}
       <button onClick={() => setOpen(!open)}
-        className="fixed md:hidden glass-btn z-30"
-        style={{ right: 8, bottom: 80 }}>
+        className="chip fixed md:hidden z-30"
+        style={{ right: 8, bottom: 80, cursor: 'pointer' }}>
         💬 {open ? '隐藏' : '留言墙'}
       </button>
 
@@ -69,22 +61,12 @@ export default function MessageWall() {
         zIndex: 15, flexDirection: 'column',
       }}>
       {/* Wall background */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: `url(/assets/scene/stone-wall.jpg)`,
-        backgroundSize: 'cover', backgroundPosition: 'center',
-        filter: 'brightness(0.7) contrast(1.1) saturate(0.5)',
-      }} />
-      {/* Light overlay */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,250,240,0.5) 0%, rgba(255,248,235,0.35) 50%, rgba(255,250,240,0.55) 100%)' }} />
-      {/* Vignette edges */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '12%', background: 'linear-gradient(180deg, rgba(255,250,240,0.7) 0%, transparent 100%)' }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '18%', background: 'linear-gradient(0deg, rgba(255,250,240,0.7) 0%, transparent 100%)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'var(--surface)', borderLeft: '1px solid var(--hairline)' }} />
 
       {/* Header */}
       <div className="relative p-5 pb-2 flex-shrink-0">
-        <h2 className="text-black/45 text-base font-serif tracking-wider text-center">留言墙</h2>
-        <p className="text-black/25 text-[10px] text-center mt-0.5">把想说的话留在这里 · 匿名</p>
+        <h2 className="text-base font-serif tracking-wider text-center" style={{ color: 'var(--ink)' }}>留言墙</h2>
+        <p className="text-[10px] text-center mt-0.5" style={{ color: 'var(--ink-weak)' }}>把想说的话留在这里 · 匿名</p>
       </div>
 
       {/* Messages — pinned notes */}
@@ -92,43 +74,29 @@ export default function MessageWall() {
         <div className="columns-2 gap-3">
           {messages.length === 0 && (
             <div className="text-center py-8 col-span-2">
-              <p className="text-white/15 text-xs">墙上还没有留言</p>
-              <p className="text-white/08 text-[10px] mt-1">写下第一张纸条吧</p>
+              <p className="text-xs" style={{ color: 'var(--ink-weak)' }}>墙上还没有留言</p>
+              <p className="text-[10px] mt-1" style={{ color: 'var(--ink-weak)' }}>写下第一张纸条吧</p>
             </div>
           )}
-          {messages.map((msg, i) => {
-            const style = NOTE_COLORS[i % NOTE_COLORS.length];
-            const rots = ['-1.5deg','0.8deg','-0.5deg','1.2deg','-0.8deg','1.5deg'];
-            const rotation = rots[i % rots.length];
-            return (
-              <div key={msg.id} className="break-inside-avoid mb-3"
-                style={{
-                  background: style.bg,
-                  color: style.text,
-                  padding: '12px 14px 10px',
-                  borderRadius: '2px 12px 2px 12px',
-                  boxShadow: `1px 2px 6px ${style.shadow}, inset 0 1px 0 rgba(255,255,255,0.3)`,
-                  transform: `rotate(${rotation}deg)`,
-                  fontSize: '11px',
-                  lineHeight: '1.6',
-                  position: 'relative',
-                  fontFamily: "'Noto Serif SC', Georgia, serif",
-                }}
-              >
-                {/* Pin */}
-                <div style={{
-                  position: 'absolute', top: -4, left: '50%', marginLeft: -3,
-                  width: 6, height: 6, borderRadius: '50%',
-                  background: 'radial-gradient(circle, rgba(180,80,60,0.8), rgba(120,40,30,0.6))',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                }} />
-                <p>{msg.content}</p>
-                <p style={{ fontSize: '8px', color: 'inherit', opacity: 0.35, marginTop: 6, textAlign: 'right' }}>
-                  {new Date(msg.created_at).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                </p>
+          {messages.map((m) => (
+            <div key={m.id} className="card-hover break-inside-avoid mb-3" style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--hairline)',
+              borderRadius: 12,
+              padding: '10px 14px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 10,
+              boxShadow: 'var(--shadow-card)',
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 6, flex: 'none',
+                background: { amber: '#c98a4b', rose: '#b56a4c', sky: '#8faeb8', violet: '#9b8fb8', emerald: '#8fa184', slate: '#9aa3ad' }[m.color] || '#c98a4b' }} />
+              <div style={{ flex: 1 }}>
+                <p className="m-0 text-[13px] leading-[1.8]" style={{ color: 'var(--ink-soft)' }}>{m.content}</p>
+                <p className="m-0 mt-1 text-[10px]" style={{ color: 'var(--ink-weak)' }}>{m.created_at?.replace('T', ' ').slice(0, 16)}</p>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
 
