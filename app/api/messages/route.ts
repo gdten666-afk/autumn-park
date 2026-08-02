@@ -9,17 +9,16 @@ import { apiCacheClear, apiCacheGet, apiCacheSet } from '@/lib/cache';
 const MESSAGE_COLORS = ['amber', 'rose', 'sky', 'violet', 'emerald', 'slate'];
 
 export async function GET() {
-  const cached = apiCacheGet<ApiResponse>('messages');
-  if (cached) {
-    return NextResponse.json(cached, { headers: { 'Cache-Control': 'no-cache' } });
-  }
   await ensureTables();
   const session = await getSession();
   const isOperator = session?.role === 'operator';
-  const messages = await dbAll('SELECT * FROM messages ORDER BY created_at DESC LIMIT 200');
+  // 缓存只保存原始留言；canDelete 权限标记必须按当前请求的用户身份计算，
+  // 否则管理员请求产生的缓存会把删除按钮泄露给普通用户。
+  const cached = apiCacheGet<unknown[]>('messages:base');
+  const messages = cached || await dbAll('SELECT * FROM messages ORDER BY created_at DESC LIMIT 200');
+  if (!cached) apiCacheSet('messages:base', messages, 10_000);
   const data = isOperator ? messages.map(m => ({ ...m, canDelete: true })) : messages;
   const body = { ok: true, data } satisfies ApiResponse;
-  apiCacheSet('messages', body, 10_000);
   return NextResponse.json(body, { headers: { 'Cache-Control': 'no-cache' } });
 }
 
@@ -47,7 +46,7 @@ export async function POST(req: NextRequest) {
     const id = nanoid();
     const color = MESSAGE_COLORS[Math.floor(Math.random() * MESSAGE_COLORS.length)];
     await dbRun('INSERT INTO messages (id, content, color) VALUES (?, ?, ?)', [id, content.trim(), color]);
-    apiCacheClear('messages');
+    apiCacheClear('messages:base');
 
     const msg = { id, content: content.trim(), color, created_at: new Date().toISOString() };
     return NextResponse.json({ ok: true, data: msg } satisfies ApiResponse<typeof msg>);
@@ -65,7 +64,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Message id required' }, { status: 400 });
     }
     await dbRun('DELETE FROM messages WHERE id = ?', [id]);
-    apiCacheClear('messages');
+    apiCacheClear('messages:base');
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     if (err.message === 'Unauthorized' || err.message === 'Forbidden') {

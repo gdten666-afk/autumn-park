@@ -54,6 +54,7 @@ export default function MessageWall() {
       });
       const d = await res.json();
       if (d.ok) setMessages(prev => prev.filter(m => m.id !== id));
+      else window.alert(d.error || '删除失败，请确认你有管理员权限');
     } catch {}
   };
 
