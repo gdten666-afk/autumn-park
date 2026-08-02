@@ -90,7 +90,7 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
           </div>
         </div>
 
-        <div className="pt-16 h-full overflow-y-auto">
+        <div className="pt-[140px] md:pt-16 h-full overflow-y-auto">
           {/* Bio / Signature section */}
           <div className="px-4 md:px-6 pb-2">
             {isOwner && !editingBio && (
