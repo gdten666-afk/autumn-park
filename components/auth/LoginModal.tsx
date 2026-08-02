@@ -87,25 +87,23 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center animate-fadeIn" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center animate-fadeIn" onClick={onClose}>
       <div className="glass-strong p-6 w-80 max-w-[90vw] animate-slideUp" onClick={e => e.stopPropagation()}>
-        <h2 className="text-white/80 text-lg mb-4 text-center font-serif tracking-wider">进入公园</h2>
+        <h2 className="text-lg mb-4 text-center font-serif tracking-wider" style={{ color: 'var(--ink)' }}>进入公园</h2>
 
         {/* Tabs */}
-        <div className="flex mb-4 border-b border-white/10">
+        <div className="flex mb-4" style={{ borderBottom: '1px solid var(--hairline)' }}>
           <button
             onClick={() => { setTab('login'); setError(''); }}
-            className={`flex-1 pb-2 text-sm transition-colors ${
-              tab === 'login' ? 'text-white border-b-2 border-white/50' : 'text-white/30'
-            }`}
+            className={`flex-1 pb-2 text-sm transition-colors ${tab === 'login' ? 'text-[#2c2822]' : 'text-[#b3aca0]'}`}
+            style={{ borderBottom: tab === 'login' ? '2px solid var(--accent)' : '2px solid transparent' }}
           >
             登录
           </button>
           <button
             onClick={() => { setTab('register'); setError(''); }}
-            className={`flex-1 pb-2 text-sm transition-colors ${
-              tab === 'register' ? 'text-white border-b-2 border-white/50' : 'text-white/30'
-            }`}
+            className={`flex-1 pb-2 text-sm transition-colors ${tab === 'register' ? 'text-[#2c2822]' : 'text-[#b3aca0]'}`}
+            style={{ borderBottom: tab === 'register' ? '2px solid var(--accent)' : '2px solid transparent' }}
           >
             注册
           </button>
@@ -131,7 +129,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
                   onKeyDown={e => e.key === 'Enter' && handleLogin()}
                   className="glass-input mb-3"
                 />
-                <p className="text-white/20 text-xs mb-3">用邀请码登录不需要密码</p>
+                <p className="text-xs mb-3" style={{ color: 'var(--ink-weak)' }}>用邀请码登录不需要密码</p>
               </>
             ) : (
               <input
@@ -143,7 +141,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
                 className="glass-input mb-3"
               />
             )}
-            {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
+            {error && <p className="text-xs mb-3" style={{ color: '#b0563c' }}>{error}</p>}
             <button
               onClick={handleLogin}
               disabled={loading}
@@ -153,7 +151,8 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
             </button>
             <button
               onClick={() => { setUseInviteLogin(!useInviteLogin); setError(''); }}
-              className="w-full mt-2 text-white/25 hover:text-white/50 text-xs transition-colors"
+              className="w-full mt-2 text-xs transition-colors hover:text-[#6b645a]"
+              style={{ color: 'var(--ink-weak)' }}
             >
               {useInviteLogin ? '← 用密码登录' : '用邀请码登录'}
             </button>
@@ -188,7 +187,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
               onChange={e => setRegInviteCode(e.target.value)}
               className="glass-input mb-3"
             />
-            {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
+            {error && <p className="text-xs mb-3" style={{ color: '#b0563c' }}>{error}</p>}
             <button
               onClick={handleRegister}
               disabled={loading}
@@ -200,7 +199,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
         )}
 
         {tab === 'register' && (
-          <p className="text-white/20 text-xs text-center mt-3">
+          <p className="text-xs text-center mt-3" style={{ color: 'var(--ink-weak)' }}>
             需要邀请码才能注册
           </p>
         )}

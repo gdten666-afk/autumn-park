@@ -12,18 +12,18 @@ interface UserMenuProps {
 export default function UserMenu({ session, onEnterCorner, onOpenAdmin, onLogout }: UserMenuProps) {
   return (
     <div className="fixed top-4 z-30 flex items-center gap-2 right-4 md:right-[296px]">
-      <div className="glass flex items-center gap-2 px-4 py-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-400/70" />
-        <span className="text-black/45 text-sm">{session.name}</span>
+      <div className="chip">
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-2)' }} />
+        <span style={{ color: 'var(--ink-soft)', fontSize: 13 }}>{session.name}</span>
       </div>
 
       <button onClick={onEnterCorner} className="glass-btn">我的角落</button>
 
       {session.role === 'operator' && (
-        <button onClick={onOpenAdmin} className="glass-btn !bg-amber-100/60 !border-amber-200/50 !text-amber-700/80 hover:!bg-amber-100/80">管理</button>
+        <button onClick={onOpenAdmin} className="btn-ghost !py-1.5">管理</button>
       )}
 
-      <button onClick={onLogout} className="btn-ghost text-[11px]">离开</button>
+      <button onClick={onLogout} className="btn-ghost !py-1.5 text-[11px]">离开</button>
     </div>
   );
 }
