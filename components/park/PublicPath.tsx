@@ -42,10 +42,23 @@ export default function PublicPath() {
   return (
     <div className="relative w-full pointer-events-none">
       {/* View mode toggle */}
-      <div className="fixed top-16 right-4 md:right-[296px] z-20 flex gap-1 pointer-events-auto max-md:top-14 max-md:right-2">
-        <button onClick={() => setViewMode('walk')} className={`glass-btn ${viewMode === 'walk' ? '!bg-white/80 !text-black/70' : ''}`}>漫步</button>
-        <button onClick={() => setViewMode('gallery')} className={`glass-btn ${viewMode === 'gallery' ? '!bg-white/80 !text-black/70' : ''}`}>画廊</button>
-        <span className="text-black/40 text-xs self-center ml-3 font-mono">{photos.length}</span>
+      <div className="fixed top-16 right-4 md:right-[296px] z-20 flex items-center gap-1 pointer-events-auto max-md:top-14 max-md:right-2"
+        style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid var(--hairline)', borderRadius: 999, padding: 4 }}>
+        {(['walk', 'gallery'] as const).map(mode => (
+          <button
+            key={mode}
+            onClick={() => setViewMode(mode)}
+            className="px-3 py-1 text-[11px] rounded-full transition-colors"
+            style={{
+              color: viewMode === mode ? 'var(--ink)' : 'var(--ink-weak)',
+              background: viewMode === mode ? 'rgba(60,52,40,0.06)' : 'transparent',
+              letterSpacing: '0.1em',
+            }}
+          >
+            {mode === 'walk' ? '漫步' : '画廊'}
+          </button>
+        ))}
+        <span className="pl-2 pr-1 text-[10px] font-mono" style={{ color: 'var(--ink-weak)' }}>{photos.length}</span>
       </div>
 
       {noPhotos ? (
@@ -96,7 +109,7 @@ export default function PublicPath() {
               const rotations = ['-2deg', '1deg', '-1deg', '2deg', '-3deg', '1.5deg', '-1.5deg', '2.5deg'];
               const rotation = rotations[i % rotations.length];
               return (
-                <div key={photo.id} className="polaroid-card cursor-pointer group/card"
+                <div key={photo.id} className="polaroid-card card-hover cursor-pointer group/card"
                   style={{
                     transform: `rotate(${rotation})`,
                     marginTop: (i % 5) * 12,
