@@ -302,7 +302,7 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   };
 
   return (
-    <div className="fixed bottom-4 left-4 z-25 flex gap-2 items-end max-md:bottom-4 max-md:left-2">
+    <div className="fixed bottom-4 left-4 md:left-[252px] z-25 flex gap-2 items-end max-md:bottom-4 max-md:left-2">
       {/* 天气音效 */}
       <button onClick={toggleSound}
         className={`chip ${soundOn ? '!border-[rgba(181,106,76,0.4)] !text-[#a25a3e]' : ''}`}

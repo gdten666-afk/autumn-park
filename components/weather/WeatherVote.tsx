@@ -140,7 +140,7 @@ export default function WeatherVote() {
               <span className="text-3xl">{todayW?.emoji}</span>
               <p className="text-[10px] mt-0.5" style={{ color: 'var(--ink-soft)' }}>{todayW?.label}</p>
             </div>
-            <div className="text-black/15 text-sm">→</div>
+            <div className="text-sm" style={{ color: 'var(--ink-weak)' }}>→</div>
             <div className="text-center">
               <p className="text-[10px] mb-1" style={{ color: 'var(--ink-weak)' }}>明日预测</p>
               <span className="text-3xl">{tomorrowW?.emoji}</span>

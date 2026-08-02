@@ -31,7 +31,7 @@ export default function Quotes() {
                 <p className="text-black/55 text-[13px] md:text-sm leading-relaxed font-serif mb-1.5 md:mb-2">
                   「{q.text}」
                 </p>
-                <p className="text-black/35 text-[9px] md:text-[10px] tracking-wider">
+                <p className="text-[9px] md:text-[10px] tracking-wider" style={{ color: 'var(--ink-faint)' }}>
                   —— {q.source}
                 </p>
               </div>

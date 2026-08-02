@@ -49,6 +49,7 @@ yarn-error.log*
 /start_server.py
 /verify_refactor.py
 /.playwright-cli/
+/work-music-tmp/
 
 # typescript
 *.tsbuildinfo

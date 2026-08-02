@@ -70,7 +70,7 @@ export default function PublicPath() {
               </svg>
             </div>
             <p className="text-black/55 text-base mb-2 font-serif">公园里还没有照片</p>
-            <p className="text-black/40 text-xs leading-relaxed">进入你的角落，上传照片并点亮「发布到公园」<br />它们会像记忆碎片一样散落在这片风景里</p>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--ink-faint)' }}>进入你的角落，上传照片并点亮「发布到公园」<br />它们会像记忆碎片一样散落在这片风景里</p>
           </div>
         </div>
       ) : viewMode === 'walk' ? (
@@ -99,7 +99,7 @@ export default function PublicPath() {
                     }}>
                     <div className={`${tint} backdrop-blur-sm border border-black/5 rounded-2xl p-4 shadow-sm`}>
                       <p className="text-black/55 text-sm leading-relaxed font-serif mb-2">「{item.text}」</p>
-                      <p className="text-black/35 text-[10px] tracking-wider">—— {item.source}</p>
+                      <p className="text-[10px] tracking-wider" style={{ color: 'var(--ink-faint)' }}>—— {item.source}</p>
                     </div>
                   </div>
                 );

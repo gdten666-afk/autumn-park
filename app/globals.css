@@ -8,13 +8,13 @@
   --bg: #f7f6f2;
   --surface: #ffffff;
   --ink: #2c2822;
-  --ink-soft: #6b645a;
-  --ink-faint: #8b8579;
-  --ink-weak: #b3aca0;
+  --ink-soft: #57504a;
+  --ink-faint: #6f685e;
+  --ink-weak: #8a8377;
   --accent: #b56a4c;
   --accent-2: #c98a4b;
   --hairline: rgba(60, 52, 40, 0.1);
-  --hairline-strong: rgba(60, 52, 40, 0.16);
+  --hairline-strong: rgba(60, 52, 40, 0.24);
   --shadow-card: 0 6px 18px rgba(50, 40, 25, 0.05);
   --shadow-lift: 0 14px 34px rgba(50, 40, 25, 0.1);
 }
@@ -32,19 +32,19 @@ body {
 /* --- Minimal premium surfaces --- */
 .glass {
   background: var(--surface);
-  border: 1px solid var(--hairline);
+  border: 1px solid var(--hairline-strong);
   border-radius: 14px;
   box-shadow: var(--shadow-card);
 }
 .glass-strong {
   background: var(--surface);
-  border: 1px solid var(--hairline);
+  border: 1px solid var(--hairline-strong);
   border-radius: 18px;
   box-shadow: var(--shadow-lift);
 }
 .glass-btn {
   background: var(--surface);
-  border: 1px solid var(--hairline);
+  border: 1px solid var(--hairline-strong);
   border-radius: 999px;
   padding: 7px 16px;
   font-size: 12px;
@@ -106,7 +106,7 @@ body {
 /* --- Minimal utility classes --- */
 .chip {
   background: rgba(255, 255, 255, 0.72);
-  border: 1px solid var(--hairline);
+  border: 1px solid var(--hairline-strong);
   border-radius: 999px;
   padding: 7px 14px;
   font-size: 11px;
@@ -120,7 +120,7 @@ body {
 .kicker {
   font-size: 10px;
   letter-spacing: 0.34em;
-  color: #b09a7f;
+  color: #967a58;
   text-transform: uppercase;
 }
 .hairline { border-top: 1px solid var(--hairline); }
