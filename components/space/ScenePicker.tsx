@@ -18,10 +18,10 @@ export default function ScenePicker({ current, onSelect, isOwner }: ScenePickerP
           key={s.value}
           onClick={() => isOwner && onSelect(s.value)}
           disabled={!isOwner}
-          className={`px-3 py-1.5 rounded-full text-xs border border-white/10 transition-all ${
+          className={`px-3 py-1.5 rounded-full text-xs border transition-all ${
             current === s.value
-              ? 'bg-white/25 text-white'
-              : 'bg-white/10 text-white/70 hover:bg-white/20'
+              ? 'bg-[var(--ink)] text-[var(--surface)] border-[var(--ink)]'
+              : 'bg-[var(--surface)] text-[var(--ink-soft)] border-[var(--hairline)] hover:border-[var(--hairline-strong)]'
           } ${!isOwner && 'cursor-default'}`}
           title={s.label}
         >

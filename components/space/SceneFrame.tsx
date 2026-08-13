@@ -5,11 +5,11 @@ import { useEffect, useRef } from 'react';
 import type { Scene, Weather } from '@/lib/types';
 
 const SCENE_STYLES: Record<Scene, { bg: string; gradient: string }> = {
-  'autumn-bench':    { bg: '#3e2723', gradient: 'linear-gradient(180deg, #4e342e 0%, #3e2723 40%, #2c1810 100%)' },
-  'darkroom':        { bg: '#1a1a1a', gradient: 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%)' },
-  'starlit-camp':    { bg: '#0d1b2a', gradient: 'linear-gradient(180deg, #0d1b2a 0%, #1b2838 60%, #1a1110 100%)' },
-  'lighthouse-coast':{ bg: '#1a237e', gradient: 'linear-gradient(180deg, #1a237e 0%, #283593 50%, #0d1b2a 100%)' },
-  'bookstore':       { bg: '#3e2723', gradient: 'linear-gradient(180deg, #4e342e 0%, #3e2723 60%, #2c1810 100%)' },
+  'autumn-bench':    { bg: '#f3ece0', gradient: 'linear-gradient(180deg, #f7f1e6 0%, #f1e9db 55%, #e9dfcc 100%)' },
+  'darkroom':        { bg: '#eceae4', gradient: 'linear-gradient(180deg, #f1efe9 0%, #e9e7df 55%, #dedbd1 100%)' },
+  'starlit-camp':    { bg: '#e6eaf0', gradient: 'linear-gradient(180deg, #eceff4 0%, #e2e7ef 55%, #d6dde8 100%)' },
+  'lighthouse-coast':{ bg: '#e5ebef', gradient: 'linear-gradient(180deg, #edf1f4 0%, #e3eaee 55%, #d6e0e6 100%)' },
+  'bookstore':       { bg: '#f0e9dc', gradient: 'linear-gradient(180deg, #f5efe3 0%, #ede5d5 55%, #e4dac6 100%)' },
 };
 
 const SCENE_LABELS: Record<Scene, string> = {
@@ -49,7 +49,7 @@ function createRainDrop(w: number, _h: number, heavy: boolean): RainParticle {
     speed: heavy ? 10 + Math.random() * 10 : 7 + Math.random() * 7,
     angle: 0.22 + Math.random() * 0.12,
     opacity: heavy ? 0.4 + Math.random() * 0.35 : 0.3 + Math.random() * 0.3,
-    color: `rgba(${180 + Math.floor(Math.random()*40)}, ${200 + Math.floor(Math.random()*30)}, ${225 + Math.floor(Math.random()*30)}`,
+    color: `rgba(${70 + Math.floor(Math.random()*40)}, ${90 + Math.floor(Math.random()*40)}, ${120 + Math.floor(Math.random()*40)}`,
   };
 }
 
@@ -108,9 +108,9 @@ function drawRain(ctx: CanvasRenderingContext2D, drops: RainParticle[]): void {
 
 function drawSnow(ctx: CanvasRenderingContext2D, flakes: SnowParticle[]): void {
   for (const f of flakes) {
-    ctx.fillStyle = `rgba(255,255,255,${f.opacity})`;
+    ctx.fillStyle = `rgba(150,170,190,${f.opacity})`;
     ctx.shadowBlur = f.radius * 3;
-    ctx.shadowColor = `rgba(255,255,255,${f.opacity * 0.6})`;
+    ctx.shadowColor = `rgba(150,170,190,${f.opacity * 0.5})`;
     ctx.beginPath();
     ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
     ctx.fill();
@@ -215,12 +215,12 @@ export default function SceneFrame({ scene, weather, children }: SceneFrameProps
           </>
         )}
 
-        {/* Rain: dark blue-grey atmosphere */}
+        {/* Rain: soft blue-grey atmosphere on paper */}
         {(weather === 'light-rain' || weather === 'heavy-rain') && (
           <div className="absolute inset-0" style={{
             background: weather === 'heavy-rain'
-              ? 'linear-gradient(180deg, rgba(20,30,50,0.55) 0%, rgba(30,40,60,0.5) 50%, rgba(40,50,70,0.45) 100%)'
-              : 'linear-gradient(180deg, rgba(30,40,60,0.3) 0%, rgba(40,50,70,0.25) 50%, rgba(50,60,80,0.2) 100%)',
+              ? 'linear-gradient(180deg, rgba(80,95,120,0.22) 0%, rgba(95,110,135,0.18) 50%, rgba(110,125,150,0.15) 100%)'
+              : 'linear-gradient(180deg, rgba(100,115,140,0.12) 0%, rgba(115,130,150,0.1) 50%, rgba(130,145,165,0.08) 100%)',
           }} />
         )}
 

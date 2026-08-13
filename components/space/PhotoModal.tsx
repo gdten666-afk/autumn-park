@@ -52,7 +52,6 @@ export default function PhotoModal({
   }, [photo.id]);
 
   useEffect(() => {
-    // 延后一帧再发起请求，避免在 effect 体内同步触发 setState（react-hooks 规则）
     const t = setTimeout(loadComments, 0);
     return () => clearTimeout(t);
   }, [loadComments]);
@@ -98,7 +97,7 @@ export default function PhotoModal({
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (!touchStart.current) return;
-    if (zoom > 1) { touchStart.current = null; return; } // don't swipe when zoomed
+    if (zoom > 1) { touchStart.current = null; return; }
     const dx = (e.changedTouches[0]?.clientX || 0) - touchStart.current.x;
     if (dx < -60) onNext();
     else if (dx > 60) onPrev();
@@ -139,26 +138,26 @@ export default function PhotoModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center animate-fadeIn"
+      className="fixed inset-0 z-50 bg-[var(--bg)]/96 backdrop-blur-sm flex items-center justify-center animate-fadeIn"
       onClick={onClose}
     >
       {/* Top bar */}
       <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
           <button onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors">
+            className="w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
-          <span className="text-white/30 text-xs">{index + 1} / {photos.length}</span>
+          <span className="text-[var(--ink-weak)] text-xs">{index + 1} / {photos.length}</span>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={handleDownload}
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+            className="w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors"
             title="下载照片">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </button>
           <button onClick={() => setZoom(z => z > 1.5 ? 1 : z + 0.5)}
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white text-xs transition-colors"
+            className="w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] text-xs transition-colors"
             title="缩放">
             {zoom > 1 ? `${Math.round(zoom * 100)}%` : '1:1'}
           </button>
@@ -168,13 +167,13 @@ export default function PhotoModal({
       {/* Nav arrows */}
       {index > 0 && (
         <button onClick={e => { e.stopPropagation(); onPrev(); }}
-          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors max-md:w-8 max-md:h-8">
+          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors max-md:w-8 max-md:h-8">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
       )}
       {index < photos.length - 1 && (
         <button onClick={e => { e.stopPropagation(); onNext(); }}
-          className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition-colors max-md:w-8 max-md:h-8">
+          className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors max-md:w-8 max-md:h-8">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       )}
@@ -188,8 +187,7 @@ export default function PhotoModal({
         onTouchMove={handleTouchMove}
         onDoubleClick={handleDoubleClick}
       >
-        <div className="relative overflow-hidden" style={{ maxHeight: '70vh' }}>
-          {/* Thumbnail shown instantly (already cached from grid) */}
+        <div className="relative overflow-hidden rounded-2xl ring-1 ring-[var(--hairline)] shadow-[var(--shadow-lift)]" style={{ maxHeight: '70vh' }}>
           <img
             src={`/api/photos/${photo.id}?thumb=1`}
             alt=""
@@ -197,12 +195,11 @@ export default function PhotoModal({
             style={{ transform: `scale(${zoom})`, filter: 'blur(20px) scale(1.1)', opacity: 0.6 }}
             draggable={false}
           />
-          {/* Full image with medium size (1200px) — faster than original */}
           <img
             ref={imageRef}
             src={`/api/photos/${photo.id}?medium=1`}
             alt={photo.caption || 'photo'}
-            className="relative max-w-full max-h-[70vh] object-contain transition-opacity duration-500"
+            className="relative max-w-full max-h-[70vh] object-contain transition-opacity duration-500 bg-[var(--surface)]"
             style={{ transform: `scale(${zoom})`, cursor: zoom > 1 ? 'grab' : 'default', opacity: 1 }}
             draggable={false}
             onLoad={e => {
@@ -221,43 +218,43 @@ export default function PhotoModal({
                 <input type="text" value={editValue} onChange={e => onEditValueChange(e.target.value)}
                   maxLength={100} autoFocus
                   onKeyDown={e => { if (e.key==='Enter') onSaveCaption(photo.id); if (e.key==='Escape') onCancelEdit(); }}
-                  className="flex-1 bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white/90 placeholder:text-white/25 outline-none focus:border-white/30 text-center" />
+                  className="flex-1 bg-[var(--surface)] border border-[var(--hairline-strong)] rounded-lg px-3 py-2 text-sm text-[var(--ink)] placeholder:text-[var(--ink-weak)] outline-none focus:border-[var(--accent-2)] text-center" />
                 <button onClick={() => onSaveCaption(photo.id)}
-                  className="text-xs px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-white/80 transition-colors flex-shrink-0">保存</button>
+                  className="text-xs px-3 py-2 rounded-lg bg-[var(--ink)] hover:opacity-90 text-[var(--surface)] transition-colors flex-shrink-0">保存</button>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
-                <p className="text-white/85 text-base font-serif">{photo.caption}</p>
+                <p className="text-[var(--ink)] text-base font-serif">{photo.caption}</p>
                 {isOwner && (
                   <button onClick={() => onStartEdit(photo)}
-                    className="text-white/30 hover:text-white/60 text-xs transition-colors" title="编辑文案">✎</button>
+                    className="text-[var(--ink-weak)] hover:text-[var(--ink-soft)] text-xs transition-colors" title="编辑文案">✎</button>
                 )}
               </div>
             )
           ) : (
             isOwner && (
               <button onClick={() => onStartEdit(photo)}
-                className="text-white/25 hover:text-white/50 text-xs transition-colors">+ 添加文案</button>
+                className="text-[var(--ink-weak)] hover:text-[var(--ink-soft)] text-xs transition-colors">+ 添加文案</button>
             )
           )}
-          <p className="text-white/20 text-xs mt-1.5">
+          <p className="text-[var(--ink-weak)] text-xs mt-1.5">
             {photo.is_public && <span className="mr-2">公园可见</span>}
           </p>
 
           {/* Comments section */}
-          <div className="mt-4 pt-4 border-t border-white/10 text-left w-full max-w-lg max-h-[25vh] flex flex-col">
+          <div className="mt-4 pt-4 border-t border-[var(--hairline)] text-left w-full max-w-lg max-h-[25vh] flex flex-col">
             {/* Comment list */}
             <div className="flex-1 overflow-y-auto space-y-2 mb-3">
               {comments.length === 0 && (
-                <p className="text-white/15 text-[10px] text-center">还没有评论</p>
+                <p className="text-[var(--ink-weak)] text-[10px] text-center">还没有评论</p>
               )}
               {comments.map(c => (
                 <div key={c.id} className="flex items-start gap-2 group">
-                  <p className="text-white/30 text-[10px] flex-shrink-0 mt-0.5 w-14 truncate text-right">{c.author_name}</p>
-                  <p className="text-white/60 text-xs flex-1 leading-relaxed">{c.content}</p>
+                  <p className="text-[var(--ink-weak)] text-[10px] flex-shrink-0 mt-0.5 w-14 truncate text-right">{c.author_name}</p>
+                  <p className="text-[var(--ink-soft)] text-xs flex-1 leading-relaxed">{c.content}</p>
                   {c.user_id === photo.user_id && (
                     <button onClick={() => deleteComment(c.id)}
-                      className="text-white/10 hover:text-red-400/60 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      className="text-[var(--ink-weak)] hover:text-red-500/70 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                       ✕
                     </button>
                   )}
@@ -271,14 +268,14 @@ export default function PhotoModal({
                 type="text" value={commentText} onChange={e => setCommentText(e.target.value)}
                 placeholder="说点什么…" maxLength={300}
                 onKeyDown={e => { if (e.key === 'Enter') postComment(); }}
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white/80 placeholder:text-white/20 outline-none focus:border-white/20"
+                className="flex-1 bg-[var(--surface)] border border-[var(--hairline-strong)] rounded-lg px-3 py-1.5 text-xs text-[var(--ink)] placeholder:text-[var(--ink-weak)] outline-none focus:border-[var(--accent-2)]"
               />
               <button onClick={postComment} disabled={commentPosting || !commentText.trim()}
-                className="text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 disabled:opacity-30 transition-colors flex-shrink-0">
+                className="text-xs px-3 py-1.5 rounded-lg bg-[var(--ink)] hover:opacity-90 text-[var(--surface)] disabled:opacity-30 transition-colors flex-shrink-0">
                 {commentPosting ? '…' : '发送'}
               </button>
             </div>
-            {commentError && <p className="text-red-400/50 text-[10px] mt-1">{commentError}</p>}
+            {commentError && <p className="text-red-500/60 text-[10px] mt-1">{commentError}</p>}
           </div>
         </div>
       </div>

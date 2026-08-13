@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Weather } from '@/lib/types';
-import { SCENE_PLAYLIST, DEFAULT_PLAYLIST, trackName } from '@/lib/playlist';
+import { DEFAULT_PLAYLIST, trackName } from '@/lib/playlist';
 
 // === Weather sound engine (noise-based, same as before) ===
 
@@ -93,9 +93,10 @@ class MusicPlayer {
   private order: string[] = [];
   private currentIdx = 0;
   private vol = 0.3;
-  private fadeTimer: ReturnType<typeof setInterval> | null = null;
+  private fadeTimers = new Set<ReturnType<typeof setInterval>>();
+  private fadingOut: HTMLAudioElement[] = [];
   private stopped = true;
-  private onState: ((s: PlayerState) => void) | null = null;
+  private listeners = new Set<(s: PlayerState) => void>();
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -105,15 +106,19 @@ class MusicPlayer {
     }
   }
 
-  setOnState(fn: ((s: PlayerState) => void) | null) { this.onState = fn; }
+  subscribe(fn: (s: PlayerState) => void): () => void {
+    this.listeners.add(fn);
+    return () => { this.listeners.delete(fn); };
+  }
 
   private emit() {
     const active = Boolean(this.audio && !this.stopped && !this.audio.paused);
-    this.onState?.({
+    const state: PlayerState = {
       playing: active,
       trackName: active ? trackName(this.order[this.currentIdx]) : '',
       index: this.currentIdx,
-    });
+    };
+    this.listeners.forEach(l => l(state));
   }
 
   private autoStart() {
@@ -132,37 +137,60 @@ class MusicPlayer {
     return arr;
   }
 
-  private fadeTo(target: number, ms: number, done?: () => void) {
-    if (this.fadeTimer) clearInterval(this.fadeTimer);
-    const el = this.audio;
-    if (!el) { done?.(); return; }
+  private fadeElement(el: HTMLAudioElement, target: number, ms: number, done?: () => void): void {
     const from = el.volume;
     const steps = Math.max(1, Math.round(ms / 50));
     let i = 0;
-    this.fadeTimer = setInterval(() => {
+    const timer = setInterval(() => {
       i++;
       el.volume = from + (target - from) * (i / steps);
       if (i >= steps) {
-        if (this.fadeTimer) clearInterval(this.fadeTimer);
-        this.fadeTimer = null;
+        clearInterval(timer);
+        this.fadeTimers.delete(timer);
         el.volume = target;
         done?.();
       }
     }, 50);
+    this.fadeTimers.add(timer);
   }
 
-  private playTrack(url: string, fadeIn = true) {
-    this.stopAudio();
+  private fadeTo(target: number, ms: number, done?: () => void) {
+    const el = this.audio;
+    if (!el) { done?.(); return; }
+    this.fadeElement(el, target, ms, done);
+  }
+
+  private clearFades() {
+    this.fadeTimers.forEach(t => clearInterval(t));
+    this.fadeTimers.clear();
+  }
+
+  private playTrack(url: string, crossfade = true) {
+    const prev = this.audio;
+    this.fadingOut.forEach(a => { try { a.pause(); } catch {} });
+    this.fadingOut = [];
+
     const audio = new Audio(url);
     audio.volume = 0;
     audio.loop = false;
     audio.onended = () => this.next();
     audio.onerror = () => this.next();
     this.audio = audio;
-    const p = audio.play();
-    p?.catch(() => {});
-    if (fadeIn) this.fadeTo(this.vol, 1200);
-    else audio.volume = this.vol;
+    audio.play()?.catch(() => {});
+
+    if (prev && crossfade && !prev.paused) {
+      // 交叉淡入淡出：旧曲继续播放并淡出，新曲淡入，结束后再停旧曲
+      prev.onended = null;
+      prev.onerror = null;
+      this.fadingOut.push(prev);
+      this.fadeElement(audio, this.vol, 1000);
+      this.fadeElement(prev, 0, 1000, () => {
+        try { prev.pause(); } catch {}
+        this.fadingOut = this.fadingOut.filter(a => a !== prev);
+      });
+    } else {
+      this.fadeElement(audio, this.vol, 1000);
+    }
     this.emit();
   }
 
@@ -248,7 +276,9 @@ class MusicPlayer {
   }
 
   private stopAudio() {
-    if (this.fadeTimer) { clearInterval(this.fadeTimer); this.fadeTimer = null; }
+    this.clearFades();
+    this.fadingOut.forEach(a => { try { a.pause(); } catch {} });
+    this.fadingOut = [];
     if (this.audio) { this.audio.pause(); this.audio.onended = null; this.audio.onerror = null; this.audio = null; }
   }
 }
@@ -272,8 +302,8 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   const loaded = useRef(false);
 
   useEffect(() => {
-    musicPlayer.setOnState(setPlayer);
-    return () => musicPlayer.setOnState(null);
+    const unsubscribe = musicPlayer.subscribe(setPlayer);
+    return unsubscribe;
   }, []);
 
   const toggleSound = useCallback(async () => {
@@ -285,10 +315,9 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
     if (player.playing) musicPlayer.pause();
     else if (musicPlayer.resumeSafe()) musicPlayer.resume();
     else {
-      const playlist = (scene ? SCENE_PLAYLIST[scene] : null) || DEFAULT_PLAYLIST;
-      musicPlayer.play(playlist);
+      musicPlayer.play(DEFAULT_PLAYLIST);
     }
-  }, [player.playing, scene]);
+  }, [player.playing]);
 
   // 天气变化时更新环境音
   useEffect(() => {
@@ -296,16 +325,14 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   }, [weather]); // eslint-disable-line
   useEffect(() => { loaded.current = true; }, []);
 
-  // 进入角落场景时，若音乐已在播放则切换到该场景歌单
+  // 音乐是全局单例，跨场景持续播放同一首歌，不做任何切歌。
+  // 只有公园页根实例（无 scene）卸载时才完全停止；角落实例卸载只停它自己的天气音效。
   useEffect(() => {
-    if (!scene) return;
-    const playlist = SCENE_PLAYLIST[scene];
-    if (playlist && playlist.length > 0 && musicPlayer.isActive()) {
-      musicPlayer.play(playlist);
-    }
+    return () => {
+      weatherAudio.stop();
+      if (!scene) musicPlayer.teardown();
+    };
   }, [scene]);
-
-  useEffect(() => () => { weatherAudio.stop(); musicPlayer.teardown(); }, []);
 
   const hasWeatherSound = weather !== 'sunny' && weather !== 'cloudy';
 
@@ -318,7 +345,7 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
     <div className="fixed bottom-4 left-4 md:left-[252px] z-25 flex gap-2 items-end max-md:bottom-4 max-md:left-2">
       {/* 天气音效 */}
       <button onClick={toggleSound}
-        className={`chip ${soundOn ? '!border-[rgba(181,106,76,0.4)] !text-[#a25a3e]' : ''}`}
+        className={`chip ${soundOn ? '!border-[rgba(193,95,60,0.45)] !text-[var(--accent)]' : ''}`}
         title={soundOn ? '关闭天气音效' : '开启天气音效'}>
         <span>{soundOn ? '◍' : '○'}</span>
         <span className="hidden md:inline">{hasWeatherSound ? (soundOn ? '天气音效' : '天气音') : '无'}</span>

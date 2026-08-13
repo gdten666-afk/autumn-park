@@ -13,21 +13,27 @@ export function hashPassword(password: string): string {
 export function verifyPassword(password: string, stored: string): boolean {
   if (!stored || !stored.includes(':')) return false;
   const [salt, hash] = stored.split(':');
-  const attempt = crypto.scryptSync(password, salt, 64).toString('hex');
-  return attempt === hash;
+  const attempt = crypto.scryptSync(password, salt, 64);
+  const expected = Buffer.from(hash, 'hex');
+  if (attempt.length !== expected.length) return false;
+  return crypto.timingSafeEqual(attempt, expected);
 }
 
 const SESSION_COOKIE = 'park_session';
+// 会话签名密钥：生产环境必须显式配置，绝不回退到可猜测的引导码或硬编码值。
 const SESSION_SECRET =
   process.env.SESSION_SECRET ||
-  process.env.BOOTSTRAP_CODE ||
-  'park-session-secret';
+  (process.env.NODE_ENV === 'production' ? '' : 'dev-only-session-secret');
 
-if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET && !process.env.BOOTSTRAP_CODE) {
-  console.warn('[auth] SESSION_SECRET is not set in production — sessions are NOT secure. Set SESSION_SECRET now.');
+if (!SESSION_SECRET) {
+  console.warn('[auth] SESSION_SECRET is not set — session signing will fail until it is configured.');
 }
 
 function sign(payload: string): string {
+  // 运行时才强制要求密钥，避免在构建期预渲染（无环境变量）时抛错。
+  if (!SESSION_SECRET) {
+    throw new Error('[auth] SESSION_SECRET is required. Set it via `openssl rand -hex 32`.');
+  }
   return crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('hex');
 }
 

@@ -95,7 +95,7 @@ export default function WeatherVote() {
     return (
       <div className="fixed bottom-4 left-4 z-25 max-md:bottom-16 max-md:left-2">
         <div className="chip text-xs">
-          <span className="w-3 h-3 border-2 border-black/15 border-t-black/30 rounded-full animate-spin" />
+          <span className="w-3 h-3 border-2 border-[var(--hairline-strong)] border-t-[var(--ink-weak)] rounded-full animate-spin" />
           <span style={{ color: 'var(--ink-weak)' }}>天气</span>
         </div>
       </div>
@@ -174,13 +174,13 @@ export default function WeatherVote() {
                   onClick={() => handleVote(w.value)}
                   disabled={voting}
                   className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-all
-                    ${isSelected ? 'bg-amber-100/60 ring-1 ring-amber-200/50' : 'hover:bg-white/50'}
+                    ${isSelected ? 'bg-[rgba(193,95,60,0.08)] ring-1 ring-[rgba(193,95,60,0.2)]' : 'hover:bg-[var(--bg-soft)]'}
                     ${data.userVote && !isSelected ? 'opacity-50' : ''}
                   `}
                 >
                   <span className="text-base w-6 text-center flex-shrink-0">{w.emoji}</span>
                   <span className="w-7 flex-shrink-0" style={{ color: 'var(--ink-soft)' }}>{w.label}</span>
-                  <div className="flex-1 h-1.5 bg-black/5 rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 bg-[var(--hairline)] rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${barWidth}%`, background: 'var(--accent-2)' }}
@@ -203,7 +203,7 @@ export default function WeatherVote() {
           )}
 
           {data.userVote && (
-            <p className="text-amber-500/60 text-[10px] mt-2 text-center">
+            <p className="text-[var(--accent)] text-[10px] mt-2 text-center">
               已投票 ✓
             </p>
           )}

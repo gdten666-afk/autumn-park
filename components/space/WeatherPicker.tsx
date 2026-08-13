@@ -18,10 +18,10 @@ export default function WeatherPicker({ current, onSelect, isOwner }: WeatherPic
           key={w.value}
           onClick={() => isOwner && onSelect(w.value)}
           disabled={!isOwner}
-          className={`px-2.5 py-1.5 rounded-lg text-sm border border-white/10 transition-all ${
+          className={`px-2.5 py-1.5 rounded-lg text-sm border transition-all ${
             current === w.value
-              ? 'bg-white/25 text-white scale-110'
-              : 'bg-white/10 text-white/70 hover:bg-white/20'
+              ? 'bg-[var(--ink)] border-[var(--ink)] scale-105'
+              : 'bg-[var(--surface)] border-[var(--hairline)] hover:border-[var(--hairline-strong)]'
           } ${!isOwner && 'cursor-default'}`}
           title={w.label}
         >

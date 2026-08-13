@@ -127,12 +127,12 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-white/5 flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-[var(--bg-soft)] flex items-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(45,42,36,0.3)" strokeWidth="1.2">
               <rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M 21 15 L 16 10 L 5 21" />
             </svg>
           </div>
-          <p className="text-white/20 text-sm">这里还没有照片</p>
+          <p className="text-[var(--ink-faint)] text-sm">这里还没有照片</p>
         </div>
       </div>
     );
@@ -152,7 +152,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
                 value={caption}
                 onChange={e => setCaption(e.target.value)}
                 maxLength={100}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white/80 placeholder:text-white/20 outline-none focus:border-white/20 transition-colors"
+                className="w-full bg-[var(--surface)] border border-[var(--hairline-strong)] rounded-xl px-4 py-2.5 text-sm text-[var(--ink)] placeholder:text-[var(--ink-weak)] outline-none focus:border-[var(--accent-2)] transition-colors"
               />
             </div>
 
@@ -162,13 +162,13 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
               inline-flex items-center gap-2 px-5 py-2.5 rounded-xl cursor-pointer text-sm font-medium
               transition-all select-none
               ${uploading
-                ? 'bg-white/10 text-white/30 cursor-wait'
-                : 'bg-white/10 hover:bg-white/20 text-white/80 active:scale-95'
+                ? 'bg-[var(--bg-soft)] text-[var(--ink-weak)] cursor-wait'
+                : 'bg-[var(--ink)] hover:opacity-90 text-[var(--surface)] active:scale-95'
               }
             `}>
               {uploading ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white/60 rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-[var(--hairline-strong)] border-t-[var(--ink)] rounded-full animate-spin" />
                   上传中…
                 </>
               ) : (
@@ -190,12 +190,12 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
             </label>
 
             {/* Public toggle */}
-            <label className="inline-flex items-center gap-2 text-xs text-white/30 cursor-pointer select-none">
+            <label className="inline-flex items-center gap-2 text-xs text-[var(--ink-faint)] cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={makePublic}
                 onChange={e => setMakePublic(e.target.checked)}
-                className="accent-amber-500 w-3.5 h-3.5"
+                className="accent-[var(--accent)] w-3.5 h-3.5"
               />
               发布到公园
             </label>
@@ -204,11 +204,11 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
 
           {/* Caption hint */}
           {!caption && !uploading && (
-            <p className="text-white/15 text-[11px] mt-2">文案会在照片上显示，上传后也可以随时修改</p>
+            <p className="text-[var(--ink-weak)] text-[11px] mt-2">文案会在照片上显示，上传后也可以随时修改</p>
           )}
 
           {uploadError && (
-            <p className="text-red-400/70 text-xs mt-2">{uploadError}</p>
+            <p className="text-red-500/70 text-xs mt-2">{uploadError}</p>
           )}
         </div>
       )}
@@ -217,8 +217,8 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
       <div className={gridClass}>
         {/* Skeleton loading */}
         {loading && Array.from({ length: 8 }).map((_, i) => (
-          <div key={`sk-${i}`} className="relative aspect-square rounded-xl bg-white/5 ring-1 ring-white/5 overflow-hidden animate-pulse">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5" />
+          <div key={`sk-${i}`} className="relative aspect-square rounded-xl bg-[var(--bg-soft)] ring-1 ring-[var(--hairline)] overflow-hidden animate-pulse">
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--surface)] via-transparent to-[var(--surface)]" />
           </div>
         ))}
 
@@ -228,8 +228,8 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
             <div key={photo.id} className="relative group">
               {/* Card */}
               <div
-                className="relative overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10 cursor-pointer
-                  transition-all duration-300 hover:ring-white/25 hover:shadow-lg hover:shadow-black/20
+                className="relative overflow-hidden rounded-xl bg-[var(--surface)] ring-1 ring-[var(--hairline)] cursor-pointer
+                  transition-all duration-300 hover:ring-[var(--hairline-strong)] hover:shadow-[var(--shadow-lift)]
                   active:scale-[0.98]"
                 style={{ aspectRatio: '1' }}
                 onClick={() => setDetailIdx(idx)}
@@ -250,7 +250,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
 
                 {/* Public badge */}
                 {photo.is_public && (
-                  <span className="absolute top-2 right-2 text-[9px] bg-black/40 backdrop-blur text-white/50 px-1.5 py-0.5 rounded-full">
+                  <span className="absolute top-2 right-2 text-[9px] bg-white/85 backdrop-blur text-[var(--ink-soft)] px-1.5 py-0.5 rounded-full">
                     公园
                   </span>
                 )}
@@ -261,7 +261,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
                 <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                   <button
                     onClick={(e) => { e.stopPropagation(); startEdit(photo); }}
-                    className="text-[10px] px-2 py-1 rounded-md bg-black/50 backdrop-blur text-white/70 hover:text-white hover:bg-black/60 transition-colors"
+                    className="text-[10px] px-2 py-1 rounded-md bg-white/90 backdrop-blur text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-white transition-colors"
                     title="编辑文案"
                   >
                     ✎ 文案
@@ -269,7 +269,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
                   <button
                     onClick={(e) => { e.stopPropagation(); handleTogglePublic(photo); }}
                     className={`text-[10px] px-2 py-1 rounded-md backdrop-blur transition-colors ${
-                      photo.is_public ? 'bg-green-500/50 text-white/80 hover:bg-green-500/60' : 'bg-black/40 text-white/50 hover:bg-black/50'
+                      photo.is_public ? 'bg-[var(--ink)] text-[var(--surface)]' : 'bg-white/90 text-[var(--ink-soft)] hover:bg-white'
                     }`}
                     title={photo.is_public ? '公园可见' : '仅自己可见'}
                   >
@@ -277,7 +277,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(photo.id); }}
-                    className="text-[10px] px-2 py-1 rounded-md bg-red-500/40 backdrop-blur text-white/70 hover:text-white hover:bg-red-500/50 transition-colors"
+                    className="text-[10px] px-2 py-1 rounded-md bg-white/90 backdrop-blur text-[#b0563c] hover:text-white hover:bg-[#b0563c] transition-colors"
                     title="删除"
                   >
                     ✕
@@ -288,7 +288,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
               {/* Inline caption editor */}
               {isEditing && (
                 <div
-                  className="absolute bottom-0 inset-x-0 bg-black/80 backdrop-blur p-3"
+                  className="absolute bottom-0 inset-x-0 bg-[var(--surface)] border-t border-[var(--hairline)] p-3"
                   onClick={e => e.stopPropagation()}
                 >
                   <input
@@ -302,18 +302,18 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
                       if (e.key === 'Enter') saveCaption(photo.id);
                       if (e.key === 'Escape') { setEditingId(null); setEditValue(''); }
                     }}
-                    className="w-full bg-white/10 border border-white/15 rounded-lg px-3 py-1.5 text-xs text-white/90 placeholder:text-white/25 outline-none focus:border-white/30"
+                    className="w-full bg-[var(--surface)] border border-[var(--hairline-strong)] rounded-lg px-3 py-1.5 text-xs text-[var(--ink)] placeholder:text-[var(--ink-weak)] outline-none focus:border-[var(--accent-2)]"
                   />
                   <div className="flex justify-end gap-2 mt-2">
                     <button
                       onClick={() => { setEditingId(null); setEditValue(''); }}
-                      className="text-[10px] text-white/30 hover:text-white/50 transition-colors"
+                      className="text-[10px] text-[var(--ink-weak)] hover:text-[var(--ink-soft)] transition-colors"
                     >
                       取消
                     </button>
                     <button
                       onClick={() => saveCaption(photo.id)}
-                      className="text-[10px] px-3 py-1 rounded-md bg-white/15 hover:bg-white/25 text-white/80 transition-colors"
+                      className="text-[10px] px-3 py-1 rounded-md bg-[var(--ink)] hover:opacity-90 text-[var(--surface)] transition-colors"
                     >
                       保存
                     </button>
@@ -328,13 +328,13 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
         {!loading && photos.length === 0 && isOwner && (
           <div className="col-span-full flex items-center justify-center py-16">
             <div className="text-center max-w-xs">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-white/5 flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2" strokeLinecap="round">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-[var(--bg-soft)] flex items-center justify-center">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(45,42,36,0.3)" strokeWidth="1.2" strokeLinecap="round">
                   <rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M 21 15 L 16 10 L 5 21" />
                 </svg>
               </div>
-              <p className="text-white/30 text-sm mb-1">还没有照片</p>
-              <p className="text-white/15 text-xs leading-relaxed">
+              <p className="text-[var(--ink-faint)] text-sm mb-1">还没有照片</p>
+              <p className="text-[var(--ink-weak)] text-xs leading-relaxed">
                 点击上方「添加照片」按钮上传你的第一张照片
                 <br />可以配上文案，点亮「发布到公园」分享给大家
               </p>

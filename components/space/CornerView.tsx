@@ -60,8 +60,8 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
 
   if (!space) {
     return (
-      <div className="fixed inset-0 z-30 bg-black flex items-center justify-center">
-        <p className="text-white/40">正在进入这个角落...</p>
+      <div className="fixed inset-0 z-30 bg-[var(--bg)] flex items-center justify-center">
+        <p className="text-[var(--ink-faint)]">正在进入这个角落...</p>
       </div>
     );
   }
@@ -71,7 +71,7 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
       <SceneFrame scene={space.scene} weather={space.weather}>
         <AmbientSound weather={space.weather} scene={space.scene} />
         <div className="absolute top-0 left-0 right-0 z-20 px-3 pt-3 pb-2 flex flex-col md:flex-row md:items-center md:justify-between gap-2"
-          style={{ background: 'linear-gradient(180deg, rgba(10,12,18,0.5) 0%, rgba(10,12,18,0.18) 70%, transparent 100%)' }}>
+          style={{ background: 'linear-gradient(180deg, rgba(250,249,245,0.75) 0%, rgba(250,249,245,0.4) 70%, transparent 100%)' }}>
           <div className="flex items-center justify-between gap-2">
             <button onClick={onExit} className="glass-btn shrink-0 text-xs !px-3 !py-1.5">
               ← 回到公园
@@ -95,12 +95,12 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
           <div className="px-4 md:px-6 pb-2">
             {isOwner && !editingBio && (
               <div className="flex items-start gap-2">
-                <p className="text-white/25 text-xs italic leading-relaxed flex-1">
+                <p className="text-[var(--ink-faint)] text-xs italic leading-relaxed flex-1">
                   {space.bio || '写一句签名，让路过的人了解你…'}
                 </p>
                 <button
                   onClick={() => { setBioValue(space.bio || ''); setEditingBio(true); }}
-                  className="text-white/15 hover:text-white/40 text-[10px] flex-shrink-0 transition-colors"
+                  className="text-[var(--ink-weak)] hover:text-[var(--ink-soft)] text-[10px] flex-shrink-0 transition-colors"
                 >
                   {space.bio ? '✎' : '+ 签名'}
                 </button>
@@ -112,16 +112,16 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
                   type="text" value={bioValue} onChange={e => setBioValue(e.target.value)}
                   maxLength={120} autoFocus placeholder="写一句签名…"
                   onKeyDown={e => { if (e.key === 'Enter') saveBio(); if (e.key === 'Escape') setEditingBio(false); }}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white/70 placeholder:text-white/20 outline-none focus:border-white/20"
+                  className="flex-1 bg-[var(--surface)] border border-[var(--hairline-strong)] rounded-lg px-3 py-1.5 text-xs text-[var(--ink)] placeholder:text-[var(--ink-weak)] outline-none focus:border-[var(--accent-2)]"
                 />
                 <button onClick={saveBio} disabled={saving}
-                  className="text-[10px] px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-white/60 transition-colors flex-shrink-0">
+                  className="text-[10px] px-2 py-1 rounded-md bg-[var(--bg-soft)] hover:bg-[var(--hairline)] text-[var(--ink-soft)] transition-colors flex-shrink-0">
                   {saving ? '…' : '保存'}
                 </button>
               </div>
             )}
             {!isOwner && space.bio && (
-              <p className="text-white/25 text-xs italic leading-relaxed">{space.bio}</p>
+              <p className="text-[var(--ink-faint)] text-xs italic leading-relaxed">{space.bio}</p>
             )}
           </div>
 

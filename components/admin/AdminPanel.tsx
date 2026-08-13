@@ -42,16 +42,16 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center" onClick={onClose}>
-      <div className="bg-[#1a1110] border border-white/10 rounded-xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center animate-fadeIn" onClick={onClose}>
+      <div className="bg-[var(--surface)] border border-[var(--hairline)] rounded-2xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-[var(--shadow-lift)]" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-white/80 text-lg">管理面板</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white/60 text-sm">关闭</button>
+          <h2 className="text-[var(--ink)] text-lg font-serif">管理面板</h2>
+          <button onClick={onClose} className="text-[var(--ink-weak)] hover:text-[var(--ink-soft)] text-sm">关闭</button>
         </div>
 
         {/* Invite code generation */}
         <section className="mb-6">
-          <h3 className="text-white/60 text-sm mb-3">生成邀请码</h3>
+          <h3 className="text-[var(--ink-soft)] text-sm mb-3">生成邀请码</h3>
           <div className="flex gap-2 items-center">
             <input
               type="number"
@@ -59,31 +59,31 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
               min={1}
               max={100}
               onChange={e => setCount(Number(e.target.value))}
-              className="w-20 px-2 py-1.5 bg-white/5 border border-white/10 rounded text-white/80 text-sm text-center"
+              className="w-20 px-2 py-1.5 bg-[var(--bg-soft)] border border-[var(--hairline-strong)] rounded text-[var(--ink)] text-sm text-center"
             />
             <button
               onClick={generateCodes}
-              className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 rounded text-sm text-amber-300/80 transition-colors"
+              className="px-3 py-1.5 bg-[rgba(193,95,60,0.1)] hover:bg-[rgba(193,95,60,0.18)] rounded text-sm text-[var(--accent)] transition-colors"
             >
               生成
             </button>
           </div>
 
           {generated.length > 0 && (
-            <div className="mt-3 p-3 bg-white/5 rounded">
-              <p className="text-white/40 text-xs mb-1">新生成的邀请码：</p>
+            <div className="mt-3 p-3 bg-[var(--bg-soft)] rounded">
+              <p className="text-[var(--ink-faint)] text-xs mb-1">新生成的邀请码：</p>
               {generated.map(code => (
-                <code key={code} className="block text-green-400 text-xs font-mono">{code}</code>
+                <code key={code} className="block text-[var(--accent)] text-xs font-mono">{code}</code>
               ))}
             </div>
           )}
 
           {codes.length > 0 && (
             <details className="mt-3">
-              <summary className="text-white/30 text-xs cursor-pointer hover:text-white/50">历史邀请码 ({codes.length})</summary>
+              <summary className="text-[var(--ink-weak)] text-xs cursor-pointer hover:text-[var(--ink-soft)]">历史邀请码 ({codes.length})</summary>
               <div className="mt-2 max-h-32 overflow-y-auto">
                 {codes.map((c: any) => (
-                  <div key={c.code} className="text-xs font-mono text-white/30 py-0.5">
+                  <div key={c.code} className="text-xs font-mono text-[var(--ink-faint)] py-0.5">
                     {c.code} {c.used_by ? '(已使用)' : '(未使用)'}
                   </div>
                 ))}
@@ -92,17 +92,17 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
           )}
         </section>
 
-        {/* Generate thumbnails */}
+        {/* Migrate legacy blob photos into storage */}
         <section className="mb-6">
-          <h3 className="text-white/60 text-sm mb-3">生成缩略图</h3>
-          <p className="text-white/20 text-[10px] mb-2">分批处理，每批5张，自动循环直到全部完成</p>
+          <h3 className="text-[var(--ink-soft)] text-sm mb-3">迁移旧照片到存储</h3>
+          <p className="text-[var(--ink-weak)] text-[10px] mb-2">把旧版存入数据库的照片迁到对象存储/磁盘并生成缩略图，每批1张</p>
           <button
             onClick={async () => {
               const btn = document.activeElement as HTMLButtonElement;
               btn.disabled = true;
               let totalDone = 0;
               for (let round = 0; round < 20; round++) {
-                btn.textContent = `生成中... ${totalDone} 张`;
+                btn.textContent = `迁移中... ${totalDone} 张`;
                 const res = await fetch('/api/admin/photos', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -111,39 +111,39 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                 const data = await res.json();
                 if (!data.ok) { alert('失败: ' + (data.error || '未知错误')); break; }
                 totalDone += data.data?.batch || 0;
-                if (data.data?.done) { alert(`全部完成！共生成 ${totalDone} 张缩略图`); break; }
+                if (data.data?.done) { alert(`全部完成！共迁移 ${totalDone} 张`); break; }
                 if (data.data?.remaining === 0) { alert(`完成！${totalDone} 张`); break; }
               }
               btn.disabled = false;
-              btn.textContent = '重新生成所有缩略图';
+              btn.textContent = '开始迁移';
             }}
-            className="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 rounded text-sm text-amber-300/80 transition-colors"
+            className="px-4 py-2 bg-[rgba(193,95,60,0.1)] hover:bg-[rgba(193,95,60,0.18)] rounded text-sm text-[var(--accent)] transition-colors"
           >
-            重新生成所有缩略图
+            开始迁移
           </button>
         </section>
 
-        {/* Clean broken photos */}
+        {/* Clean empty photo records */}
         <section className="mb-6">
-          <h3 className="text-white/60 text-sm mb-3">清理失效照片</h3>
-          <p className="text-white/20 text-[10px] mb-2">删除图片数据丢失的照片记录（data=NULL），清理后需重新上传</p>
+          <h3 className="text-[var(--ink-soft)] text-sm mb-3">清理空照片记录</h3>
+          <p className="text-[var(--ink-weak)] text-[10px] mb-2">删除既无图片数据也无存储文件的空记录</p>
           <button
             onClick={async () => {
-              if (!confirm('确定要清理所有失效照片吗？这些照片需要重新上传！')) return;
+              if (!confirm('确定要清理所有空照片记录吗？')) return;
               const res = await fetch('/api/admin/photos?broken=1', { method: 'DELETE' });
               const data = await res.json();
               if (data.ok) alert(data.data?.message || `已清理 ${data.data?.deleted || 0} 张`);
               else alert('清理失败');
             }}
-            className="px-4 py-2 bg-orange-500/20 hover:bg-orange-500/30 rounded text-sm text-orange-300/80 transition-colors"
+            className="px-4 py-2 bg-[rgba(193,95,60,0.1)] hover:bg-[rgba(193,95,60,0.18)] rounded text-sm text-[var(--accent)] transition-colors"
           >
-            清理失效照片
+            清理空照片记录
           </button>
         </section>
 
         {/* Delete all photos */}
         <section className="mb-6">
-          <h3 className="text-white/60 text-sm mb-3">清空所有照片</h3>
+          <h3 className="text-[var(--ink-soft)] text-sm mb-3">清空所有照片</h3>
           <button
             onClick={async () => {
               if (!confirm('确定要删除所有照片吗？此操作不可撤销！')) return;
@@ -152,7 +152,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
               if (data.ok) alert(`已删除 ${data.data?.deleted || 0} 张照片`);
               else alert('删除失败');
             }}
-            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded text-sm text-red-300/80 transition-colors"
+            className="px-4 py-2 bg-[rgba(176,86,60,0.1)] hover:bg-[rgba(176,86,60,0.18)] rounded text-sm text-[#b0563c] transition-colors"
           >
             清空所有照片
           </button>
@@ -160,19 +160,19 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
 
         {/* User list */}
         <section>
-          <h3 className="text-white/60 text-sm mb-3">用户列表 ({users.length})</h3>
+          <h3 className="text-[var(--ink-soft)] text-sm mb-3">用户列表 ({users.length})</h3>
           <div className="space-y-1">
             {users.map((u: any) => (
-              <div key={u.id} className="flex items-center justify-between py-2 px-2 rounded hover:bg-white/5">
+              <div key={u.id} className="flex items-center justify-between py-2 px-2 rounded hover:bg-[var(--bg-soft)]">
                 <div>
-                  <span className="text-white/70 text-sm">{u.name}</span>
-                  <span className="text-white/20 text-xs ml-2">{u.role === 'operator' ? '管理员' : ''}</span>
-                  <span className="text-white/20 text-xs ml-2">{u.photo_count || 0} 张照片</span>
+                  <span className="text-[var(--ink)] text-sm">{u.name}</span>
+                  <span className="text-[var(--ink-weak)] text-xs ml-2">{u.role === 'operator' ? '管理员' : ''}</span>
+                  <span className="text-[var(--ink-weak)] text-xs ml-2">{u.photo_count || 0} 张照片</span>
                 </div>
                 {u.role !== 'operator' && (
                   <button
                     onClick={() => deleteUser(u.id, u.name)}
-                    className="text-red-400/50 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-400/10 transition-colors"
+                    className="text-[#b0563c]/70 hover:text-[#b0563c] text-xs px-2 py-1 rounded hover:bg-[rgba(176,86,60,0.08)] transition-colors"
                   >
                     删除
                   </button>

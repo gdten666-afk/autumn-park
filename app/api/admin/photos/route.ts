@@ -27,7 +27,10 @@ export async function DELETE(req: NextRequest) {
     const brokenOnly = url.searchParams.get('broken') === '1';
 
     if (brokenOnly) {
-      const photos = await dbAll('SELECT id, full_key, thumb_key FROM photos WHERE data IS NULL');
+      // 只清理“既没有 BLOB、也没有任何存储 key”的空记录。
+      // 旧逻辑用 `data IS NULL` 会误删所有走 S3/磁盘存储的现代照片。
+      const brokenSql = `data IS NULL AND full_key = '' AND thumb_key = ''`;
+      const photos = await dbAll(`SELECT id, full_key, thumb_key, filename FROM photos WHERE ${brokenSql}`);
       for (const p of photos) {
         await deleteImageKeys([p.full_key, p.thumb_key]);
         try {
@@ -35,7 +38,7 @@ export async function DELETE(req: NextRequest) {
           if (fs.existsSync(fp)) fs.unlinkSync(fp);
         } catch {}
       }
-      await dbRun('DELETE FROM photos WHERE data IS NULL');
+      await dbRun(`DELETE FROM photos WHERE ${brokenSql}`);
       apiCacheClear('photos:public');
       apiCacheClear('stats');
       return NextResponse.json({ ok: true, data: { deleted: photos.length, message: `已清理 ${photos.length} 张失效照片` } });

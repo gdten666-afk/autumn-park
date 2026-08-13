@@ -33,16 +33,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Invite code already used' }, { status: 410 });
     }
 
-    const trimmedName = name.trim();
-    const userId = isBootstrap && code.used_by ? code.used_by : nanoid();
+    const trimmedName = name.trim().slice(0, 32);
+    if (trimmedName.length === 0) {
+      return NextResponse.json({ ok: false, error: '请输入用户名' }, { status: 400 });
+    }
+
+    // 引导码只用于“首次创建”管理员账号；已使用后禁止再用它覆盖账号（防接管）。
+    if (isBootstrap && code.used_by) {
+      return NextResponse.json({ ok: false, error: 'Bootstrap account already exists' }, { status: 409 });
+    }
+
+    // 用户名有唯一索引，重复时给出明确提示，而不是 500。
+    const existing = await dbGet('SELECT id FROM users WHERE name = ?', [trimmedName]);
+    if (existing) {
+      return NextResponse.json({ ok: false, error: '用户名已存在' }, { status: 409 });
+    }
+
+    const userId = nanoid();
     const role = isBootstrap ? 'operator' : 'user';
     const pwdHash = hashPassword(password);
-
-    if (isBootstrap && code.used_by) {
-      await dbRun('UPDATE users SET name = ?, password_hash = ? WHERE id = ?', [trimmedName, pwdHash, userId]);
-    } else {
-      await dbRun('INSERT INTO users (id, name, password_hash, role, invite_code) VALUES (?, ?, ?, ?, ?)', [userId, trimmedName, pwdHash, role, inviteCode.trim()]);
-    }
+    await dbRun('INSERT INTO users (id, name, password_hash, role, invite_code) VALUES (?, ?, ?, ?, ?)', [userId, trimmedName, pwdHash, role, inviteCode.trim()]);
     await dbRun('UPDATE invite_codes SET used_by = ? WHERE code = ?', [userId, inviteCode.trim()]);
     await dbRun('INSERT OR IGNORE INTO spaces (user_id, scene, weather) VALUES (?, \'autumn-bench\', \'sunny\')', [userId]);
 

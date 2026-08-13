@@ -21,9 +21,14 @@ export function rateLimit(
 }
 
 export function clientIp(req: Request): string {
-  const fwd = req.headers.get("x-forwarded-for");
-  if (fwd) return fwd.split(",")[0].trim();
-  return req.headers.get("x-real-ip") || "unknown";
+  // 优先取可信代理（Fly/Render）注入的头，避免攻击者伪造 X-Forwarded-For 绕过限流。
+  return (
+    req.headers.get('fly-client-ip') ||
+    req.headers.get('cf-connecting-ip') ||
+    req.headers.get('x-real-ip') ||
+    req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+    'unknown'
+  );
 }
 
 // Periodically drop expired buckets so the map does not grow forever.

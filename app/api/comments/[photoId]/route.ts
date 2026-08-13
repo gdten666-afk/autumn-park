@@ -50,6 +50,13 @@ export async function POST(
       return NextResponse.json({ ok: false, error: '评论最多300字' }, { status: 400 });
     }
 
+    // 校验照片存在且可评论，避免孤儿评论 / 对不可见照片评论。
+    const photo = await dbGet('SELECT id, is_public, user_id FROM photos WHERE id = ?', [photoId]);
+    if (!photo) return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
+    if (!photo.is_public && photo.user_id !== session.userId && session.role !== 'operator') {
+      return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
+    }
+
     const id = nanoid();
     await dbRun(
       'INSERT INTO photo_comments (id, photo_id, user_id, content) VALUES (?, ?, ?, ?)',
