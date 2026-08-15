@@ -9,3 +9,5 @@ services:
     envVars:
       - key: UPLOAD_DIR
         value: /app/uploads
+      - key: TZ
+        value: Asia/Shanghai

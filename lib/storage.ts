@@ -29,6 +29,10 @@ export const useObjectStorage = Boolean(
   S3_ENDPOINT && S3_BUCKET && S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY,
 );
 
+if (!useObjectStorage && process.env.NODE_ENV === 'production') {
+  console.warn('[storage] 未配置 S3/R2 对象存储，图片将写入本地磁盘。Render 免费套餐的磁盘为临时盘，重新部署会丢失图片，请配置 S3_* 或使用持久磁盘。');
+}
+
 let s3: S3Client | null = null;
 function getS3(): S3Client {
   if (!s3) {
