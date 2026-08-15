@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import type { SeasonState, Weather } from '@/lib/types';
-import { getTimeOfDay } from '@/lib/time';
+import { getTimeOfDay, TIME_LABELS } from '@/lib/time';
+
+const SEASON_NAME: Record<string, string> = { spring: '春', summer: '夏', autumn: '秋', winter: '冬' };
 
 interface ParkSceneProps { seasonState: SeasonState; weather: Weather; }
 
@@ -136,20 +138,23 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
       {/* 简约线稿插画：地平线 + 树 */}
       <div className="parallax-slow absolute inset-0" style={{ zIndex: 2, pointerEvents: 'none' }}>
         <svg viewBox="0 0 1440 400" preserveAspectRatio="xMidYMax slice" style={{ position: 'absolute', inset: 'auto 0 0 0', width: '100%', height: '42%', opacity: 0.9 }}>
-          <line x1="0" y1="330" x2="1440" y2="330" stroke="rgba(60,52,40,0.14)" strokeWidth="1.2" />
-          <g stroke="rgba(60,52,40,0.5)" strokeWidth="2.4" strokeLinecap="round" fill="none">
+          <line x1="0" y1="330" x2="1440" y2="330" stroke="rgba(93,72,48,0.18)" strokeWidth="1.2" />
+          <g stroke="rgba(93,72,48,0.55)" strokeWidth="2.4" strokeLinecap="round" fill="none">
             <path d="M260 332 C256 296 250 268 262 234" />
             <path d="M264 262 C238 244 222 246 206 228 M264 246 C244 228 238 220 226 200" />
             <path d="M1170 334 C1174 300 1180 274 1168 244" />
             <path d="M1168 270 C1192 254 1206 256 1220 240 M1168 254 C1186 238 1192 230 1202 212" />
           </g>
-          <circle cx="206" cy="228" r="7" fill="rgba(201,138,75,0.5)" />
-          <circle cx="226" cy="200" r="6" fill="rgba(217,160,94,0.5)" />
-          <circle cx="1220" cy="240" r="6" fill="rgba(201,138,75,0.5)" />
-          <circle cx="1202" cy="212" r="5" fill="rgba(217,160,94,0.5)" />
-          <path d="M180 340 C320 322 480 322 620 340" stroke="rgba(60,52,40,0.22)" strokeWidth="1.2" />
-          <path d="M860 344 C1020 328 1180 328 1300 344" stroke="rgba(60,52,40,0.2)" strokeWidth="1.2" />
+          <circle cx="206" cy="228" r="7" fill="rgba(176,86,60,0.55)" />
+          <circle cx="226" cy="200" r="6" fill="rgba(201,138,75,0.6)" />
+          <circle cx="1220" cy="240" r="6" fill="rgba(176,86,60,0.55)" />
+          <circle cx="1202" cy="212" r="5" fill="rgba(201,138,75,0.6)" />
+          <path d="M180 340 C320 322 480 322 620 340" stroke="rgba(93,72,48,0.2)" strokeWidth="1.2" />
+          <path d="M860 344 C1020 328 1180 328 1300 344" stroke="rgba(93,72,48,0.2)" strokeWidth="1.2" />
         </svg>
+        <div style={{ position: 'absolute', top: '9%', right: '4%', fontSize: 10, letterSpacing: '0.3em', color: 'var(--ink-ghost)' }}>
+          {SEASON_NAME[season]} · {TIME_LABELS[tod]}
+        </div>
       </div>
 
       {/* Season accent */}
