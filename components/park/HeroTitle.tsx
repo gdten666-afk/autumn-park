@@ -19,11 +19,11 @@ export default function HeroTitle() {
   }, []);
 
   useEffect(() => {
-    refresh();
+    const t0 = setTimeout(refresh, 0);
     const t = setInterval(refresh, 60_000);
     const onChanged = () => refresh();
     window.addEventListener('messages-changed', onChanged);
-    return () => { clearInterval(t); window.removeEventListener('messages-changed', onChanged); };
+    return () => { clearTimeout(t0); clearInterval(t); window.removeEventListener('messages-changed', onChanged); };
   }, [refresh]);
 
   return (
