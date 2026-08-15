@@ -7,7 +7,15 @@ import fs from 'fs';
 import { deleteImageKeys, ensureStorageDirs, keyFor, writeImageBytes } from '@/lib/storage';
 import { apiCacheClear } from '@/lib/cache';
 
-const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads');
+const UPLOAD_DIR = path.resolve(/* turbopackIgnore: true */ process.env.UPLOAD_DIR || './uploads');
+
+// 安全拼接：只接受纯文件名，杜绝 ../ 越界
+function safeLegacyPath(filename: unknown): string | null {
+  if (typeof filename !== 'string' || !filename) return null;
+  const base = path.basename(filename);
+  if (base !== filename || base.startsWith('.')) return null;
+  return path.join(UPLOAD_DIR, base);
+}
 
 function toBuffer(data: any): Buffer {
   if (Buffer.isBuffer(data)) return data;
@@ -33,10 +41,8 @@ export async function DELETE(req: NextRequest) {
       const photos = await dbAll(`SELECT id, full_key, thumb_key, filename FROM photos WHERE ${brokenSql}`);
       for (const p of photos) {
         await deleteImageKeys([p.full_key, p.thumb_key]);
-        try {
-          const fp = path.join(UPLOAD_DIR, p.filename);
-          if (fs.existsSync(fp)) fs.unlinkSync(fp);
-        } catch {}
+        const fp = safeLegacyPath(p.filename);
+        if (fp) { try { await fs.promises.unlink(fp); } catch { /* 忽略不存在 */ } }
       }
       await dbRun(`DELETE FROM photos WHERE ${brokenSql}`);
       apiCacheClear('photos:public');
@@ -44,13 +50,11 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ ok: true, data: { deleted: photos.length, message: `已清理 ${photos.length} 张失效照片` } });
     }
 
-    const photos = await dbAll('SELECT id, full_key, thumb_key FROM photos');
+    const photos = await dbAll('SELECT id, full_key, thumb_key, filename FROM photos');
     for (const p of photos) {
       await deleteImageKeys([p.full_key, p.thumb_key]);
-      try {
-        const fp = path.join(UPLOAD_DIR, p.filename);
-        if (fs.existsSync(fp)) fs.unlinkSync(fp);
-      } catch {}
+      const fp = safeLegacyPath(p.filename);
+      if (fp) { try { await fs.promises.unlink(fp); } catch { /* 忽略不存在 */ } }
     }
     await dbRun('DELETE FROM photos');
     await dbRun('DELETE FROM photo_comments');
