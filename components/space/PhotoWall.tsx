@@ -149,6 +149,7 @@ export default function PhotoWall({ userId, isOwner, scene, sessionUserId }: Pho
             <div className="flex-1 min-w-0">
               <input
                 type="text"
+                aria-label="照片文案"
                 placeholder="写一句文案描述这张照片…"
                 value={caption}
                 onChange={e => setCaption(e.target.value)}

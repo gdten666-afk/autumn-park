@@ -141,6 +141,7 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
       <div className="flex gap-2">
         <input
           value={input}
+          aria-label="留言内容"
           onChange={e => setInput(e.target.value)}
           placeholder="写点什么..."
           maxLength={500}

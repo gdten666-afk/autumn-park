@@ -16,6 +16,9 @@ export default function WeatherPicker({ current, onSelect, isOwner }: WeatherPic
       {WEATHERS.map(w => (
         <button
           key={w.value}
+          type="button"
+          aria-pressed={current === w.value}
+          aria-label={w.label}
           onClick={() => isOwner && onSelect(w.value)}
           disabled={!isOwner}
           className={`px-2.5 py-1.5 rounded-lg text-sm border transition-all ${

@@ -16,6 +16,9 @@ export default function ScenePicker({ current, onSelect, isOwner }: ScenePickerP
       {SCENES.map(s => (
         <button
           key={s.value}
+          type="button"
+          aria-pressed={current === s.value}
+          aria-label={s.label}
           onClick={() => isOwner && onSelect(s.value)}
           disabled={!isOwner}
           className={`px-3 py-1.5 rounded-full text-xs border transition-all ${
