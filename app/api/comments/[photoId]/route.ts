@@ -16,7 +16,7 @@ export async function GET(
   if (!photo) return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
   if (!photo.is_public) {
     const session = await getSession();
-    if (!session || (session.userId !== photo.user_id && session.role !== 'operator')) {
+    if (!session || (String(session.userId) !== String(photo.user_id) && session.role !== 'operator')) {
       return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
     }
   }
@@ -53,7 +53,7 @@ export async function POST(
     // 校验照片存在且可评论，避免孤儿评论 / 对不可见照片评论。
     const photo = await dbGet('SELECT id, is_public, user_id FROM photos WHERE id = ?', [photoId]);
     if (!photo) return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
-    if (!photo.is_public && photo.user_id !== session.userId && session.role !== 'operator') {
+    if (!photo.is_public && String(photo.user_id) !== String(session.userId) && session.role !== 'operator') {
       return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
     }
 
@@ -87,14 +87,16 @@ export async function DELETE(
     const { photoId } = await params;
     const { commentId } = await req.json();
 
-    const comment = await dbAll(
-      'SELECT id, user_id FROM photo_comments WHERE id = ? AND photo_id = ?',
+    const comment = await dbGet(
+      'SELECT c.id, c.user_id, c.photo_id FROM photo_comments c WHERE c.id = ? AND c.photo_id = ?',
       [commentId, photoId]
     );
-    if (!comment.length) {
+    if (!comment) {
       return NextResponse.json({ ok: false, error: 'Comment not found' }, { status: 404 });
     }
-    if (comment[0].user_id !== session.userId && session.role !== 'operator') {
+    const photo = await dbGet('SELECT user_id FROM photos WHERE id = ?', [photoId]);
+    // 评论作者本人、照片主或运营可删除
+    if (String(comment.user_id) !== String(session.userId) && String(photo?.user_id) !== String(session.userId) && session.role !== 'operator') {
       return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
     }
 

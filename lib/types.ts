@@ -8,6 +8,8 @@ export type UserRole = 'operator' | 'user';
 export interface User {
   id: string;
   name: string;
+  display_name?: string;
+  bio?: string;
   role: UserRole;
   invite_code: string;
   created_at: string;

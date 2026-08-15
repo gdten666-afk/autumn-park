@@ -10,7 +10,10 @@ export async function PATCH(req: NextRequest) {
     const { displayName, bio } = await req.json();
 
     if (displayName !== undefined) {
-      const name = typeof displayName === 'string' ? displayName.trim().slice(0, 24) : '';
+      if (typeof displayName !== 'string' || displayName.trim().length === 0) {
+        return NextResponse.json({ ok: false, error: '昵称不能为空' }, { status: 400 });
+      }
+      const name = displayName.trim().slice(0, 24);
       await dbRun('UPDATE users SET display_name = ? WHERE id = ?', [name, session.userId]);
     }
     if (bio !== undefined) {

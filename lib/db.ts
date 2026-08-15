@@ -31,10 +31,19 @@ export function getDb(): Client {
 
 // --- Compatibility wrapper: makes @libsql/client work like better-sqlite3 ---
 
-let tablesReady = false;
+let tablesPromise: Promise<void> | null = null;
 
-export async function ensureTables() {
-  if (tablesReady) return;
+export function ensureTables(): Promise<void> {
+  if (!tablesPromise) {
+    tablesPromise = doEnsureTables().catch(err => {
+      tablesPromise = null; // 失败允许下次重试
+      throw err;
+    });
+  }
+  return tablesPromise;
+}
+
+async function doEnsureTables() {
   const db = getDb();
   await db.executeMultiple(`
     CREATE TABLE IF NOT EXISTS users (
@@ -134,7 +143,6 @@ export async function ensureTables() {
   if (bootstrap) {
     await db.execute({ sql: 'INSERT OR IGNORE INTO invite_codes (code) VALUES (?)', args: [bootstrap] });
   }
-  tablesReady = true;
 }
 
 // Convert rows to objects. libsql v0.17+ returns rows as objects already;

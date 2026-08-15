@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { ensureTables, dbGet, dbRun } from '@/lib/db';
 import { createSession, hashPassword } from '@/lib/auth';
-import type { ApiResponse, UserSession } from '@/lib/types';
+import type { ApiResponse, UserSession, UserRole } from '@/lib/types';
 import { clientIp, rateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
@@ -50,13 +50,13 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = nanoid();
-    const role = isBootstrap ? 'operator' : 'user';
+    const role: UserRole = isBootstrap ? 'operator' : 'user';
     const pwdHash = hashPassword(password);
     await dbRun('INSERT INTO users (id, name, password_hash, role, invite_code) VALUES (?, ?, ?, ?, ?)', [userId, trimmedName, pwdHash, role, inviteCode.trim()]);
     await dbRun('UPDATE invite_codes SET used_by = ? WHERE code = ?', [userId, inviteCode.trim()]);
     await dbRun('INSERT OR IGNORE INTO spaces (user_id, scene, weather) VALUES (?, \'autumn-bench\', \'sunny\')', [userId]);
 
-    const session: UserSession = { userId, name: trimmedName, role: role as any };
+    const session: UserSession = { userId, name: trimmedName, role };
     await createSession({ id: userId, name: trimmedName, role });
 
     return NextResponse.json({ ok: true, data: session });
