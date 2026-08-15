@@ -124,28 +124,30 @@ export default function ParkPage() {
         <MessageWall />
       </ParkCanvas>
 
-      {/* Masthead 报头 */}
-      <header className="masthead !px-4 md:!px-6">
-        <div className="masthead-title">
-          秋日公园 <em>AUTUMN PARK</em>
-        </div>
-        <div className="masthead-right">
-          <StatsBar />
-          {session ? (
-            <UserMenu
-              session={session}
-              onEnterCorner={() => enterCorner(session.userId, session.name)}
-              onOpenAdmin={() => setShowAdmin(true)}
-              onLogout={handleLogout}
-            />
-          ) : (
-            <button type="button" onClick={() => setShowLogin(true)} className="glass-btn !px-3 !py-1.5 text-[11px]">
-              登录
-            </button>
-          )}
-          <AmbientSound weather={weather} placement="masthead" />
-        </div>
-      </header>
+      {/* Masthead 报头（进入角落时隐藏，避免遮挡角落顶栏） */}
+      {!cornerUserId && (
+        <header className="masthead !px-4 md:!px-6">
+          <div className="masthead-title">
+            秋日公园 <em>AUTUMN PARK</em>
+          </div>
+          <div className="masthead-right">
+            <StatsBar />
+            {session ? (
+              <UserMenu
+                session={session}
+                onEnterCorner={() => enterCorner(session.userId, session.name)}
+                onOpenAdmin={() => setShowAdmin(true)}
+                onLogout={handleLogout}
+              />
+            ) : (
+              <button type="button" onClick={() => setShowLogin(true)} className="glass-btn !px-3 !py-1.5 text-[11px]">
+                登录
+              </button>
+            )}
+            <AmbientSound weather={weather} placement="masthead" />
+          </div>
+        </header>
+      )}
 
       <WeatherLayer weather={weather} />
       <ParticleOverlay seasonState={seasonState} weather={weather} />
