@@ -3,6 +3,8 @@
 
 import { useEffect, useRef } from 'react';
 import type { Scene, Weather } from '@/lib/types';
+import { createParticle, createParticleEngine, SEASON_PARTICLES } from '@/lib/particles';
+import type { Particle } from '@/lib/particles';
 
 const SCENE_STYLES: Record<Scene, { bg: string; gradient: string }> = {
   'autumn-bench':    { bg: '#f3ece0', gradient: 'linear-gradient(180deg, #f7f1e6 0%, #f1e9db 55%, #e9dfcc 100%)' },
@@ -20,147 +22,45 @@ const SCENE_LABELS: Record<Scene, string> = {
   'bookstore': '深夜书店',
 };
 
-// --- Weather particle system for the corner ---
-
-interface RainParticle {
-  x: number; y: number;
-  length: number;
-  speed: number;
-  angle: number;
-  opacity: number;
-  color: string;
-}
-
-interface SnowParticle {
-  x: number; y: number;
-  radius: number;
-  speed: number;
-  wind: number;
-  opacity: number;
-  wobble: number;
-  wobbleSpeed: number;
-}
-
-function createRainDrop(w: number, _h: number, heavy: boolean): RainParticle {
-  return {
-    x: Math.random() * (w + 100) - 50,
-    y: -Math.random() * 200,
-    length: heavy ? 15 + Math.random() * 25 : 10 + Math.random() * 18,
-    speed: heavy ? 10 + Math.random() * 10 : 7 + Math.random() * 7,
-    angle: 0.22 + Math.random() * 0.12,
-    opacity: heavy ? 0.4 + Math.random() * 0.35 : 0.3 + Math.random() * 0.3,
-    color: `rgba(${70 + Math.floor(Math.random()*40)}, ${90 + Math.floor(Math.random()*40)}, ${120 + Math.floor(Math.random()*40)}`,
-  };
-}
-
-function createSnowflake(w: number, h: number): SnowParticle {
-  return {
-    x: Math.random() * w,
-    y: -Math.random() * h,
-    radius: 1.5 + Math.random() * 3,
-    speed: 0.4 + Math.random() * 0.8,
-    wind: (Math.random() - 0.5) * 0.4,
-    opacity: 0.5 + Math.random() * 0.5,
-    wobble: Math.random() * Math.PI * 2,
-    wobbleSpeed: 0.01 + Math.random() * 0.02,
-  };
-}
-
-function updateRainDrops(drops: RainParticle[], w: number, h: number): void {
-  for (const d of drops) {
-    d.x += Math.sin(d.angle) * d.speed;
-    d.y += Math.cos(d.angle) * d.speed;
-    if (d.y > h + 40) {
-      d.y = -20 - Math.random() * 40;
-      d.x = Math.random() * (w + 100) - 50;
-    }
-  }
-}
-
-function updateSnowflakes(flakes: SnowParticle[], w: number, h: number): void {
-  for (const f of flakes) {
-    f.wobble += f.wobbleSpeed;
-    f.x += f.wind + Math.sin(f.wobble) * 0.3;
-    f.y += f.speed;
-    if (f.y > h + 10) { f.y = -10; f.x = Math.random() * w; }
-    if (f.x > w + 10) f.x = -10;
-    if (f.x < -10) f.x = w + 10;
-  }
-}
-
-function drawRain(ctx: CanvasRenderingContext2D, drops: RainParticle[]): void {
-  for (const d of drops) {
-    const dx = Math.sin(d.angle) * d.length;
-    const dy = Math.cos(d.angle) * d.length;
-    const grad = ctx.createLinearGradient(d.x, d.y, d.x - dx, d.y - dy);
-    grad.addColorStop(0, `${d.color}, ${d.opacity + 0.15})`);
-    grad.addColorStop(0.4, `${d.color}, ${d.opacity})`);
-    grad.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = 0.8;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(d.x, d.y);
-    ctx.lineTo(d.x - dx, d.y - dy);
-    ctx.stroke();
-  }
-}
-
-function drawSnow(ctx: CanvasRenderingContext2D, flakes: SnowParticle[]): void {
-  for (const f of flakes) {
-    ctx.fillStyle = `rgba(150,170,190,${f.opacity})`;
-    ctx.shadowBlur = f.radius * 3;
-    ctx.shadowColor = `rgba(150,170,190,${f.opacity * 0.5})`;
-    ctx.beginPath();
-    ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.shadowBlur = 0;
-}
+// --- 角落天气粒子（复用统一引擎） ---
 
 function WeatherParticles({ weather }: { weather: Weather }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef = useRef<number>(0);
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (weather !== 'light-rain' && weather !== 'heavy-rain' && weather !== 'snow') return;
 
-    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
-    resize();
-    window.addEventListener('resize', resize);
-
+    const engine = createParticleEngine(canvas);
     const isRain = weather === 'light-rain' || weather === 'heavy-rain';
-    const isSnow = weather === 'snow';
-    if (!isRain && !isSnow) return;
-
     const heavy = weather === 'heavy-rain';
 
-    let drops: RainParticle[] = [];
-    let flakes: SnowParticle[] = [];
-
-    if (isRain) {
-      const count = heavy ? 200 : 100;
-      drops = Array.from({ length: count }, () => createRainDrop(canvas.width, canvas.height, heavy));
-    }
-    if (isSnow) {
-      flakes = Array.from({ length: 100 }, () => createSnowflake(canvas.width, canvas.height));
-    }
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (drops.length) { updateRainDrops(drops, canvas.width, canvas.height); drawRain(ctx, drops); }
-      if (flakes.length) { updateSnowflakes(flakes, canvas.width, canvas.height); drawSnow(ctx, flakes); }
-      rafRef.current = requestAnimationFrame(animate);
+    const build = (w: number, h: number): Particle[] => {
+      if (isRain) {
+        const count = heavy ? 200 : 100;
+        return Array.from({ length: count }, () => {
+          const p = createParticle(w, h, SEASON_PARTICLES.autumn, {
+            type: 'raindrop', density: heavy ? 2.2 : 1.0,
+            speedMult: heavy ? 3.5 : 2.5, sizeMult: heavy ? 1.3 : 1.0,
+          });
+          p.length = (heavy ? 15 + Math.random() * 25 : 10 + Math.random() * 18) * 0.6;
+          p.opacity = heavy ? 0.4 + Math.random() * 0.35 : 0.3 + Math.random() * 0.3;
+          return p;
+        });
+      }
+      return Array.from({ length: 100 }, () => {
+        const p = createParticle(w, h, SEASON_PARTICLES.winter, null);
+        p.size = 1.5 + Math.random() * 3;
+        p.opacity = 0.5 + Math.random() * 0.5;
+        return p;
+      });
     };
-    animate();
 
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-      window.removeEventListener('resize', resize);
-    };
+    engine.rebuild(build);
+    engine.start();
+    return () => engine.stop();
   }, [weather]);
 
   return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" style={{ zIndex: 9 }} />;
