@@ -177,6 +177,17 @@ body {
 @keyframes cloudDrift { 0%, 100% { transform: translateX(-2%); } 50% { transform: translateX(2%); } }
 @keyframes fogDrift { 0%, 100% { opacity: 0.4; transform: translateX(-1%); } 50% { opacity: 0.6; transform: translateX(1%); } }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+/* Corner transition（替代 framer-motion） */
+.corner-overlay { opacity: 0; transition: opacity 1.5s ease; }
+.corner-overlay--enter { opacity: 1; }
+.corner-rule { width: 96px; height: 2px; background: var(--hairline-strong); margin: 0 auto 16px; transform: scaleX(0); transition: transform 1s ease 0.3s; }
+.corner-rule--enter { transform: scaleX(1); }
+.corner-caption { opacity: 0; transform: translateY(4px); transition: opacity 1s ease 0.5s, transform 1s ease 0.5s; }
+.corner-caption--enter { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .corner-overlay, .corner-rule, .corner-caption { transition-duration: 0.01s; }
+}
 .skeleton { background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%); background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite; }
 
 /* --- Scrollbar --- */
