@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 import { ensureTables, dbGet } from '@/lib/db';
 import { apiCacheGet, apiCacheSet } from '@/lib/cache';
 
-const HOT_TITLE_MAX = 28;
+// 16 字 + 「」引号 = 2 行内，保证 Hero 预留高度稳定（CLS 控制）
+const HOT_TITLE_MAX = 16;
 
 export async function GET() {
   const cached = apiCacheGet<{ ok: true; data: { id: string; content: string; likes: number } | null }>('messages:hot');

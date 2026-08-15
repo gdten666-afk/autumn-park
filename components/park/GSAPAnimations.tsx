@@ -20,6 +20,9 @@ export default function GSAPAnimations() {
       gsap.from('.scroll-hint', { opacity: 0, duration: 0.8, delay: 0.8 });
 
       gsap.utils.toArray<HTMLElement>('.reveal').forEach((el) => {
+        // 固定定位的面板/控件不参与滚动显现动画——gsap.from 会触发其内部绝对定位子元素的
+        // 包含块重算，造成布局位移（实测 CLS 0.236）
+        if (getComputedStyle(el).position === 'fixed') return;
         gsap.from(el, {
           opacity: 0,
           y: 24,

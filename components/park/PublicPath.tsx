@@ -9,6 +9,7 @@ type FeedItem = { type: 'photo'; data: Photo; idx: number } | { type: 'quote'; t
 
 export default function PublicPath() {
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [expanded, setExpanded] = useState<Photo | null>(null);
   const [viewMode, setViewMode] = useState<'walk' | 'gallery'>('walk');
 
@@ -22,6 +23,7 @@ export default function PublicPath() {
     const r = await fetch('/api/photos/public');
     const data = await r.json();
     if (data.ok) setPhotos(data.data);
+    setLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export default function PublicPath() {
     return () => { clearTimeout(t); window.removeEventListener('photo-uploaded', handler); };
   }, [loadPhotos]);
 
-  const noPhotos = photos.length === 0;
+  const noPhotos = loaded && photos.length === 0;
 
   const feedItems = useMemo<FeedItem[]>(() => {
     const items: FeedItem[] = [];
@@ -68,7 +70,21 @@ export default function PublicPath() {
         <span className="pl-2 pr-1 text-[10px] font-mono" style={{ color: 'var(--ink-weak)' }}>{photos.length}</span>
       </div>
 
-      {noPhotos ? (
+      {!loaded ? (
+        /* 骨架屏：与网格同位置同最小高度，避免数据到达时布局位移（CLS） */
+        <div className="relative w-full pointer-events-auto md:max-w-[calc(100vw-var(--panel-w)-40px)]" style={{ paddingTop: '12vh', paddingBottom: '20vh', minHeight: '60vh', width: '100%', paddingLeft: 'clamp(8px, 3vw, 32px)', paddingRight: 'clamp(8px, 3vw, 32px)' }}>
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={`sk-${i}`} className="paper-frame" style={{ width: 'clamp(220px, 82vw, 300px)' }}>
+                <div className="paper-frame__img animate-pulse" style={{ background: 'var(--bg-soft)' }} />
+                <div className="paper-frame__label">
+                  <div className="animate-pulse" style={{ height: 10, width: '60%', background: 'var(--bg-soft)', borderRadius: 4, marginTop: 6 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : noPhotos ? (
         <div className="flex items-center justify-center pointer-events-auto" style={{ minHeight: '60vh' }}>
           <div className="glass-strong p-10 text-center max-w-sm animate-slideUp">
             <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[var(--bg-soft)] flex items-center justify-center">

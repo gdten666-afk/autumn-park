@@ -27,11 +27,14 @@ export default function HeroTitle() {
   }, [refresh]);
 
   return (
-    <h1 className="m-0 text-[clamp(30px,5vw,52px)] leading-[1.34] font-medium tracking-wide">
-      {message ? `「${message.content}」` : DEFAULT_TITLE}
-      {message && (
-        <span className="hero-title-note">—— 来自留言墙 · {message.likes} 人喜欢</span>
-      )}
-    </h1>
+    /* 固定高度容器：热度标题到达时在预留区内替换内容，避免推挤下方布局（CLS） */
+    <div className="hero-title-box" style={{ minHeight: 'clamp(120px, 20vh, 185px)' }}>
+      <h1 className="m-0 text-[clamp(30px,5vw,52px)] leading-[1.34] font-medium tracking-wide">
+        {message ? `「${message.content}」` : DEFAULT_TITLE}
+      </h1>
+      <span className="hero-title-note">
+        {message ? `—— 来自留言墙 · ${message.likes} 人喜欢` : '—— 留言墙上最被喜欢的话，会出现在这里'}
+      </span>
+    </div>
   );
 }

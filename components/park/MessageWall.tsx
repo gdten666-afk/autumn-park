@@ -189,7 +189,8 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
         💬 留言墙
       </Link>
 
-      <aside aria-label="留言墙" className="reveal fixed pointer-events-auto hidden md:flex" style={{
+      <aside aria-label="留言墙" className="reveal pointer-events-auto hidden md:flex" style={{
+        position: 'fixed',
         right: 0, top: 0, bottom: 0, width: 'var(--panel-w)',
         zIndex: 15, flexDirection: 'column',
       }}>
