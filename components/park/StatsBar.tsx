@@ -8,8 +8,13 @@ export default function StatsBar() {
   useEffect(() => {
     const load = () => fetch('/api/stats').then(r => r.json()).then(d => { if (d.ok) setStats(d.data); }).catch(() => {});
     load();
-    const t = setInterval(load, 30000);
-    return () => clearInterval(t);
+    let t: ReturnType<typeof setInterval> | null = setInterval(load, 30000);
+    const onVis = () => {
+      if (document.hidden) { if (t) { clearInterval(t); t = null; } }
+      else if (!t) t = setInterval(load, 30000);
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => { if (t) clearInterval(t); document.removeEventListener('visibilitychange', onVis); };
   }, []);
 
   if (!stats) return null;

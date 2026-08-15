@@ -69,8 +69,20 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
 
   useEffect(() => {
     const t0 = setTimeout(fetchMessages, 0);
-    const t = setInterval(fetchMessages, 30000);
-    return () => { clearTimeout(t0); clearInterval(t); };
+    let t: ReturnType<typeof setInterval> | null = setInterval(fetchMessages, 30000);
+    const onVis = () => {
+      if (document.hidden) {
+        if (t) { clearInterval(t); t = null; }
+      } else if (!t) {
+        t = setInterval(fetchMessages, 30000);
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      clearTimeout(t0);
+      if (t) clearInterval(t);
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, [fetchMessages]);
 
   const handlePost = async () => {
