@@ -14,6 +14,7 @@ import AdminPanel from '@/components/admin/AdminPanel';
 import WeatherLayer from '@/components/weather/WeatherLayer';
 import WeatherVote from '@/components/weather/WeatherVote';
 import ParticleOverlay from '@/components/park/ParticleOverlay';
+import HeroTitle from '@/components/park/HeroTitle';
 import AmbientSound from '@/components/park/AmbientSound';
 import MessageWall from '@/components/park/MessageWall';
 import StatsBar from '@/components/park/StatsBar';
@@ -78,23 +79,23 @@ export default function ParkPage() {
 
         {/* Welcome hero */}
         <div className="welcome-text pointer-events-none relative px-4 md:px-0" style={{ paddingTop: 'clamp(96px, 16vh, 150px)', paddingLeft: '4vw', zIndex: 20 }}>
+          <div className="hero-issue hidden lg:block" style={{ position: 'absolute', left: 10, top: '22%', zIndex: 19, writingMode: 'vertical-rl', fontSize: 9, letterSpacing: '0.42em', color: 'var(--ink-ghost)', padding: '14px 6px', borderRight: '1px solid var(--hairline)' }}>
+            NO.03 — 秋日刊 · 二〇二六
+          </div>
           <div className="flex flex-col items-start max-w-lg">
-            <div className="kicker mb-5">AUTUMN PARK · 四季流转</div>
-            <h1 className="m-0 text-[clamp(30px,5vw,52px)] leading-[1.22] font-medium tracking-wide">
-              在秋天，<br />
-              慢慢<em style={{ fontStyle: 'normal', color: 'var(--accent)' }}>散步</em>。
-            </h1>
-            <p className="text-[13px] leading-[2] max-w-[300px] mb-7" style={{ color: 'var(--ink-faint)' }}>
-              照片、留言与天气都安静地留在这里。向下走，逛逛这座公园。
+            <div className="kicker mb-5">四季流转 · AUTUMN ISSUE</div>
+            <HeroTitle />
+            <p className="text-[13px] leading-[2] max-w-[300px] mb-7" style={{ color: 'var(--ink-weak)' }}>
+              照片和心事，都可以留在这里。
             </p>
             <div className="flex items-center gap-3 pointer-events-auto">
-              <button
+              <button type="button"
                 onClick={() => { if (session) enterCorner(session.userId, session.name); else setShowLogin(true); }}
                 className="btn-primary"
               >
                 进入公园 →
               </button>
-              <button
+              <button type="button"
                 onClick={() => window.scrollTo({ top: window.innerHeight * 0.95, behavior: 'smooth' })}
                 className="btn-ghost"
               >
