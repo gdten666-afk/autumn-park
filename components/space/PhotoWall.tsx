@@ -250,7 +250,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
 
                 {/* Public badge */}
                 {photo.is_public && (
-                  <span className="absolute top-2 right-2 text-[9px] bg-white/85 backdrop-blur text-[var(--ink-soft)] px-1.5 py-0.5 rounded-full">
+                  <span className="absolute top-2 right-2 text-[9px] bg-white/95 text-[var(--ink-soft)] px-1.5 py-0.5 rounded-full">
                     公园
                   </span>
                 )}
@@ -261,14 +261,14 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
                 <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                   <button
                     onClick={(e) => { e.stopPropagation(); startEdit(photo); }}
-                    className="text-[10px] px-2 py-1 rounded-md bg-white/90 backdrop-blur text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-white transition-colors"
+                    className="text-[10px] px-2 py-1 rounded-md bg-white/95 text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-white transition-colors"
                     title="编辑文案"
                   >
                     ✎ 文案
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleTogglePublic(photo); }}
-                    className={`text-[10px] px-2 py-1 rounded-md backdrop-blur transition-colors ${
+                    className={`text-[10px] px-2 py-1 rounded-md transition-colors ${
                       photo.is_public ? 'bg-[var(--ink)] text-[var(--surface)]' : 'bg-white/90 text-[var(--ink-soft)] hover:bg-white'
                     }`}
                     title={photo.is_public ? '公园可见' : '仅自己可见'}
@@ -277,7 +277,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(photo.id); }}
-                    className="text-[10px] px-2 py-1 rounded-md bg-white/90 backdrop-blur text-[#b0563c] hover:text-white hover:bg-[#b0563c] transition-colors"
+                    className="text-[10px] px-2 py-1 rounded-md bg-white/95 text-[#b0563c] hover:text-white hover:bg-[#b0563c] transition-colors"
                     title="删除"
                   >
                     ✕

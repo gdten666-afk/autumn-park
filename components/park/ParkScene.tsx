@@ -119,8 +119,7 @@ export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
         <>
           <div className="absolute inset-0" style={{
             zIndex: 3,
-            background: 'linear-gradient(180deg, rgba(210,215,220,0.45) 0%, rgba(220,225,230,0.4) 50%, rgba(230,235,240,0.35) 100%)',
-            backdropFilter: 'blur(4px)',
+            background: 'linear-gradient(180deg, rgba(214,219,224,0.62) 0%, rgba(222,227,232,0.55) 50%, rgba(232,237,242,0.5) 100%)',
           }} />
           <div className="absolute inset-0" style={{
             zIndex: 4,

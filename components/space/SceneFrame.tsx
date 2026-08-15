@@ -136,7 +136,7 @@ export default function SceneFrame({ scene, weather, children }: SceneFrameProps
         {/* Fog: heavy blur + drifting mist */}
         {weather === 'fog' && (
           <>
-            <div className="absolute inset-0 bg-white/15 backdrop-blur-[3px]" />
+            <div className="absolute inset-0 bg-white/20" />
             <div className="absolute top-[8%] left-[5%] w-[45vw] h-[18vh] bg-white/20 rounded-full blur-3xl"
               style={{ animation: 'fogDrift 14s ease-in-out infinite' }} />
             <div className="absolute top-[25%] right-[10%] w-[40vw] h-[15vh] bg-white/15 rounded-full blur-3xl"

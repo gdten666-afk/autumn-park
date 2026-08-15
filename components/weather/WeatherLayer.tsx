@@ -50,10 +50,9 @@ export default function WeatherLayer({ weather }: WeatherLayerProps) {
       {/* Fog: layered mist */}
       {weather === 'fog' && (
         <>
-          <div className="absolute inset-0 bg-white/20 backdrop-blur-[3px]" />
-          <div className="absolute top-[10%] left-[5%] w-[45vw] h-[18vh] bg-white/25 rounded-full blur-3xl" style={{ animation: 'fogDrift 14s ease-in-out infinite' }} />
-          <div className="absolute top-[30%] right-[10%] w-[40vw] h-[15vh] bg-white/20 rounded-full blur-3xl" style={{ animation: 'fogDrift 18s ease-in-out infinite reverse' }} />
-          <div className="absolute top-[50%] left-[20%] w-[50vw] h-[12vh] bg-white/15 rounded-full blur-2xl" style={{ animation: 'fogDrift 16s ease-in-out infinite' }} />
+          <div className="absolute inset-0 bg-white/25" />
+          <div className="absolute top-[10%] left-[5%] w-[45vw] h-[18vh] bg-white/25 rounded-full blur-2xl" style={{ animation: 'fogDrift 14s ease-in-out infinite' }} />
+          <div className="absolute top-[45%] left-[20%] w-[50vw] h-[12vh] bg-white/15 rounded-full blur-2xl" style={{ animation: 'fogDrift 16s ease-in-out infinite' }} />
         </>
       )}
     </div>

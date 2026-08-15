@@ -87,7 +87,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center animate-fadeIn" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center animate-fadeIn" onClick={onClose}>
       <div className="glass-strong p-6 w-80 max-w-[90vw] animate-slideUp" onClick={e => e.stopPropagation()}>
         <h2 className="text-lg mb-4 text-center font-serif tracking-wider" style={{ color: 'var(--ink)' }}>进入公园</h2>
 

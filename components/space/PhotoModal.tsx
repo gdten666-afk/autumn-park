@@ -138,7 +138,7 @@ export default function PhotoModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[var(--bg)]/96 backdrop-blur-sm flex items-center justify-center animate-fadeIn"
+      className="fixed inset-0 z-50 bg-[var(--bg)]/97 flex items-center justify-center animate-fadeIn"
       onClick={onClose}
     >
       {/* Top bar */}
