@@ -74,7 +74,7 @@ export default function PublicPath() {
           </div>
         </div>
       ) : viewMode === 'walk' ? (
-        <div className="reveal relative w-full pointer-events-auto md:max-w-[calc(100vw-320px)]" style={{ paddingTop: '12vh', paddingBottom: '20vh', width: '100%', paddingLeft: 'clamp(8px, 3vw, 32px)', paddingRight: 'clamp(8px, 3vw, 32px)' }}>
+        <div className="reveal relative w-full pointer-events-auto md:max-w-[calc(100vw-var(--panel-w)-40px)]" style={{ paddingTop: '12vh', paddingBottom: '20vh', width: '100%', paddingLeft: 'clamp(8px, 3vw, 32px)', paddingRight: 'clamp(8px, 3vw, 32px)' }}>
           <div className="flex flex-wrap justify-center gap-4 md:gap-6">
             {feedItems.map((item) => {
               if (item.type === 'quote') {
@@ -83,27 +83,25 @@ export default function PublicPath() {
                     style={{ width: 'clamp(200px, 85vw, 300px)' }}>
                     <div className="glass px-5 py-6 text-center w-full">
                       <p className="text-[var(--ink-soft)] text-sm leading-relaxed font-serif mb-2">「{item.text}」</p>
-                      <p className="text-[10px] tracking-wider" style={{ color: 'var(--ink-faint)' }}>—— {item.source}</p>
+                      <p className="text-[10px] tracking-wider" style={{ color: 'var(--ink-weak)' }}>—— {item.source}</p>
                     </div>
                   </div>
                 );
               }
               const photo = item.data;
+              const date = (photo.created_at || '').slice(0, 10);
               return (
-                <div key={photo.id} className="polaroid-card cursor-pointer group/card"
+                <div key={photo.id} className="paper-frame cursor-pointer"
                   style={{ width: 'clamp(220px, 82vw, 300px)' }}
                   onClick={() => setExpanded(photo)}>
-                  <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-[var(--hairline)] shadow-[var(--shadow-card)] group-hover:shadow-[var(--shadow-lift)] transition-shadow duration-300">
-                    <div className="overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                      <img src={`/api/photos/${photo.id}?thumb=1`} alt={photo.caption || 'photo'} className="w-full h-full object-cover img-loading transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" decoding="async"
-                        onLoad={e => { (e.target as HTMLImageElement).classList.replace('img-loading', 'img-loaded'); }} />
-                    </div>
-                    <div className="px-3 py-2.5">
-                      {photo.caption && (
-                        <p className="text-[var(--ink)] text-xs font-serif leading-relaxed line-clamp-2">{photo.caption}</p>
-                      )}
-                      <p className="text-[var(--ink-weak)] text-[10px] mt-1">{photo.author_name || 'anonymous'}</p>
-                    </div>
+                  <div className="paper-frame__img">
+                    <img src={`/api/photos/${photo.id}?thumb=1`} alt={photo.caption || `照片 by ${photo.author_name || '游客'}`}
+                      className="img-loading" loading="lazy" decoding="async"
+                      onLoad={e => { (e.target as HTMLImageElement).classList.replace('img-loading', 'img-loaded'); }} />
+                  </div>
+                  <div className="paper-frame__label">
+                    {photo.caption && <p className="cap">{photo.caption}</p>}
+                    <p className="meta">— {photo.author_name || '游客'}{date ? ` · ${date}` : ''}</p>
                   </div>
                 </div>
               );
@@ -111,17 +109,18 @@ export default function PublicPath() {
           </div>
         </div>
       ) : (
-        <div className="relative w-full pointer-events-auto md:max-w-[calc(100vw-320px)]" style={{ paddingTop: '12vh', paddingBottom: '20vh', width: '100%', paddingLeft: 'clamp(12px, 4vw, 32px)', paddingRight: 'clamp(12px, 4vw, 32px)' }}>
+        <div className="relative w-full pointer-events-auto md:max-w-[calc(100vw-var(--panel-w)-40px)]" style={{ paddingTop: '12vh', paddingBottom: '20vh', width: '100%', paddingLeft: 'clamp(12px, 4vw, 32px)', paddingRight: 'clamp(12px, 4vw, 32px)' }}>
           <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4">
             {photos.map(photo => (
-              <div key={photo.id} className="break-inside-avoid mb-4 cursor-pointer group/gallery" onClick={() => setExpanded(photo)}>
-                <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-[var(--hairline)] hover:ring-[var(--hairline-strong)] transition-all duration-300 hover:shadow-[var(--shadow-lift)]">
-                  <img src={`/api/photos/${photo.id}?thumb=1`} alt={photo.caption || 'photo'} className="w-full block img-loading" loading="lazy" decoding="async"
+              <div key={photo.id} className="break-inside-avoid mb-4 cursor-pointer paper-frame" onClick={() => setExpanded(photo)}>
+                <div className="paper-frame__img" style={{ aspectRatio: 'auto' }}>
+                  <img src={`/api/photos/${photo.id}?thumb=1`} alt={photo.caption || `照片 by ${photo.author_name || '游客'}`}
+                    className="w-full block img-loading" loading="lazy" decoding="async"
                     onLoad={e => { (e.target as HTMLImageElement).classList.replace('img-loading', 'img-loaded'); }} />
-                  <div className="px-3 py-2.5">
-                    {photo.caption && <p className="text-[var(--ink)] text-xs font-serif leading-relaxed line-clamp-2">{photo.caption}</p>}
-                    <p className="text-[var(--ink-weak)] text-[10px] mt-0.5">{photo.author_name}</p>
-                  </div>
+                </div>
+                <div className="paper-frame__label">
+                  {photo.caption && <p className="cap">{photo.caption}</p>}
+                  <p className="meta">— {photo.author_name || '游客'}</p>
                 </div>
               </div>
             ))}
