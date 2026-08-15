@@ -3,11 +3,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+interface InviteRow { code: string; used_by: string | null; created_at: string; }
+interface AdminUserRow { id: string; name: string; role: string; invite_code: string; created_at: string; photo_count: number; }
+
 export default function AdminPanel({ onClose }: { onClose: () => void }) {
-  const [codes, setCodes] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+  const [codes, setCodes] = useState<InviteRow[]>([]);
+  const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [count, setCount] = useState(5);
   const [generated, setGenerated] = useState<string[]>([]);
+  const [migrating, setMigrating] = useState(false);
+  const [migrateMsg, setMigrateMsg] = useState('');
 
   useEffect(() => {
     fetch('/api/admin/invites').then(r => r.json()).then(d => { if (d.ok) setCodes(d.data); });
@@ -18,7 +23,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
     const res = await fetch('/api/admin/invites', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ count }),
+      body: JSON.stringify({ count: Math.min(100, Math.max(1, count || 1)) }),
     });
     const data = await res.json();
     if (data.ok) {
@@ -27,6 +32,30 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
       if (refresh.ok) setCodes(refresh.data);
     }
   }, [count]);
+
+  const runMigration = useCallback(async () => {
+    setMigrating(true); setMigrateMsg('');
+    try {
+      let totalDone = 0;
+      for (let round = 0; round < 20; round++) {
+        setMigrateMsg(`迁移中... ${totalDone} 张`);
+        const res = await fetch('/api/admin/photos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+        const data = await res.json();
+        if (!data.ok) { setMigrateMsg('失败: ' + (data.error || '未知错误')); break; }
+        totalDone += data.data?.batch || 0;
+        if (data.data?.done) { setMigrateMsg(`全部完成！共迁移 ${totalDone} 张`); break; }
+        if (data.data?.remaining === 0) { setMigrateMsg(`完成！${totalDone} 张`); break; }
+      }
+    } catch {
+      setMigrateMsg('网络错误，请稍后重试');
+    } finally {
+      setMigrating(false);
+    }
+  }, []);
 
   const deleteUser = useCallback(async (userId: string, name: string) => {
     if (!confirm(`确定删除用户 ${name}？这将删除其所有照片和数据。`)) return;
@@ -42,7 +71,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center animate-fadeIn" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center animate-fadeIn" onClick={onClose}>
       <div className="bg-[var(--surface)] border border-[var(--hairline)] rounded-2xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-[var(--shadow-lift)]" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-[var(--ink)] text-lg font-serif">管理面板</h2>
@@ -82,7 +111,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
             <details className="mt-3">
               <summary className="text-[var(--ink-weak)] text-xs cursor-pointer hover:text-[var(--ink-soft)]">历史邀请码 ({codes.length})</summary>
               <div className="mt-2 max-h-32 overflow-y-auto">
-                {codes.map((c: any) => (
+                {codes.map(c => (
                   <div key={c.code} className="text-xs font-mono text-[var(--ink-faint)] py-0.5">
                     {c.code} {c.used_by ? '(已使用)' : '(未使用)'}
                   </div>
@@ -97,30 +126,15 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
           <h3 className="text-[var(--ink-soft)] text-sm mb-3">迁移旧照片到存储</h3>
           <p className="text-[var(--ink-weak)] text-[10px] mb-2">把旧版存入数据库的照片迁到对象存储/磁盘并生成缩略图，每批1张</p>
           <button
-            onClick={async () => {
-              const btn = document.activeElement as HTMLButtonElement;
-              btn.disabled = true;
-              let totalDone = 0;
-              for (let round = 0; round < 20; round++) {
-                btn.textContent = `迁移中... ${totalDone} 张`;
-                const res = await fetch('/api/admin/photos', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({}),
-                });
-                const data = await res.json();
-                if (!data.ok) { alert('失败: ' + (data.error || '未知错误')); break; }
-                totalDone += data.data?.batch || 0;
-                if (data.data?.done) { alert(`全部完成！共迁移 ${totalDone} 张`); break; }
-                if (data.data?.remaining === 0) { alert(`完成！${totalDone} 张`); break; }
-              }
-              btn.disabled = false;
-              btn.textContent = '开始迁移';
-            }}
-            className="px-4 py-2 bg-[rgba(193,95,60,0.1)] hover:bg-[rgba(193,95,60,0.18)] rounded text-sm text-[var(--accent)] transition-colors"
+            onClick={runMigration}
+            disabled={migrating}
+            className="px-4 py-2 bg-[rgba(193,95,60,0.1)] hover:bg-[rgba(193,95,60,0.18)] rounded text-sm text-[var(--accent)] transition-colors disabled:opacity-50"
           >
-            开始迁移
+            {migrating ? (migrateMsg || '迁移中...') : '开始迁移'}
           </button>
+          {!migrating && migrateMsg && (
+            <p className="text-[var(--ink-weak)] text-[10px] mt-2">{migrateMsg}</p>
+          )}
         </section>
 
         {/* Clean empty photo records */}
@@ -162,7 +176,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
         <section>
           <h3 className="text-[var(--ink-soft)] text-sm mb-3">用户列表 ({users.length})</h3>
           <div className="space-y-1">
-            {users.map((u: any) => (
+            {users.map(u => (
               <div key={u.id} className="flex items-center justify-between py-2 px-2 rounded hover:bg-[var(--bg-soft)]">
                 <div>
                   <span className="text-[var(--ink)] text-sm">{u.name}</span>
