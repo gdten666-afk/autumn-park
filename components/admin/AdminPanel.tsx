@@ -2,11 +2,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useModalA11y } from '@/components/ui/useModalA11y';
 
 interface InviteRow { code: string; used_by: string | null; created_at: string; }
 interface AdminUserRow { id: string; name: string; role: string; invite_code: string; created_at: string; photo_count: number; }
 
 export default function AdminPanel({ onClose }: { onClose: () => void }) {
+  const { ref, props } = useModalA11y(true, onClose, '管理面板');
   const [codes, setCodes] = useState<InviteRow[]>([]);
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [count, setCount] = useState(5);
@@ -71,7 +73,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center animate-fadeIn" onClick={onClose}>
+    <div ref={ref} {...props} className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center animate-fadeIn" onClick={onClose}>
       <div className="bg-[var(--surface)] border border-[var(--hairline)] rounded-2xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-[var(--shadow-lift)]" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-[var(--ink)] text-lg font-serif">管理面板</h2>
