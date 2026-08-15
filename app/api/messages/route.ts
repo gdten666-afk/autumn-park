@@ -12,12 +12,27 @@ export async function GET() {
   await ensureTables();
   const session = await getSession();
   const isOperator = session?.role === 'operator';
-  // 缓存只保存原始留言；canDelete 权限标记必须按当前请求的用户身份计算，
-  // 否则管理员请求产生的缓存会把删除按钮泄露给普通用户。
-  const cached = apiCacheGet<unknown[]>('messages:base');
-  const messages = cached || await dbAll('SELECT * FROM messages ORDER BY created_at DESC LIMIT 200');
+  // 缓存只保存原始留言（含点赞数）；likedByMe/canDelete 必须按当前请求的用户身份计算
+  const cached = apiCacheGet<Record<string, unknown>[]>('messages:base');
+  const messages = cached || await dbAll(
+    `SELECT m.id, m.content, m.color, m.created_at,
+            (SELECT COUNT(*) FROM message_likes ml WHERE ml.message_id = m.id) as likes
+     FROM messages m ORDER BY m.created_at DESC LIMIT 200`
+  );
   if (!cached) apiCacheSet('messages:base', messages, 10_000);
-  const data = isOperator ? messages.map(m => ({ ...m, canDelete: true })) : messages;
+
+  let likedIds = new Set<string>();
+  if (session) {
+    const rows = await dbAll('SELECT message_id FROM message_likes WHERE user_id = ?', [session.userId]);
+    likedIds = new Set(rows.map(r => String(r.message_id)));
+  }
+
+  const data = messages.map(m => ({
+    ...m,
+    likes: Number(m.likes ?? 0),
+    likedByMe: likedIds.has(String(m.id)),
+    ...(isOperator ? { canDelete: true } : {}),
+  }));
   const body = { ok: true, data } satisfies ApiResponse;
   return NextResponse.json(body, { headers: { 'Cache-Control': 'no-cache' } });
 }
@@ -46,7 +61,7 @@ export async function POST(req: NextRequest) {
     const id = nanoid();
     const color = MESSAGE_COLORS[Math.floor(Math.random() * MESSAGE_COLORS.length)];
     await dbRun('INSERT INTO messages (id, content, color) VALUES (?, ?, ?)', [id, content.trim(), color]);
-    apiCacheClear('messages:base');
+    apiCacheClear('messages:');
 
     const msg = { id, content: content.trim(), color, created_at: new Date().toISOString() };
     return NextResponse.json({ ok: true, data: msg } satisfies ApiResponse<typeof msg>);
@@ -64,7 +79,8 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Message id required' }, { status: 400 });
     }
     await dbRun('DELETE FROM messages WHERE id = ?', [id]);
-    apiCacheClear('messages:base');
+    await dbRun('DELETE FROM message_likes WHERE message_id = ?', [id]);
+    apiCacheClear('messages:');
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     if (err.message === 'Unauthorized' || err.message === 'Forbidden') {
