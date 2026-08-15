@@ -36,17 +36,18 @@ function NightSky() {
   return <canvas ref={canvasRef} className="absolute inset-0" style={{ zIndex: 4 }} />;
 }
 
+const PALETTE: Record<string, { sky: string; ground: string; accent: string; rays: string }> = {
+  spring: { sky: 'linear-gradient(180deg,#f2efe7 0%,#f7f5ef 55%,#ece8dc 100%)', ground: 'linear-gradient(0deg, rgba(120,140,110,0.14) 0%, rgba(160,170,140,0.06) 45%, transparent 100%)', accent: 'rgba(140,170,130,0.05)', rays: 'rgba(255,250,240,0.25)' },
+  summer: { sky: 'linear-gradient(180deg,#eef0ea 0%,#f6f4ec 55%,#ebe5d6 100%)', ground: 'linear-gradient(0deg, rgba(130,150,110,0.14) 0%, rgba(170,175,140,0.06) 45%, transparent 100%)', accent: 'rgba(120,160,120,0.05)', rays: 'rgba(255,246,225,0.3)' },
+  autumn: { sky: 'linear-gradient(180deg,#f3efe6 0%,#f7f4ec 55%,#eee7da 100%)', ground: 'linear-gradient(0deg, rgba(150,110,70,0.14) 0%, rgba(180,150,110,0.06) 45%, transparent 100%)', accent: 'rgba(181,106,76,0.05)', rays: 'rgba(255,238,210,0.28)' },
+  winter: { sky: 'linear-gradient(180deg,#eef1f2 0%,#f5f5f1 55%,#e8e9e4 100%)', ground: 'linear-gradient(0deg, rgba(150,155,165,0.12) 0%, rgba(180,185,190,0.05) 45%, transparent 100%)', accent: 'rgba(150,160,180,0.04)', rays: 'rgba(245,245,250,0.2)' },
+};
+
 export default function ParkScene({ seasonState, weather }: ParkSceneProps) {
   const season = seasonState.season;
   const tod = getTimeOfDay();
 
-  const palette: Record<string, { sky: string; ground: string; accent: string; rays: string }> = {
-    spring: { sky: 'linear-gradient(180deg,#f2efe7 0%,#f7f5ef 55%,#ece8dc 100%)', ground: 'linear-gradient(0deg, rgba(120,140,110,0.14) 0%, rgba(160,170,140,0.06) 45%, transparent 100%)', accent: 'rgba(140,170,130,0.05)', rays: 'rgba(255,250,240,0.25)' },
-    summer: { sky: 'linear-gradient(180deg,#eef0ea 0%,#f6f4ec 55%,#ebe5d6 100%)', ground: 'linear-gradient(0deg, rgba(130,150,110,0.14) 0%, rgba(170,175,140,0.06) 45%, transparent 100%)', accent: 'rgba(120,160,120,0.05)', rays: 'rgba(255,246,225,0.3)' },
-    autumn: { sky: 'linear-gradient(180deg,#f3efe6 0%,#f7f4ec 55%,#eee7da 100%)', ground: 'linear-gradient(0deg, rgba(150,110,70,0.14) 0%, rgba(180,150,110,0.06) 45%, transparent 100%)', accent: 'rgba(181,106,76,0.05)', rays: 'rgba(255,238,210,0.28)' },
-    winter: { sky: 'linear-gradient(180deg,#eef1f2 0%,#f5f5f1 55%,#e8e9e4 100%)', ground: 'linear-gradient(0deg, rgba(150,155,165,0.12) 0%, rgba(180,185,190,0.05) 45%, transparent 100%)', accent: 'rgba(150,160,180,0.04)', rays: 'rgba(245,245,250,0.2)' },
-  };
-  const c = palette[season] || palette.spring;
+  const c = PALETTE[season] || PALETTE.spring;
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden">
