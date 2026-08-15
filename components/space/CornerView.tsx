@@ -61,7 +61,7 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
   if (!space) {
     return (
       <div className="fixed inset-0 z-30 bg-[var(--bg)] flex items-center justify-center">
-        <p className="text-[var(--ink-faint)]">正在进入这个角落...</p>
+        <p className="text-[var(--ink-weak)]">正在进入这个角落...</p>
       </div>
     );
   }
@@ -95,7 +95,7 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
           <div className="px-4 md:px-6 pb-2">
             {isOwner && !editingBio && (
               <div className="flex items-start gap-2">
-                <p className="text-[var(--ink-faint)] text-xs italic leading-relaxed flex-1">
+                <p className="text-[var(--ink-weak)] text-xs italic leading-relaxed flex-1">
                   {space.bio || '写一句签名，让路过的人了解你…'}
                 </p>
                 <button
@@ -121,7 +121,7 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
               </div>
             )}
             {!isOwner && space.bio && (
-              <p className="text-[var(--ink-faint)] text-xs italic leading-relaxed">{space.bio}</p>
+              <p className="text-[var(--ink-weak)] text-xs italic leading-relaxed">{space.bio}</p>
             )}
           </div>
 

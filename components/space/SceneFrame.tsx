@@ -7,11 +7,11 @@ import { createParticle, createParticleEngine, SEASON_PARTICLES } from '@/lib/pa
 import type { Particle } from '@/lib/particles';
 
 const SCENE_STYLES: Record<Scene, { bg: string; gradient: string }> = {
-  'autumn-bench':    { bg: '#f3ece0', gradient: 'linear-gradient(180deg, #f7f1e6 0%, #f1e9db 55%, #e9dfcc 100%)' },
-  'darkroom':        { bg: '#eceae4', gradient: 'linear-gradient(180deg, #f1efe9 0%, #e9e7df 55%, #dedbd1 100%)' },
-  'starlit-camp':    { bg: '#e6eaf0', gradient: 'linear-gradient(180deg, #eceff4 0%, #e2e7ef 55%, #d6dde8 100%)' },
-  'lighthouse-coast':{ bg: '#e5ebef', gradient: 'linear-gradient(180deg, #edf1f4 0%, #e3eaee 55%, #d6e0e6 100%)' },
-  'bookstore':       { bg: '#f0e9dc', gradient: 'linear-gradient(180deg, #f5efe3 0%, #ede5d5 55%, #e4dac6 100%)' },
+  'autumn-bench':     { bg: '#f5eee2', gradient: 'linear-gradient(180deg, #f8f2e7 0%, #f2eadd 55%, #eadfcd 100%)' },
+  'darkroom':         { bg: '#efede7', gradient: 'linear-gradient(180deg, #f4f2ec 0%, #edeae2 55%, #e3e0d6 100%)' },
+  'starlit-camp':     { bg: '#e9edf2', gradient: 'linear-gradient(180deg, #eff2f6 0%, #e5eaf1 55%, #d9e0ea 100%)' },
+  'lighthouse-coast': { bg: '#e8eef1', gradient: 'linear-gradient(180deg, #f0f4f6 0%, #e6edf0 55%, #d9e3e8 100%)' },
+  'bookstore':        { bg: '#f3ecdf', gradient: 'linear-gradient(180deg, #f8f1e4 0%, #f0e7d7 55%, #e7dcc8 100%)' },
 };
 
 const SCENE_LABELS: Record<Scene, string> = {

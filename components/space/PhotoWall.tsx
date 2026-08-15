@@ -132,7 +132,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
               <rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M 21 15 L 16 10 L 5 21" />
             </svg>
           </div>
-          <p className="text-[var(--ink-faint)] text-sm">这里还没有照片</p>
+          <p className="text-[var(--ink-weak)] text-sm">这里还没有照片</p>
         </div>
       </div>
     );
@@ -190,7 +190,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
             </label>
 
             {/* Public toggle */}
-            <label className="inline-flex items-center gap-2 text-xs text-[var(--ink-faint)] cursor-pointer select-none">
+            <label className="inline-flex items-center gap-2 text-xs text-[var(--ink-weak)] cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={makePublic}
@@ -333,7 +333,7 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
                   <rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M 21 15 L 16 10 L 5 21" />
                 </svg>
               </div>
-              <p className="text-[var(--ink-faint)] text-sm mb-1">还没有照片</p>
+              <p className="text-[var(--ink-weak)] text-sm mb-1">还没有照片</p>
               <p className="text-[var(--ink-weak)] text-xs leading-relaxed">
                 点击上方「添加照片」按钮上传你的第一张照片
                 <br />可以配上文案，点亮「发布到公园」分享给大家

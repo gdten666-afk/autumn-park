@@ -100,7 +100,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
 
           {generated.length > 0 && (
             <div className="mt-3 p-3 bg-[var(--bg-soft)] rounded">
-              <p className="text-[var(--ink-faint)] text-xs mb-1">新生成的邀请码：</p>
+              <p className="text-[var(--ink-weak)] text-xs mb-1">新生成的邀请码：</p>
               {generated.map(code => (
                 <code key={code} className="block text-[var(--accent)] text-xs font-mono">{code}</code>
               ))}
@@ -112,7 +112,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
               <summary className="text-[var(--ink-weak)] text-xs cursor-pointer hover:text-[var(--ink-soft)]">历史邀请码 ({codes.length})</summary>
               <div className="mt-2 max-h-32 overflow-y-auto">
                 {codes.map(c => (
-                  <div key={c.code} className="text-xs font-mono text-[var(--ink-faint)] py-0.5">
+                  <div key={c.code} className="text-xs font-mono text-[var(--ink-weak)] py-0.5">
                     {c.code} {c.used_by ? '(已使用)' : '(未使用)'}
                   </div>
                 ))}

@@ -50,7 +50,7 @@ export default function PublicPath() {
             onClick={() => setViewMode(mode)}
             className="px-3 py-1 text-[11px] rounded-full transition-colors"
             style={{
-              color: viewMode === mode ? 'var(--ink)' : 'var(--ink-faint)',
+              color: viewMode === mode ? 'var(--ink)' : 'var(--ink-weak)',
               background: viewMode === mode ? 'var(--bg-soft)' : 'transparent',
               letterSpacing: '0.08em',
             }}
@@ -70,7 +70,7 @@ export default function PublicPath() {
               </svg>
             </div>
             <p className="text-[var(--ink-soft)] text-base mb-2 font-serif">公园里还没有照片</p>
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--ink-faint)' }}>进入你的角落，上传照片并点亮「发布到公园」<br />它们会像记忆碎片一样散落在这片风景里</p>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--ink-weak)' }}>进入你的角落，上传照片并点亮「发布到公园」<br />它们会像记忆碎片一样散落在这片风景里</p>
           </div>
         </div>
       ) : viewMode === 'walk' ? (
@@ -148,7 +148,7 @@ export default function PublicPath() {
             </div>
             <div className="mt-4 text-center">
               {expanded.caption && <p className="text-[var(--ink)] text-lg font-serif mb-1">{expanded.caption}</p>}
-              <p className="text-[var(--ink-faint)] text-sm">by {expanded.author_name || 'anonymous'}</p>
+              <p className="text-[var(--ink-weak)] text-sm">by {expanded.author_name || 'anonymous'}</p>
             </div>
             <button onClick={() => setExpanded(null)} className="glass-btn mt-4">关闭</button>
           </div>
