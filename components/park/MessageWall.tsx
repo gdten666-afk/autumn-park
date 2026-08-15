@@ -2,14 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-
-interface Message {
-  id: string;
-  content: string;
-  color: string;
-  created_at: string;
-  canDelete?: boolean;
-}
+import type { Message } from '@/lib/types';
 
 interface MessageWallProps {
   mode?: 'panel' | 'page';
@@ -19,7 +12,7 @@ const COLOR_DOT: Record<string, string> = {
   amber: '#c98a4b', rose: '#b56a4c', sky: '#8faeb8', violet: '#9b8fb8', emerald: '#8fa184', slate: '#9aa3ad',
 };
 
-function MessageCard({ m, onDelete }: { m: Message; onDelete: (id: string) => void }) {
+function MessageCard({ m, onDelete, onLike }: { m: Message; onDelete: (id: string) => void; onLike: (id: string) => void }) {
   return (
     <div className="note-card" style={{
       transform: `rotate(${m.id.length % 2 === 0 ? -0.8 : 0.6}deg)`,
@@ -33,8 +26,19 @@ function MessageCard({ m, onDelete }: { m: Message; onDelete: (id: string) => vo
         <p className="m-0 text-[13px] leading-[1.8]" style={{ color: 'var(--ink-soft)' }}>{m.content}</p>
         <p className="m-0 mt-1 text-[10px]" style={{ color: 'var(--ink-weak)' }}>{m.created_at?.replace('T', ' ').slice(0, 16)}</p>
       </div>
+      <button
+        type="button"
+        aria-pressed={Boolean(m.likedByMe)}
+        aria-label={m.likedByMe ? '取消点赞' : '点赞'}
+        onClick={e => { e.stopPropagation(); onLike(m.id); }}
+        className="flex-none flex items-center gap-1 text-[11px] rounded-full px-2 py-0.5 transition-colors"
+        style={{ color: m.likedByMe ? 'var(--accent)' : 'var(--ink-weak)', background: 'transparent' }}
+      >
+        ♥ {m.likes && m.likes > 0 ? m.likes : ''}
+      </button>
       {m.canDelete && (
         <button
+          type="button"
           onClick={e => {
             e.stopPropagation();
             if (window.confirm('删除这条留言？')) onDelete(m.id);
@@ -93,6 +97,7 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
     if (data.ok) {
       setMessages(prev => [data.data, ...prev]);
       setInput('');
+      window.dispatchEvent(new CustomEvent('messages-changed'));
     } else {
       setError(data.status === 401 ? '登录后才能留言' : (data.error || '发送失败'));
     }
@@ -107,8 +112,27 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
         body: JSON.stringify({ id }),
       });
       const d = await res.json();
-      if (d.ok) setMessages(prev => prev.filter(m => m.id !== id));
+      if (d.ok) {
+        setMessages(prev => prev.filter(m => m.id !== id));
+        window.dispatchEvent(new CustomEvent('messages-changed'));
+      }
       else window.alert(d.error || '删除失败，请确认你有管理员权限');
+    } catch {}
+  };
+
+  const handleLike = async (id: string) => {
+    try {
+      const res = await fetch('/api/messages/like', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      const d = await res.json();
+      if (d.ok) {
+        setMessages(prev => prev.map(m => m.id === id ? { ...m, likes: d.data.likes, likedByMe: d.data.liked } : m));
+        window.dispatchEvent(new CustomEvent('messages-changed'));
+      } else if (res.status === 401) {
+        window.dispatchEvent(new CustomEvent('need-login'));
+      }
     } catch {}
   };
 
@@ -146,7 +170,7 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
               </div>
             )}
             {messages.map(m => (
-              <MessageCard key={m.id} m={m} onDelete={deleteMessage} />
+              <MessageCard key={m.id} m={m} onDelete={deleteMessage} onLike={handleLike} />
             ))}
           </div>
         </div>
@@ -185,7 +209,7 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
             )}
             {messages.map(m => (
               <div key={m.id} className="break-inside-avoid mb-3">
-                <MessageCard m={m} onDelete={deleteMessage} />
+                <MessageCard m={m} onDelete={deleteMessage} onLike={handleLike} />
               </div>
             ))}
           </div>

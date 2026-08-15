@@ -71,6 +71,13 @@ export default function ParkPage() {
     setSession(null);
   }, []);
 
+  // 未登录点赞等操作 → 唤起登录弹窗
+  useEffect(() => {
+    const h = () => setShowLogin(true);
+    window.addEventListener('need-login', h);
+    return () => window.removeEventListener('need-login', h);
+  }, []);
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
       <ParkCanvas onSeasonChange={handleSeasonChange}>
