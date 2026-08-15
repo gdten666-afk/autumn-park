@@ -20,23 +20,15 @@ export default function StatsBar() {
   if (!stats) return null;
 
   const voteTotal = Object.values(stats.votes || {}).reduce((a,b) => a+b, 0);
-  const weatherEmoji: Record<string,string> = { sunny:'☀️', cloudy:'☁️', 'light-rain':'🌧', 'heavy-rain':'⛈', fog:'🌫', snow:'❄️' };
 
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 z-30 pointer-events-none max-md:hidden md:top-16">
-      <div className="chip" style={{ gap: 16 }}>
-        <span style={{ color: 'var(--ink-soft)' }}>👥 <b style={{ color: 'var(--ink)' }}>{stats.users}</b></span>
-        <span style={{ color: 'var(--ink-soft)' }}>🖼 <b style={{ color: 'var(--ink)' }}>{stats.photos}</b></span>
-        <span style={{ color: 'var(--ink-soft)' }}>💬 <b style={{ color: 'var(--ink)' }}>{stats.messages}</b></span>
-        {voteTotal > 0 && (
-          <span style={{ color: 'var(--ink-weak)' }}>
-            今日投票 <b style={{ color: 'var(--ink-soft)' }}>{voteTotal}</b>
-            {Object.entries(stats.votes || {}).slice(0,2).map(([k,v]) => (
-              <span key={k} className="ml-1">{weatherEmoji[k]||k}{v}</span>
-            ))}
-          </span>
-        )}
-      </div>
+    <div className="hidden md:flex items-center" style={{ gap: 14, fontSize: 11, color: 'var(--ink-soft)', fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
+      <span>👥 <b style={{ color: 'var(--ink)' }}>{stats.users}</b></span>
+      <span>🖼 <b style={{ color: 'var(--ink)' }}>{stats.photos}</b></span>
+      <span>💬 <b style={{ color: 'var(--ink)' }}>{stats.messages}</b></span>
+      {voteTotal > 0 && (
+        <span>今日投票 <b style={{ color: 'var(--ink)' }}>{voteTotal}</b></span>
+      )}
     </div>
   );
 }

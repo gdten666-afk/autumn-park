@@ -77,7 +77,7 @@ export default function ParkPage() {
         <ParkScene seasonState={seasonState} weather={weather} />
 
         {/* Welcome hero */}
-        <div className="welcome-text pointer-events-none relative px-4 md:px-0" style={{ paddingTop: 'clamp(72px, 14vh, 140px)', paddingLeft: '4vw', zIndex: 20 }}>
+        <div className="welcome-text pointer-events-none relative px-4 md:px-0" style={{ paddingTop: 'clamp(96px, 16vh, 150px)', paddingLeft: '4vw', zIndex: 20 }}>
           <div className="flex flex-col items-start max-w-lg">
             <div className="kicker mb-5">AUTUMN PARK · 四季流转</div>
             <h1 className="m-0 text-[clamp(30px,5vw,52px)] leading-[1.22] font-medium tracking-wide">
@@ -116,30 +116,33 @@ export default function ParkPage() {
         <MessageWall />
       </ParkCanvas>
 
+      {/* Masthead 报头 */}
+      <header className="masthead !px-4 md:!px-6">
+        <div className="masthead-title">
+          秋日公园 <em>AUTUMN PARK</em>
+        </div>
+        <div className="masthead-right">
+          <StatsBar />
+          {session ? (
+            <UserMenu
+              session={session}
+              onEnterCorner={() => enterCorner(session.userId, session.name)}
+              onOpenAdmin={() => setShowAdmin(true)}
+              onLogout={handleLogout}
+            />
+          ) : (
+            <button type="button" onClick={() => setShowLogin(true)} className="glass-btn !px-3 !py-1.5 text-[11px]">
+              登录
+            </button>
+          )}
+          <AmbientSound weather={weather} placement="masthead" />
+        </div>
+      </header>
+
       <WeatherLayer weather={weather} />
       <ParticleOverlay seasonState={seasonState} weather={weather} />
-      <StatsBar />
       <GSAPAnimations />
-
-      {/* User controls */}
-      {session ? (
-        <UserMenu
-          session={session}
-          onEnterCorner={() => enterCorner(session.userId, session.name)}
-          onOpenAdmin={() => setShowAdmin(true)}
-          onLogout={handleLogout}
-        />
-      ) : (
-        <button
-          onClick={() => setShowLogin(true)}
-          className="fixed top-4 z-30 glass-btn right-4 md:right-[296px]"
-        >
-          进入我的角落
-        </button>
-      )}
-
       <WeatherVote />
-      <AmbientSound weather={weather} />
 
       {/* Corner transition + view */}
       {cornerUserId && (

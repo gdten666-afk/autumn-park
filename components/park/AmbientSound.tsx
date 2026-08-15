@@ -292,9 +292,10 @@ const musicPlayer = new MusicPlayer();
 interface AmbientSoundProps {
   weather: Weather;
   scene?: string;
+  placement?: 'masthead' | 'corner';
 }
 
-export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
+export default function AmbientSound({ weather, scene, placement = 'corner' }: AmbientSoundProps) {
   const [soundOn, setSoundOn] = useState(false);
   const [player, setPlayer] = useState<PlayerState>({ playing: false, trackName: '', index: 0 });
   const [volume, setVolume] = useState(0.3);
@@ -342,7 +343,9 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
   };
 
   return (
-    <div className="fixed bottom-4 left-4 md:left-[252px] z-25 flex gap-2 items-end max-md:bottom-4 max-md:left-2">
+    <div className={placement === 'masthead'
+      ? 'flex gap-2 items-center'
+      : 'fixed bottom-4 left-4 md:left-[calc(var(--panel-w)+40px)] z-25 flex gap-2 items-end max-md:bottom-4 max-md:left-2'}>
       {/* 天气音效 */}
       <button onClick={toggleSound}
         className={`chip ${soundOn ? '!border-[rgba(193,95,60,0.45)] !text-[var(--accent)]' : ''}`}
@@ -355,7 +358,7 @@ export default function AmbientSound({ weather, scene }: AmbientSoundProps) {
       <div className="relative">
         <div className="chip cursor-pointer select-none" onClick={toggleMusic} title={player.playing ? '暂停' : '播放'}>
           <span>{player.playing ? 'Ⅱ' : '▶'}</span>
-          <b style={{ color: 'var(--ink)', fontWeight: 600 }}>{player.trackName || '背景音乐'}</b>
+          <b className="hidden md:inline" style={{ color: 'var(--ink)', fontWeight: 600 }}>{player.trackName || '背景音乐'}</b>
           <button
             className="ml-1 text-[11px]"
             style={{ color: 'var(--ink-weak)' }}
