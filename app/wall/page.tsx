@@ -5,7 +5,7 @@ import MessageWall from '@/components/park/MessageWall';
 
 export default function WallPage() {
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100dvh', color: 'var(--ink)' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100dvh', color: 'var(--ink)', overflowY: 'auto' }}>
       <header className="sticky top-0 z-20 flex items-center justify-between px-4 py-3"
         style={{ background: 'var(--surface)', borderBottom: '1px solid var(--hairline)' }}>
         <Link href="/park" className="btn-ghost !py-1.5 text-xs">← 回到公园</Link>

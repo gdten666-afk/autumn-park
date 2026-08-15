@@ -160,7 +160,7 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
   // 面板模式（桌面端）：右侧固定面板；移动端用链接跳转到独立留言页
   return (
     <>
-      <Link href="/wall" className="chip fixed md:hidden z-30" style={{ right: 8, bottom: 80 }}>
+      <Link href="/wall" className="chip fixed md:hidden z-30" style={{ right: 8, bottom: 8 }}>
         💬 留言墙
       </Link>
 

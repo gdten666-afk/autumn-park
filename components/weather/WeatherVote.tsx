@@ -85,7 +85,7 @@ export default function WeatherVote() {
   if (!data) {
     if (loadError) {
       return (
-        <div className="fixed bottom-4 left-4 z-25 max-md:bottom-16 max-md:left-2">
+        <div className="fixed bottom-4 left-4 z-25 max-md:bottom-2 max-md:left-2">
           <button onClick={fetchData} className="chip text-xs" style={{ cursor: 'pointer' }}>
             <span style={{ color: 'var(--ink-soft)' }}>🌤 加载失败，点击重试</span>
           </button>
@@ -93,7 +93,7 @@ export default function WeatherVote() {
       );
     }
     return (
-      <div className="fixed bottom-4 left-4 z-25 max-md:bottom-16 max-md:left-2">
+      <div className="fixed bottom-4 left-4 z-25 max-md:bottom-2 max-md:left-2">
         <div className="chip text-xs">
           <span className="w-3 h-3 border-2 border-[var(--hairline-strong)] border-t-[var(--ink-weak)] rounded-full animate-spin" />
           <span style={{ color: 'var(--ink-weak)' }}>天气</span>
@@ -108,7 +108,7 @@ export default function WeatherVote() {
   const todayLabel = formatDate(data.voteDate);
 
   return (
-    <div ref={containerRef} className="fixed bottom-4 left-4 z-25 flex flex-col items-start gap-2 max-md:bottom-16 max-md:left-2">
+    <div ref={containerRef} className="fixed bottom-4 left-4 z-25 flex flex-col items-start gap-2 max-md:bottom-2 max-md:left-2">
       {/* Compact collapsed button */}
       <button
         onClick={() => setExpanded(!expanded)}
