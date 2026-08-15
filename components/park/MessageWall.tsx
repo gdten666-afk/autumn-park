@@ -21,15 +21,11 @@ const COLOR_DOT: Record<string, string> = {
 
 function MessageCard({ m, onDelete }: { m: Message; onDelete: (id: string) => void }) {
   return (
-    <div className="card-hover" style={{
-      background: 'var(--surface)',
-      border: '1px solid var(--hairline)',
-      borderRadius: 12,
-      padding: '10px 14px',
+    <div className="note-card" style={{
+      transform: `rotate(${m.id.length % 2 === 0 ? -0.8 : 0.6}deg)`,
       display: 'flex',
       alignItems: 'flex-start',
       gap: 10,
-      boxShadow: 'var(--shadow-card)',
     }}>
       <span style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 6, flex: 'none',
         background: COLOR_DOT[m.color] || '#c98a4b' }} />
@@ -169,7 +165,7 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
       </Link>
 
       <div className="reveal fixed pointer-events-auto hidden md:flex" style={{
-        right: 0, top: 0, bottom: 0, width: 280,
+        right: 0, top: 0, bottom: 0, width: 'var(--panel-w)',
         zIndex: 15, flexDirection: 'column',
       }}>
         <div style={{ position: 'absolute', inset: 0, background: 'var(--surface)', borderLeft: '1px solid var(--hairline)' }} />
