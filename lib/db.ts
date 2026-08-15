@@ -107,6 +107,15 @@ async function doEnsureTables() {
     CREATE INDEX IF NOT EXISTS idx_photos_public ON photos(is_public, created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_comments_photo ON photo_comments(photo_id);
+
+    CREATE TABLE IF NOT EXISTS message_likes (
+      message_id TEXT NOT NULL,
+      user_id    TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (message_id, user_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_likes_message ON message_likes(message_id);
   `);
   // 只对确实缺失的列执行 ALTER，避免冷启动时跨洋做多次必然失败的 DDL。
   const tableCols = async (table: string): Promise<Set<string>> => {

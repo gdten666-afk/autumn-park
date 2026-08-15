@@ -51,6 +51,16 @@ export interface WeatherVote {
   vote: Weather;
 }
 
+export interface Message {
+  id: string;
+  content: string;
+  color: string;
+  created_at: string;
+  likes?: number;
+  likedByMe?: boolean;
+  canDelete?: boolean;
+}
+
 export interface DailyWeather {
   date: string;
   weather: Weather;
