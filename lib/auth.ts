@@ -79,9 +79,9 @@ export async function getSession(): Promise<UserSession | null> {
       if (sign(payload) !== signature) return null;
       const data = JSON.parse(payload);
       if (data.exp < Date.now()) return null;
-      const user = await dbGet('SELECT id, name, role FROM users WHERE id = ?', [data.userId]);
+      const user = await dbGet<{ id: string; name: string; role: string }>('SELECT id, name, role FROM users WHERE id = ?', [data.userId]);
       if (!user) return null;
-      return { userId: user.id, name: user.name, role: user.role };
+      return { userId: user.id, name: user.name, role: user.role as UserSession['role'] };
     }
 
     // Legacy unsigned tokens are no longer accepted (session forgery fix).

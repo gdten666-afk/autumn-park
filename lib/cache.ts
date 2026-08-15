@@ -104,9 +104,16 @@ export class LRUCache<T> {
 
 // Global caches
 // Full images: up to 200MB (about 20-30 photos)
-export const fullImageCache = new LRUCache<any>(64 * 1024 * 1024);
+export const fullImageCache = new LRUCache<CachedImage>(64 * 1024 * 1024);
 // Thumbnails: up to 10MB (hundreds of photos — they're tiny)
-export const thumbCache = new LRUCache<any>(10 * 1024 * 1024);
+export const thumbCache = new LRUCache<CachedImage>(10 * 1024 * 1024);
+
+// 图片内存缓存条目（buf + 内容哈希 ETag + 内容类型）
+export interface CachedImage {
+  buf: Buffer;
+  etag: string;
+  contentType: string;
+}
 
 // --- Short-TTL cache for public JSON APIs ---
 // 公开数据（照片列表/留言/统计/天气）在内存里缓存几秒到几十秒，

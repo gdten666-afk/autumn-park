@@ -11,11 +11,11 @@ export async function GET() {
   await ensureTables();
   const today = getTodayDate();
 
-  const [userCount] = await dbAll('SELECT COUNT(*) as cnt FROM users');
-  const [photoCount] = await dbAll('SELECT COUNT(*) as cnt FROM photos WHERE is_public = 1');
-  const [msgCount] = await dbAll('SELECT COUNT(*) as cnt FROM messages');
+  const [userCount] = await dbAll<{ cnt: number }>('SELECT COUNT(*) as cnt FROM users');
+  const [photoCount] = await dbAll<{ cnt: number }>('SELECT COUNT(*) as cnt FROM photos WHERE is_public = 1');
+  const [msgCount] = await dbAll<{ cnt: number }>('SELECT COUNT(*) as cnt FROM messages');
 
-  const votes = await dbAll('SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote', [today]);
+  const votes = await dbAll<{ vote: string; cnt: number }>('SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote', [today]);
 
   const voteMap: Record<string, number> = {};
   for (const v of votes) voteMap[v.vote] = v.cnt;

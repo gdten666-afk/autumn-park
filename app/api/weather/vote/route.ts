@@ -28,7 +28,7 @@ export async function GET() {
     const todayWeather = await getOrComputeDailyWeather(today);
     const tomorrowWeather = await getOrComputeDailyWeather(tomorrow, todayWeather);
 
-    const voteRows = await dbAll(
+    const voteRows = await dbAll<{ vote: string; cnt: number }>(
       'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
       [tomorrow]
     );
@@ -50,7 +50,7 @@ export async function GET() {
   // Check current user's vote
   let userVote: string | null = null;
   if (session) {
-    const uv = await dbGet('SELECT vote FROM weather_votes WHERE user_id = ? AND date = ?', [session.userId, tomorrow]);
+    const uv = await dbGet<{ vote: string }>('SELECT vote FROM weather_votes WHERE user_id = ? AND date = ?', [session.userId, tomorrow]);
     userVote = uv?.vote || null;
   }
 

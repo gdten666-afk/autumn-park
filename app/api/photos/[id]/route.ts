@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureTables, dbGet, dbRun } from '@/lib/db';
 import { requireSession, getSession } from '@/lib/auth';
-import { apiCacheClear, fullImageCache, thumbCache } from '@/lib/cache';
+import { apiCacheClear, fullImageCache, thumbCache, type CachedImage } from '@/lib/cache';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs';
@@ -9,8 +9,6 @@ import crypto from 'crypto';
 import { deleteImageKeys, readImageBytes } from '@/lib/storage';
 
 const UPLOAD_DIR = path.resolve(/* turbopackIgnore: true */ process.env.UPLOAD_DIR || './uploads');
-
-type CachedImage = { buf: Buffer; etag: string; contentType: string };
 
 function toBuf(data: unknown): Buffer {
   if (Buffer.isBuffer(data)) return data;
@@ -36,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     await ensureTables();
     const { id } = await params;
     const session = await requireSession();
-    const photo = await dbGet('SELECT * FROM photos WHERE id = ?', [id]);
+    const photo = await dbGet<{ id: string; user_id: string }>('SELECT id, user_id FROM photos WHERE id = ?', [id]);
     if (!photo) return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
     if (photo.user_id !== session.userId && session.role !== 'operator') return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
     const { caption, isPublic } = await req.json();
@@ -61,7 +59,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     await ensureTables();
     const { id } = await params;
     const session = await requireSession();
-    const photo = await dbGet('SELECT * FROM photos WHERE id = ?', [id]);
+    const photo = await dbGet<{ id: string; user_id: string; filename: string; full_key: string; thumb_key: string }>('SELECT id, user_id, filename, full_key, thumb_key FROM photos WHERE id = ?', [id]);
     if (!photo) return NextResponse.json({ ok: false, error: 'Photo not found' }, { status: 404 });
     if (photo.user_id !== session.userId && session.role !== 'operator') return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
     await deleteImageKeys([photo.full_key, photo.thumb_key]);
@@ -92,9 +90,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   if (isFile || isThumb || isMedium) {
     // 1) 先查元数据并鉴权——内存缓存命中也必须先通过 canView（修复访问控制漏洞）
+    type ImageRow = {
+      id: string; filename?: string; data?: unknown; full_key?: string;
+      thumb_key?: string; thumb_data?: unknown; is_public: number; user_id: string;
+    };
     const photo = isThumb
-      ? await dbGet('SELECT id, thumb_key, thumb_data, is_public, user_id FROM photos WHERE id = ?', [id])
-      : await dbGet('SELECT id, filename, data, full_key, is_public, user_id FROM photos WHERE id = ?', [id]);
+      ? await dbGet<ImageRow>('SELECT id, thumb_key, thumb_data, is_public, user_id FROM photos WHERE id = ?', [id])
+      : await dbGet<ImageRow>('SELECT id, filename, data, full_key, is_public, user_id FROM photos WHERE id = ?', [id]);
     if (!photo) return new NextResponse('Not found', { status: 404 });
     if (!(await canView(photo))) return new NextResponse('Not found', { status: 404 });
 
@@ -162,7 +164,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   // JSON metadata — private photos are only visible to owner/operator.
-  const photo = await dbGet(
+  const photo = await dbGet<{ id: string; user_id: string; filename: string; caption: string; is_public: number; created_at: string; author_name: string }>(
     `SELECT photos.id, photos.user_id, photos.filename, photos.caption, photos.is_public,
             photos.created_at, users.name as author_name
      FROM photos JOIN users ON photos.user_id = users.id WHERE photos.id = ?`,

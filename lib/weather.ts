@@ -34,7 +34,7 @@ export async function getOrComputeDailyWeather(date: string, fallback: Weather =
 
   // For today and future dates, always recompute from votes — never trust stale cache
   if (date >= today) {
-    const votes = await dbAll(
+    const votes = await dbAll<{ vote: string; cnt: number }>(
       'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
       [date]
     );
@@ -49,7 +49,7 @@ export async function getOrComputeDailyWeather(date: string, fallback: Weather =
   const existing = await dbGet('SELECT weather FROM daily_weather WHERE date = ?', [date]);
   if (existing) return existing.weather as Weather;
 
-  const votes = await dbAll(
+  const votes = await dbAll<{ vote: string; cnt: number }>(
     'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
     [date]
   );
@@ -59,7 +59,7 @@ export async function getOrComputeDailyWeather(date: string, fallback: Weather =
 }
 
 export async function recomputeDailyWeather(date: string, fallback: Weather = 'sunny'): Promise<Weather> {
-  const votes = await dbAll(
+  const votes = await dbAll<{ vote: string; cnt: number }>(
     'SELECT vote, COUNT(*) as cnt FROM weather_votes WHERE date = ? GROUP BY vote ORDER BY cnt DESC',
     [date]
   );

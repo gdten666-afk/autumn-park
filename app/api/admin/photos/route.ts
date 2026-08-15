@@ -38,7 +38,7 @@ export async function DELETE(req: NextRequest) {
       // 只清理“既没有 BLOB、也没有任何存储 key”的空记录。
       // 旧逻辑用 `data IS NULL` 会误删所有走 S3/磁盘存储的现代照片。
       const brokenSql = `data IS NULL AND full_key = '' AND thumb_key = ''`;
-      const photos = await dbAll(`SELECT id, full_key, thumb_key, filename FROM photos WHERE ${brokenSql}`);
+      const photos = await dbAll<{ id: string; full_key: string; thumb_key: string; filename: string }>(`SELECT id, full_key, thumb_key, filename FROM photos WHERE ${brokenSql}`);
       for (const p of photos) {
         await deleteImageKeys([p.full_key, p.thumb_key]);
         const fp = safeLegacyPath(p.filename);
@@ -50,7 +50,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ ok: true, data: { deleted: photos.length, message: `已清理 ${photos.length} 张失效照片` } });
     }
 
-    const photos = await dbAll('SELECT id, full_key, thumb_key, filename FROM photos');
+    const photos = await dbAll<{ id: string; full_key: string; thumb_key: string; filename: string }>('SELECT id, full_key, thumb_key, filename FROM photos');
     for (const p of photos) {
       await deleteImageKeys([p.full_key, p.thumb_key]);
       const fp = safeLegacyPath(p.filename);
@@ -77,14 +77,14 @@ export async function POST(req: NextRequest) {
     ensureStorageDirs();
 
     const BATCH_SIZE = 1; // free-tier CPU is weak; keep batches tiny
-    const [remaining] = await dbAll(
+    const [remaining] = await dbAll<{ cnt: number }>(
       'SELECT COUNT(*) as cnt FROM photos WHERE data IS NOT NULL AND (full_key = \'\' OR thumb_key = \'\')'
     );
     if (remaining.cnt === 0) {
       return NextResponse.json({ ok: true, data: { done: true, message: '所有照片已完成' } });
     }
 
-    const photos = await dbAll(
+    const photos = await dbAll<{ id: string; data: unknown }>(
       'SELECT id, data FROM photos WHERE data IS NOT NULL AND (full_key = \'\' OR thumb_key = \'\') LIMIT ?',
       [BATCH_SIZE]
     );

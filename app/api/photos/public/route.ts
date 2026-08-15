@@ -9,7 +9,7 @@ export async function GET() {
     return NextResponse.json(cached, { headers: { 'Cache-Control': 'no-cache' } });
   }
   await ensureTables();
-  const photos = await dbAll('SELECT photos.id, photos.user_id, photos.filename, photos.caption, photos.is_public, photos.created_at, users.name as author_name FROM photos JOIN users ON photos.user_id = users.id WHERE photos.is_public = 1 ORDER BY photos.created_at DESC LIMIT 200');
+  const photos = await dbAll<Photo>('SELECT photos.id, photos.user_id, photos.filename, photos.caption, photos.is_public, photos.created_at, users.name as author_name FROM photos JOIN users ON photos.user_id = users.id WHERE photos.is_public = 1 ORDER BY photos.created_at DESC LIMIT 200');
   const body = { ok: true, data: photos } satisfies ApiResponse<Photo[]>;
   apiCacheSet('photos:public', body, 10_000);
   return NextResponse.json(body, { headers: { 'Cache-Control': 'no-cache' } });

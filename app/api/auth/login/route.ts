@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
     // Invite code + name login (passwordless fallback)
     if (inviteCode && trimmedName) {
-      const user = await dbGet('SELECT id, name, role FROM users WHERE invite_code = ? AND name = ?', [inviteCode.trim(), trimmedName]);
+      const user = await dbGet<{ id: string; name: string; role: string }>('SELECT id, name, role FROM users WHERE invite_code = ? AND name = ?', [inviteCode.trim(), trimmedName]);
       if (!user) {
         return NextResponse.json({ ok: false, error: '邀请码和用户名不匹配' }, { status: 404 });
       }
@@ -27,14 +27,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: false, error: '管理员账号请使用密码登录' }, { status: 403 });
       }
       await createSession({ id: user.id, name: user.name, role: user.role });
-      return NextResponse.json({ ok: true, data: { userId: user.id, name: user.name, role: user.role } satisfies UserSession } satisfies ApiResponse<UserSession>);
+      return NextResponse.json({ ok: true, data: { userId: user.id, name: user.name, role: user.role as UserSession['role'] } satisfies UserSession } satisfies ApiResponse<UserSession>);
     }
 
     if (!trimmedName || !password) {
       return NextResponse.json({ ok: false, error: 'Please enter your name and password' }, { status: 400 });
     }
 
-    const user = await dbGet('SELECT id, name, role, password_hash FROM users WHERE name = ?', [trimmedName]);
+    const user = await dbGet<{ id: string; name: string; role: string; password_hash: string }>('SELECT id, name, role, password_hash FROM users WHERE name = ?', [trimmedName]);
     if (!user) {
       return NextResponse.json({ ok: false, error: 'Account not found.' }, { status: 404 });
     }
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     await createSession({ id: user.id, name: user.name, role: user.role });
-    const session: UserSession = { userId: user.id, name: user.name, role: user.role };
+    const session: UserSession = { userId: user.id, name: user.name, role: user.role as UserSession['role'] };
     return NextResponse.json({ ok: true, data: session } satisfies ApiResponse<UserSession>);
   } catch (err) {
     return NextResponse.json({ ok: false, error: 'Login failed' }, { status: 500 });

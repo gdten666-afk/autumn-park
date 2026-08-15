@@ -35,7 +35,7 @@ export async function DELETE(req: NextRequest) {
     const { userId } = await req.json();
     if (!userId || typeof userId !== 'string') return NextResponse.json({ ok: false, error: 'userId required' }, { status: 400 });
 
-    const photos = await dbAll('SELECT id, filename, full_key, thumb_key FROM photos WHERE user_id = ?', [userId]);
+    const photos = await dbAll<{ id: string; filename: string; full_key: string; thumb_key: string }>('SELECT id, filename, full_key, thumb_key FROM photos WHERE user_id = ?', [userId]);
 
     // 1) 先删存储对象与遗留文件（失败不阻断；DB 记录由事务删除）
     for (const p of photos) {

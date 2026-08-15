@@ -156,37 +156,39 @@ async function doEnsureTables() {
 
 // Convert rows to objects. libsql v0.17+ returns rows as objects already;
 // older versions return rows as arrays (paired with columns).
-function toObjects(result: { columns: string[]; rows: any[] }): any[] {
+type DbRow = Record<string, unknown>;
+
+function toObjects(result: { columns: string[]; rows: unknown[] }): DbRow[] {
   if (result.rows.length === 0) return [];
-  if (!Array.isArray(result.rows[0])) return result.rows;
-  return result.rows.map(row => {
-    const obj: any = {};
+  if (!Array.isArray(result.rows[0])) return result.rows as DbRow[];
+  return (result.rows as unknown[][]).map(row => {
+    const obj: DbRow = {};
     result.columns.forEach((col, i) => { obj[col] = row[i]; });
     return obj;
   });
 }
 
 // Direct replacement for db.prepare(sql).all(params)
-export async function dbAll(sql: string, params: any[] = []): Promise<any[]> {
+export async function dbAll<T = DbRow>(sql: string, params: unknown[] = []): Promise<T[]> {
   const db = getDb();
-  const result = await db.execute({ sql, args: params });
-  return toObjects(result as unknown as { columns: string[]; rows: any[][] });
+  const result = await db.execute({ sql, args: params as never[] });
+  return toObjects(result as unknown as { columns: string[]; rows: unknown[] }) as T[];
 }
 
 // Direct replacement for db.prepare(sql).get(params)
-export async function dbGet(sql: string, params: any[] = []): Promise<any | undefined> {
-  const rows = await dbAll(sql, params);
+export async function dbGet<T = DbRow>(sql: string, params: unknown[] = []): Promise<T | undefined> {
+  const rows = await dbAll<T>(sql, params);
   return rows[0];
 }
 
 // Direct replacement for db.prepare(sql).run(params)
-export async function dbRun(sql: string, params: any[] = []): Promise<void> {
+export async function dbRun(sql: string, params: unknown[] = []): Promise<void> {
   const db = getDb();
-  await db.execute({ sql, args: params });
+  await db.execute({ sql, args: params as never[] });
 }
 
 // 事务性批量执行（libsql HTTP batch 在服务端同一事务内执行，失败整体回滚）
-export async function dbBatch(statements: { sql: string; args?: any[] }[]): Promise<void> {
+export async function dbBatch(statements: { sql: string; args?: unknown[] }[]): Promise<void> {
   const db = getDb();
-  await db.batch(statements.map(s => ({ sql: s.sql, args: s.args ?? [] })), 'write');
+  await db.batch(statements.map(s => ({ sql: s.sql, args: (s.args ?? []) as never[] })), 'write');
 }
