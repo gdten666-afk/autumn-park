@@ -167,3 +167,9 @@ export async function dbRun(sql: string, params: any[] = []): Promise<void> {
   const db = getDb();
   await db.execute({ sql, args: params });
 }
+
+// 事务性批量执行（libsql HTTP batch 在服务端同一事务内执行，失败整体回滚）
+export async function dbBatch(statements: { sql: string; args?: any[] }[]): Promise<void> {
+  const db = getDb();
+  await db.batch(statements.map(s => ({ sql: s.sql, args: s.args ?? [] })), 'write');
+}
