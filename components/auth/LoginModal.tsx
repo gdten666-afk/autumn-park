@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import type { UserSession } from '@/lib/types';
+import { useModalA11y } from '@/components/ui/useModalA11y';
 
 interface LoginModalProps {
   onLogin: (session: UserSession) => void;
@@ -10,6 +11,7 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
+  const { ref, props } = useModalA11y(true, onClose, '进入公园（登录/注册）');
   const [tab, setTab] = useState<'login' | 'register'>('login');
 
   // Login fields
@@ -87,7 +89,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center animate-fadeIn" onClick={onClose}>
+    <div ref={ref} {...props} className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center animate-fadeIn" onClick={onClose}>
       <div className="glass-strong p-6 w-80 max-w-[90vw] animate-slideUp" onClick={e => e.stopPropagation()}>
         <h2 className="text-lg mb-4 text-center font-serif tracking-wider" style={{ color: 'var(--ink)' }}>进入公园</h2>
 
@@ -113,6 +115,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
           <>
             <input
               type="text"
+              aria-label="你的名字"
               placeholder="你的名字"
               value={loginName}
               onChange={e => setLoginName(e.target.value)}
@@ -123,6 +126,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
               <>
                 <input
                   type="text"
+                  aria-label="邀请码"
                   placeholder="邀请码"
                   value={loginInviteCode}
                   onChange={e => setLoginInviteCode(e.target.value)}
@@ -134,6 +138,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
             ) : (
               <input
                 type="password"
+                aria-label="密码"
                 placeholder="密码"
                 value={loginPassword}
                 onChange={e => setLoginPassword(e.target.value)}
@@ -161,6 +166,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
           <>
             <input
               type="text"
+              aria-label="你的名字"
               placeholder="你的名字"
               value={regName}
               onChange={e => setRegName(e.target.value)}
@@ -168,6 +174,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
             />
             <input
               type="password"
+              aria-label="设置密码"
               placeholder="设置密码（至少8位）"
               value={regPassword}
               onChange={e => setRegPassword(e.target.value)}
@@ -175,6 +182,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
             />
             <input
               type="password"
+              aria-label="确认密码"
               placeholder="确认密码"
               value={regConfirm}
               onChange={e => setRegConfirm(e.target.value)}
@@ -182,6 +190,7 @@ export default function LoginModal({ onLogin, onClose }: LoginModalProps) {
             />
             <input
               type="text"
+              aria-label="邀请码"
               placeholder="邀请码"
               value={regInviteCode}
               onChange={e => setRegInviteCode(e.target.value)}

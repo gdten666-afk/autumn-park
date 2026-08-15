@@ -360,8 +360,11 @@ export default function AmbientSound({ weather, scene, placement = 'corner' }: A
           <span>{player.playing ? 'Ⅱ' : '▶'}</span>
           <b className="hidden md:inline" style={{ color: 'var(--ink)', fontWeight: 600 }}>{player.trackName || '背景音乐'}</b>
           <button
+            type="button"
             className="ml-1 text-[11px]"
             style={{ color: 'var(--ink-weak)' }}
+            aria-expanded={showMusicPanel}
+            aria-label="播放设置"
             onClick={e => { e.stopPropagation(); setShowMusicPanel(v => !v); }}
             title="播放设置"
           >⋯</button>

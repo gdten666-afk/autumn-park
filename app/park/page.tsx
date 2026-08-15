@@ -164,6 +164,7 @@ export default function ParkPage() {
             <CornerView
               userId={cornerUserId}
               isOwner={session?.userId === cornerUserId}
+              sessionUserId={session?.userId ?? null}
               onExit={exitCorner}
             />
           )}

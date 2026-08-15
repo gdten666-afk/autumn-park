@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import type { Photo } from '@/lib/types';
 import { QUOTES } from '@/lib/constants';
+import { useModalA11y } from '@/components/ui/useModalA11y';
 
 type FeedItem = { type: 'photo'; data: Photo; idx: number } | { type: 'quote'; text: string; source: string; idx: number };
 
@@ -10,6 +11,12 @@ export default function PublicPath() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [expanded, setExpanded] = useState<Photo | null>(null);
   const [viewMode, setViewMode] = useState<'walk' | 'gallery'>('walk');
+
+  const { ref: expandedRef, props: expandedProps } = useModalA11y(
+    Boolean(expanded),
+    () => setExpanded(null),
+    expanded?.caption || '照片详情',
+  );
 
   const loadPhotos = useCallback(async () => {
     const r = await fetch('/api/photos/public');
@@ -130,12 +137,12 @@ export default function PublicPath() {
 
       {/* Expanded photo modal */}
       {expanded && (
-        <div className="fixed inset-0 z-50 bg-[var(--bg)]/97 flex items-center justify-center pointer-events-auto animate-fadeIn" onClick={() => setExpanded(null)}>
-          <button onClick={() => setExpanded(null)}
+        <div ref={expandedRef} {...expandedProps} className="fixed inset-0 z-50 bg-[var(--bg)]/97 flex items-center justify-center pointer-events-auto animate-fadeIn" onClick={() => setExpanded(null)}>
+          <button type="button" aria-label="关闭" onClick={() => setExpanded(null)}
             className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
-          <button onClick={async () => {
+          <button type="button" aria-label="下载照片" onClick={async () => {
             try { const r = await fetch(`/api/photos/${expanded.id}?file=1`); const b = await r.blob(); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = expanded.filename || 'photo.jpg'; a.click(); URL.revokeObjectURL(u); } catch {}
           }}
             className="absolute top-4 right-16 z-10 w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors"
@@ -150,7 +157,7 @@ export default function PublicPath() {
               {expanded.caption && <p className="text-[var(--ink)] text-lg font-serif mb-1">{expanded.caption}</p>}
               <p className="text-[var(--ink-weak)] text-sm">by {expanded.author_name || 'anonymous'}</p>
             </div>
-            <button onClick={() => setExpanded(null)} className="glass-btn mt-4">关闭</button>
+            <button type="button" onClick={() => setExpanded(null)} className="glass-btn mt-4">关闭</button>
           </div>
         </div>
       )}

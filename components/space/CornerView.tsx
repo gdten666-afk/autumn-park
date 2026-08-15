@@ -17,9 +17,10 @@ interface CornerViewProps {
   userId: string;
   isOwner: boolean;
   onExit: () => void;
+  sessionUserId?: string | null;
 }
 
-export default function CornerView({ userId, isOwner, onExit }: CornerViewProps) {
+export default function CornerView({ userId, isOwner, onExit, sessionUserId }: CornerViewProps) {
   const [space, setSpace] = useState<SpaceWithProfile | null>(null);
   const [editingBio, setEditingBio] = useState(false);
   const [bioValue, setBioValue] = useState('');
@@ -125,7 +126,7 @@ export default function CornerView({ userId, isOwner, onExit }: CornerViewProps)
             )}
           </div>
 
-          <PhotoWall userId={userId} isOwner={isOwner} scene={space.scene} />
+          <PhotoWall userId={userId} isOwner={isOwner} scene={space.scene} sessionUserId={sessionUserId} />
         </div>
       </SceneFrame>
     </div>

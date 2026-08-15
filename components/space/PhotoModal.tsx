@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { Photo } from '@/lib/types';
+import { useModalA11y } from '@/components/ui/useModalA11y';
 
 interface Comment {
   id: string;
@@ -16,6 +17,7 @@ interface PhotoModalProps {
   photos: Photo[];
   index: number;
   isOwner: boolean;
+  sessionUserId?: string | null;
   editingId: string | null;
   editValue: string;
   onClose: () => void;
@@ -28,7 +30,7 @@ interface PhotoModalProps {
 }
 
 export default function PhotoModal({
-  photos, index, isOwner,
+  photos, index, isOwner, sessionUserId,
   editingId, editValue,
   onClose, onPrev, onNext,
   onStartEdit, onSaveCaption, onEditValueChange, onCancelEdit,
@@ -36,6 +38,8 @@ export default function PhotoModal({
   const photo = photos[index];
   const [zoom, setZoom] = useState(1);
   const imageRef = useRef<HTMLImageElement>(null);
+  const { ref, props } = useModalA11y(true, onClose, photo?.caption || '照片详情');
+  const reqSeq = useRef(0);
 
   // Comments
   const [comments, setComments] = useState<Comment[]>([]);
@@ -44,10 +48,12 @@ export default function PhotoModal({
   const [commentError, setCommentError] = useState('');
 
   const loadComments = useCallback(async () => {
+    const seq = ++reqSeq.current;
+    setComments([]);
     try {
       const res = await fetch(`/api/comments/${photo.id}`);
       const d = await res.json();
-      if (d.ok) setComments(d.data);
+      if (d.ok && seq === reqSeq.current) setComments(d.data);
     } catch {}
   }, [photo.id]);
 
@@ -123,40 +129,38 @@ export default function PhotoModal({
   }, []);
 
   // Download
-  const handleDownload = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/photos/${photo.id}?file=1`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = photo.filename || 'photo.jpg'; a.click();
-      URL.revokeObjectURL(url);
-    } catch {}
+  const handleDownload = useCallback(() => {
+    const a = document.createElement('a');
+    a.href = `/api/photos/${photo.id}?file=1`;
+    a.download = photo.filename || 'photo.jpg';
+    a.click();
   }, [photo]);
 
   if (!photo) return null;
 
   return (
     <div
+      ref={ref}
+      {...props}
       className="fixed inset-0 z-50 bg-[var(--bg)]/97 flex items-center justify-center animate-fadeIn"
       onClick={onClose}
     >
       {/* Top bar */}
       <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
-          <button onClick={onClose}
+          <button type="button" aria-label="关闭" onClick={onClose}
             className="w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           <span className="text-[var(--ink-weak)] text-xs">{index + 1} / {photos.length}</span>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={handleDownload}
+          <button type="button" aria-label="下载照片" onClick={handleDownload}
             className="w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors"
             title="下载照片">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </button>
-          <button onClick={() => setZoom(z => z > 1.5 ? 1 : z + 0.5)}
+          <button type="button" aria-label="缩放" onClick={() => setZoom(z => z > 1.5 ? 1 : z + 0.5)}
             className="w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] text-xs transition-colors"
             title="缩放">
             {zoom > 1 ? `${Math.round(zoom * 100)}%` : '1:1'}
@@ -166,13 +170,13 @@ export default function PhotoModal({
 
       {/* Nav arrows */}
       {index > 0 && (
-        <button onClick={e => { e.stopPropagation(); onPrev(); }}
+        <button type="button" aria-label="上一张" onClick={e => { e.stopPropagation(); onPrev(); }}
           className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors max-md:w-8 max-md:h-8">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
       )}
       {index < photos.length - 1 && (
-        <button onClick={e => { e.stopPropagation(); onNext(); }}
+        <button type="button" aria-label="下一张" onClick={e => { e.stopPropagation(); onNext(); }}
           className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--hairline)] hover:bg-[var(--bg-soft)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors max-md:w-8 max-md:h-8">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
@@ -181,6 +185,7 @@ export default function PhotoModal({
       {/* Image area */}
       <div
         className="flex flex-col items-center max-w-5xl max-h-[92vh] w-full px-4 select-none"
+        style={{ touchAction: 'pan-y' }}
         onClick={e => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -215,7 +220,7 @@ export default function PhotoModal({
           {photo.caption ? (
             isOwner && editingId === photo.id ? (
               <div className="flex items-center gap-2">
-                <input type="text" value={editValue} onChange={e => onEditValueChange(e.target.value)}
+                <input type="text" aria-label="编辑文案" value={editValue} onChange={e => onEditValueChange(e.target.value)}
                   maxLength={100} autoFocus
                   onKeyDown={e => { if (e.key==='Enter') onSaveCaption(photo.id); if (e.key==='Escape') onCancelEdit(); }}
                   className="flex-1 bg-[var(--surface)] border border-[var(--hairline-strong)] rounded-lg px-3 py-2 text-sm text-[var(--ink)] placeholder:text-[var(--ink-weak)] outline-none focus:border-[var(--accent-2)] text-center" />
@@ -252,9 +257,9 @@ export default function PhotoModal({
                 <div key={c.id} className="flex items-start gap-2 group">
                   <p className="text-[var(--ink-weak)] text-[10px] flex-shrink-0 mt-0.5 w-14 truncate text-right">{c.author_name}</p>
                   <p className="text-[var(--ink-soft)] text-xs flex-1 leading-relaxed">{c.content}</p>
-                  {c.user_id === photo.user_id && (
-                    <button onClick={() => deleteComment(c.id)}
-                      className="text-[var(--ink-weak)] hover:text-red-500/70 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                  {(c.user_id === sessionUserId || isOwner) && (
+                    <button type="button" aria-label="删除评论" onClick={() => deleteComment(c.id)}
+                      className="text-[var(--ink-weak)] hover:text-red-500/70 text-[10px] transition-opacity flex-shrink-0">
                       ✕
                     </button>
                   )}
@@ -265,7 +270,7 @@ export default function PhotoModal({
             {/* Comment input */}
             <div className="flex gap-2">
               <input
-                type="text" value={commentText} onChange={e => setCommentText(e.target.value)}
+                type="text" aria-label="评论内容" value={commentText} onChange={e => setCommentText(e.target.value)}
                 placeholder="说点什么…" maxLength={300}
                 onKeyDown={e => { if (e.key === 'Enter') postComment(); }}
                 className="flex-1 bg-[var(--surface)] border border-[var(--hairline-strong)] rounded-lg px-3 py-1.5 text-xs text-[var(--ink)] placeholder:text-[var(--ink-weak)] outline-none focus:border-[var(--accent-2)]"

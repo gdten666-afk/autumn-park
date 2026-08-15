@@ -111,6 +111,9 @@ export default function WeatherVote() {
     <div ref={containerRef} className="fixed bottom-4 left-4 z-25 flex flex-col items-start gap-2 max-md:bottom-2 max-md:left-2">
       {/* Compact collapsed button */}
       <button
+        type="button"
+        aria-expanded={expanded}
+        aria-label="天气投票"
         onClick={() => setExpanded(!expanded)}
         className="chip cursor-pointer text-xs"
         title="天气投票"
@@ -130,6 +133,8 @@ export default function WeatherVote() {
         <div
           className="glass-strong p-4 min-w-[210px] max-w-[calc(100vw-2rem)] animate-slideUp"
           style={{ zIndex: 30 }}
+          role="region"
+          aria-label="天气投票面板"
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}

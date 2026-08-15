@@ -8,9 +8,10 @@ interface PhotoWallProps {
   userId: string;
   isOwner: boolean;
   scene: string;
+  sessionUserId?: string | null;
 }
 
-export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
+export default function PhotoWall({ userId, isOwner, scene, sessionUserId }: PhotoWallProps) {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -346,9 +347,11 @@ export default function PhotoWall({ userId, isOwner, scene }: PhotoWallProps) {
       {/* === Detail modal with swipe + zoom + download === */}
       {detailIdx !== null && photos[detailIdx] && (
         <PhotoModal
+          key={photos[detailIdx].id}
           photos={photos}
           index={detailIdx}
           isOwner={isOwner}
+          sessionUserId={sessionUserId}
           editingId={editingId}
           editValue={editValue}
           onClose={() => setDetailIdx(null)}
