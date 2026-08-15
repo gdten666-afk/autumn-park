@@ -191,7 +191,7 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
 
       <aside aria-label="留言墙" className="reveal pointer-events-auto hidden md:flex" style={{
         position: 'fixed',
-        right: 0, top: 0, bottom: 0, width: 'var(--panel-w)',
+        right: 0, top: 'var(--masthead-h)', bottom: 0, width: 'var(--panel-w)',
         zIndex: 15, flexDirection: 'column',
       }}>
         <div style={{ position: 'absolute', inset: 0, background: 'var(--surface)', borderLeft: '1px solid var(--hairline)' }} />

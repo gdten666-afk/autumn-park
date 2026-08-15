@@ -20,6 +20,7 @@
   --shadow-card: 0 2px 10px rgba(60, 48, 30, 0.05);
   --shadow-lift: 0 8px 24px rgba(60, 48, 30, 0.10);
   --panel-w: 200px;
+  --masthead-h: 62px;
 }
 
 body {
@@ -142,6 +143,7 @@ body {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 40;
+  min-height: var(--masthead-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
