@@ -85,7 +85,7 @@ export default function ParkPage() {
         <ParkScene seasonState={seasonState} weather={weather} />
 
         {/* Welcome hero */}
-        <div className="welcome-text pointer-events-none relative px-4 md:px-0" style={{ paddingTop: 'clamp(96px, 16vh, 150px)', paddingLeft: '4vw', zIndex: 20 }}>
+        <section aria-label="欢迎" className="welcome-text pointer-events-none relative px-4 md:px-0" style={{ paddingTop: 'clamp(96px, 16vh, 150px)', paddingLeft: '4vw', zIndex: 20 }}>
           <div className="hero-issue hidden lg:block" style={{ position: 'absolute', left: 10, top: '22%', zIndex: 19, writingMode: 'vertical-rl', fontSize: 9, letterSpacing: '0.42em', color: 'var(--ink-ghost)', padding: '14px 6px', borderRight: '1px solid var(--hairline)' }}>
             NO.03 — 秋日刊 · 二〇二六
           </div>
@@ -110,7 +110,7 @@ export default function ParkPage() {
               </button>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Scroll hint — bottom center */}
         <div className="scroll-hint relative z-10 flex justify-center py-12">

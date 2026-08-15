@@ -188,7 +188,7 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
         💬 留言墙
       </Link>
 
-      <div className="reveal fixed pointer-events-auto hidden md:flex" style={{
+      <aside aria-label="留言墙" className="reveal fixed pointer-events-auto hidden md:flex" style={{
         right: 0, top: 0, bottom: 0, width: 'var(--panel-w)',
         zIndex: 15, flexDirection: 'column',
       }}>
@@ -218,7 +218,7 @@ export default function MessageWall({ mode = 'panel' }: MessageWallProps) {
         <div className="relative p-4 flex-shrink-0">
           {renderInput()}
         </div>
-      </div>
+      </aside>
     </>
   );
 }

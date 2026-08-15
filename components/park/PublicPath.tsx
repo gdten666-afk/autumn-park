@@ -40,9 +40,9 @@ export default function PublicPath() {
   }, [photos]);
 
   return (
-    <div className="relative w-full pointer-events-none">
+    <section aria-label="照片小径" className="relative w-full pointer-events-none">
       {/* View mode toggle */}
-      <div className="fixed top-16 right-4 md:right-[296px] z-20 flex items-center gap-1 pointer-events-auto max-md:top-14 max-md:right-2"
+      <div className="fixed top-16 right-4 md:right-[calc(var(--panel-w)+16px)] z-20 flex items-center gap-1 pointer-events-auto max-md:top-14 max-md:right-2"
         style={{ background: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: 999, padding: 4, boxShadow: 'var(--shadow-card)' }}>
         {(['walk', 'gallery'] as const).map(mode => (
           <button
@@ -154,6 +154,6 @@ export default function PublicPath() {
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }
