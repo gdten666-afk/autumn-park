@@ -22,10 +22,10 @@ export function getTomorrowDate(): string {
   return localDate(1);
 }
 
-function countWinner(votes: any[], fallback: Weather): Weather {
+export function countWinner(votes: { vote: string; cnt: number }[], fallback: Weather): Weather {
   if (votes.length === 0) return fallback;
-  const maxCnt = votes[0].cnt;
-  const topVotes = votes.filter((v: any) => v.cnt === maxCnt).map((v: any) => v.vote);
+  const maxCnt = Math.max(...votes.map(v => v.cnt));
+  const topVotes = votes.filter((v) => v.cnt === maxCnt).map((v) => v.vote as Weather);
   return WEATHER_PRIORITY.find(w => topVotes.includes(w)) || fallback;
 }
 
