@@ -77,8 +77,8 @@ export async function writeImageBytes(
     return;
   }
   const file = path.join(uploadDir(), key);
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, bytes);
+  await fs.promises.mkdir(path.dirname(file), { recursive: true });
+  await fs.promises.writeFile(file, bytes);
 }
 
 export async function readImageBytes(
@@ -96,8 +96,11 @@ export async function readImageBytes(
     }
   }
   const file = path.join(uploadDir(), key);
-  if (!fs.existsSync(file)) return null;
-  return { bytes: fs.readFileSync(file), contentType: "image/jpeg" };
+  try {
+    return { bytes: await fs.promises.readFile(file), contentType: "image/jpeg" };
+  } catch {
+    return null;
+  }
 }
 
 export async function deleteImageKeys(keys: string[]): Promise<void> {
@@ -110,7 +113,7 @@ export async function deleteImageKeys(keys: string[]): Promise<void> {
         );
       } else {
         const file = path.join(uploadDir(), key);
-        if (fs.existsSync(file)) fs.unlinkSync(file);
+        try { await fs.promises.unlink(file); } catch { /* 忽略不存在 */ }
       }
     } catch {
       // Deleting is best-effort; orphaned objects can be cleaned separately.
